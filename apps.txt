@@ -1,0 +1,4 @@
+Acá se pondran las apps que van en settings.py,
+cuando pongan en su  settings.py alguna app  en INSTALLED_APPS
+hagan un aviso si añaden apps por wsp o el mensaje cuando suban al
+repositorio, asi evitamos errores por esto.
