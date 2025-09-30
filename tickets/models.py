@@ -65,3 +65,41 @@ class SolicitudIncidencia(models.Model):
 
     def __str__(self):
         return f'Solicitud #{self.pk} - {self.estado}'
+
+
+class HistorialEstadoEncuesta(models.Model):
+    # PK
+    historial_id = models.BigAutoField(
+        primary_key=True,
+        db_column='Historial_Estado_ID'
+    )
+
+    # FK hacia SolicitudIncidencia
+    solicitud = models.ForeignKey(
+        SolicitudIncidencia,
+        on_delete=models.CASCADE,
+        db_column='Solicitud_Incidencia_ID',
+        related_name='historial_estados'
+    )
+
+    # Campos simples
+    estado = models.CharField(max_length=50, db_column='Estado')
+    usuario = models.ForeignKey(
+        'auth.User',
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='historial_estados'
+    )
+    fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
+
+    class Meta:
+        db_table = 'Historial_Estado_Encuesta'
+        verbose_name = 'Historial de Estado'
+        verbose_name_plural = 'Historial de Estados'
+        indexes = [
+            models.Index(fields=['estado'], name='hist_estado_idx'),
+            models.Index(fields=['fecha'], name='hist_fecha_idx'),
+        ]
+
+    def __str__(self):
+        return f'{self.solicitud} - {self.estado} ({self.fecha})'
