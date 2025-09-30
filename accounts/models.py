@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
 class Perfil(models.Model):
@@ -12,3 +13,14 @@ class Perfil(models.Model):
         ordering = ['tipo_perfil']
     def __str__(self):
         return f"{self.tipo_perfil} - Primera sesión: {self.first_session}"
+
+class Usuario(AbstractUser):
+    email = models.EmailField(unique=True)   # Email único
+    telefono = models.CharField(max_length=20, blank=True, null=True)
+    perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name="usuarios")
+
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
+
+    def __str__(self):
+        return f"{self.email} - {self.perfil.nombre}"
