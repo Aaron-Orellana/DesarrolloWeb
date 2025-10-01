@@ -31,3 +31,28 @@ class Cuadrilla(models.Model):
         verbose_name = 'Cuadrilla'
         verbose_name_plural = 'Cuadrillas'
 # Create your models here.
+
+#Creacion tabla Direccion
+
+
+class Direccion(models.Model):
+    direccion_id = models.AutoField(primary_key=True, db_column='Direccion_id')
+    nombre = models.CharField(max_length=150, unique=True)
+
+    # Relación con usuario correspondiente
+    usuario = models.ForeignKey(
+        'accounts.Usuario',   #
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='direcciones',
+        null=True,  # 
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Dirección'
+        verbose_name_plural = 'Direcciones'
+        ordering = ['nombre']
+
+    def __str__(self):
+        return self.nombre
