@@ -1,8 +1,16 @@
 from django.db import models
 
 class Departamento(models.Model):
-    nombre = models.CharField(max_length=150)
+    #PK
+    departamento_id = models.BigAutoField(
+	primary_key=True,
+	db_column='Departamento_ID'
+    )
 
+    #Campos simples
+    nombre = models.CharField(max_length=150)
+    
+    #FK
     direccion = models.ForeignKey(
         'Direccion', 
         on_delete=models.PROTECT,
@@ -17,6 +25,8 @@ class Departamento(models.Model):
 
     def __str__(self):
         return f"{self.nombre} ({self.direccion})"
+    
+    
 class Cuadrilla(models.Model):
     cuadrilla_id = models.AutoField(primary_key=True) 
     nombre = models.CharField(max_length=100) 
@@ -56,3 +66,28 @@ class Direccion(models.Model):
 
     def __str__(self):
         return self.nombre
+
+class Territorial(models.Model):
+    #PK
+    territorial_id = models.BigAutoField(
+	primary_key=True,
+	db_column='Territorial_ID'
+    )
+    #Campos libres
+    nombre = models.CharField(max_length=100, unique=True)
+    
+    #FK
+    usuario = models.ForeignKey(
+        'accounts.Usuario', 
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='Territorial'
+    )
+
+    class Meta:
+        verbose_name = "Territorial"
+        verbose_name_plural = "Territoriales"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        return f"{self.nombre} ({self.usuario})"

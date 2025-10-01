@@ -1,6 +1,7 @@
 from django.utils import timezone
 from django.db import models
-
+from django.core.exceptions import ValidationError
+import os
 # Create your models here.
 
 
@@ -103,3 +104,33 @@ class HistorialEstadoEncuesta(models.Model):
 
     def __str__(self):
         return f'{self.solicitud} - {self.estado} ({self.fecha})'
+
+
+def validar_tipo_archivo(valor):
+    valid_extensions = ['.jpg', '.jpeg', '.png', '.mp4', '.mov']
+    ext = os.path.splitext(valor.name)[1].lower()
+    if ext not in valid_extensions:
+        raise ValidationError("Formato de archivo que no permitido (usa jpg, png, mp4 o mov).")
+
+class Multimedia(models.Model):
+    # PK
+    multimedia_id = models.BigAutoField(
+        primary_key=True,
+        db_column='Multimedia_ID'
+    )
+    TIPOS = (
+        ('imagen', 'Imagen'),
+        ('video', 'Video'),
+    )
+    #FK
+    solicitud_incidencia= models.ForeignKey(
+        'Solicitud_Incidencia',
+        on_delete=models.PROTECT,
+        db_column='Solicitud_incidencia_id',
+        related_name='multimedia'
+    )
+    archivo = models.FileField(upload_to="evidencias/", validators=[validar_tipo_archivo])
+    tipo = models.CharField(max_length=10, choices=TIPOS)
+
+    def __str__(self):
+        return f"Tipo: {self.tipo} - Solicitud: {self.solicitud_incidencia.id}"
