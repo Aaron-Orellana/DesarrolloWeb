@@ -14,37 +14,37 @@ class SolicitudIncidencia(models.Model):
 
     # FKs (solo por nombre)
     encuesta = models.ForeignKey(
-        'Encuesta',
+        'surveys.Encuesta',
         on_delete=models.PROTECT,
         db_column='Encuesta_id',
         related_name='solicitudes_incidencia'
     )
     incidencia = models.ForeignKey(
-        'Incidencia',
+        'catalogs.Incidencia',
         on_delete=models.PROTECT,
         db_column='Incidencia_id',
         related_name='solicitudes'
     )
     territorial = models.ForeignKey(
-        'Territorial',
+        'orgs.Territorial',
         on_delete=models.PROTECT,
         db_column='Territorial_id',
         related_name='solicitudes_incidencia'
     )
     vecino = models.ForeignKey(
-        'Vecino',
+        'locations.Vecino',
         on_delete=models.PROTECT,
         db_column='Vecino_id',
         related_name='solicitudes_incidencia'
     )
     cuadrilla = models.ForeignKey(
-        'Cuadrilla',
+        'orgs.Cuadrilla',
         on_delete=models.PROTECT,
         db_column='Cuadrilla_id',
         related_name='solicitudes_incidencia'
     )
     ubicacion = models.ForeignKey(
-        'Ubicacion',
+        'locations.Ubicacion',
         on_delete=models.PROTECT,
         db_column='Ubicacion_id',
         related_name='solicitudes_incidencia'
@@ -124,7 +124,7 @@ class Multimedia(models.Model):
     )
     #FK
     solicitud_incidencia= models.ForeignKey(
-        'Solicitud_Incidencia',
+        'tickets.SolicitudIncidencia',
         on_delete=models.PROTECT,
         db_column='Solicitud_incidencia_id',
         related_name='multimedia'
@@ -133,4 +133,4 @@ class Multimedia(models.Model):
     tipo = models.CharField(max_length=10, choices=TIPOS)
 
     def __str__(self):
-        return f"Tipo: {self.tipo} - Solicitud: {self.solicitud_incidencia.id}"
+        return f"Tipo: {self.tipo} - Solicitud: {self.solicitud_incidencia.pk}"

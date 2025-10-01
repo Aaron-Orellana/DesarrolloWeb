@@ -19,7 +19,7 @@ class Perfil(models.Model):
     def __str__(self):
         return f"{self.tipo_perfil} - Primera sesión: {self.first_session}"
 
-class Usuario(AbstractUser):
+class Usuario(models.Model):
     email = models.EmailField(unique=True)   # Email único
     telefono = models.CharField(max_length=20, blank=True, null=True)
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name="usuarios")
