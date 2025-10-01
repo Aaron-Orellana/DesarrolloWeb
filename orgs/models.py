@@ -33,7 +33,7 @@ class Cuadrilla(models.Model):
 # Create your models here.
 
 #Creacion tabla Direccion
-from django.db import models
+
 
 class Direccion(models.Model):
     direccion_id = models.AutoField(primary_key=True, db_column='Direccion_id')
