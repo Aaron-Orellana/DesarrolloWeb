@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     'orgs',
     'surveys',
     'vecino',
-    tipoperfil',
+    'tipoperfil',
 ]
 
 MIDDLEWARE = [
