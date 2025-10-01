@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Lista de vecinos</title>
+</head>
+<body>
+    <h1>Lista de vecinos</h1>
+    <ul>
+        {% for v in vecinos %}
+            <li>{{ v.nombre }} - {{ v.telefono }} - {{ v.correo }}</li>
+        {% empty %}
+            <li>No hay vecinos registrados.</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
