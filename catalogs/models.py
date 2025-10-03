@@ -39,7 +39,6 @@ class Incidencia(models.Model):
     )
 
     class Meta:
-        db_table = 'Incidencia'
         verbose_name = 'Tipo de Incidencia'
         verbose_name_plural = 'Tipos de Incidencia'
         indexes = [

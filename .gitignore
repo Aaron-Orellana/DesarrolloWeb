@@ -1,2 +1,54 @@
-settings.py
+# ==========================================
+# Archivos de Python
+# ==========================================
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# ==========================================
+# Entorno virtual y dependencias
+# ==========================================
+venv/
+env/
+.venv/
+.env
+*.sqlite3-journal
+
+# ==========================================
+# Archivos de Django
+# ==========================================
+db.sqlite3        # base de datos local de desarrollo
+media/            # archivos subidos por usuarios (solo si no quieres versionarlos)
+staticfiles/      # colectados por collectstatic
+*.log             # logs de debug
+
+# ==========================================
+# Migraciones
+# ==========================================
+# ⚠️ Importante: NO ignores toda la carpeta migrations,
+# porque las migraciones son parte del proyecto.
+# Solo ignoramos los cachés de Python dentro de ellas.
+**/migrations/__pycache__/
+
+# ==========================================
+# Archivos de IDE/Editor
+# ==========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.DS_Store
+
+# ==========================================
+# Otros (según tu proyecto)
+settings.py
+# ==========================================
+# Llaves, configuraciones locales, etc.
+*.pem
+secrets.json

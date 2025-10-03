@@ -56,13 +56,8 @@ class SolicitudIncidencia(models.Model):
     fecha = models.DateTimeField(default=timezone.now, db_column='Fecha')
 
     class Meta:
-        db_table = 'Solicitud_Incidencia'
         verbose_name = 'Solicitud de Incidencia'
         verbose_name_plural = 'Solicitudes de Incidencia'
-        indexes = [
-            models.Index(fields=['estado'], name='sol_inc_estado_idx'),
-            models.Index(fields=['fecha'], name='sol_inc_fecha_idx'),
-        ]
 
     def __str__(self):
         return f'Solicitud #{self.pk} - {self.estado}'
@@ -94,13 +89,8 @@ class HistorialEstadoEncuesta(models.Model):
     fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
 
     class Meta:
-        db_table = 'Historial_Estado_Encuesta'
         verbose_name = 'Historial de Estado'
         verbose_name_plural = 'Historial de Estados'
-        indexes = [
-            models.Index(fields=['estado'], name='hist_estado_idx'),
-            models.Index(fields=['fecha'], name='hist_fecha_idx'),
-        ]
 
     def __str__(self):
         return f'{self.solicitud} - {self.estado} ({self.fecha})'

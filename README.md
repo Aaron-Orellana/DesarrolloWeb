@@ -4,55 +4,17 @@ Este proyecto es parte del curso de Desarrollo Web.
 
 
 # IMPORTANTE
-1. Como estamos modularizando las apps, para importar una foreign key, recomiendo hacerlo de esta manera.
+    En este sprint 2 se agregara el login, por lo que es importante que sigan este paso al menos UNA VEZ, este paso lo pueden encontrar más detallado en el tutorial 2. Y para realizarlo, deben haber completado las migraciones del SPRINT 1.
 
-``` 
-    # FKs
-    direccion = models.ForeignKey(
-        'orgs.Direccion',   # app orgs, modelo Direccion
-        on_delete=models.PROTECT,
-        db_column='Direccion_id',
-        related_name='incidencias'
-    )
-```
-Llamas a la app y al modelo, para los atributos que no son llaves foraneas. no es necesario cambiar.
+### En su base de datos, deberan agregar el siguiente comando SQL
+    INSERT INTO auth_group VALUES(1,'Admin');
 
-2. Si no tienes la ultima version te recomiendo hacer las migraciones 
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-Con esto nos aseguramos de que tu proyecto pueda funcionar. Además recordar, añadir el archivo settings.py, actualmente esta como settings.txt, este archivo settings.py debe ir en la carpeta municipalidad. y debes ingresarle solamente tus datos de base de datos.
+### Creacion de super usuario (Para sus pruebas)
+    python manage.py createsuperuser
+Ejecutar este comando tambien es importante, para que pueda iniciar sesion.
 
-### ADVERTENCIA
-En caso de que se añada nueva app, o en tu commit modifiques tu settings.py, hazlo saber modificando el settings.txt, para que la siguiente persona no tenga errores extraños.
+### Añadir usuario a la base de datos
+    INSERT INTO registration_profile VALUES(0, 'Default', 'Default', 1, 1)
+Con estos comandos, tendremos nuestro super usuario para hacer las pruebas necesarias. ESTE USUARIO ES TEMPORAL
 
-Mientras todos colaboramos, menos problemas tendremos.
-Este README se ira modificando a gusto y peticiones del profe
-
-## Descarga del proyecto
-
-```bash
-git clone https://github.com/Aaron-Orellana/DesarrolloWeb.git
-cd DesarrolloWeb
-```
-
-## Instalación y ejecución con Conda
-
-1. Crea el entorno conda:
-    ```bash
-    conda create -n desarrolloweb python=3.11
-    conda activate desarrolloweb
-    ```
-
-2. Instala las dependencias:
-    ```bash
-    conda install --file requirements.txt
-    ```
-
-3. Ejecuta el proyecto:
-    ```bash
-    python manage.py runserver
-    ```
-
-
+##### Para el sprint 3 deberiamos ser capaces de poder crear usuarios en la misma web, sin tener que poner comandos en la base de datos.
