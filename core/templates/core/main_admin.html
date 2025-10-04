@@ -1,1 +1,16 @@
-se ha autentificado
+{% extends 'core/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2 class="mb-4">Panel Principal</h2>
+
+    <div class="list-group">
+        <a href="{% url 'direccion_listar' %}" class="list-group-item list-group-item-action">Direcciones</a>
+        <a href="{% url 'departamento_listar' %}" class="list-group-item list-group-item-action">Departamentos</a>
+        <a href="{% url 'incidencia_listar' %}" class="list-group-item list-group-item-action">Incidencias</a>
+        <a href="{% url 'encuesta_listar' %}" class="list-group-item list-group-item-action">Encuestas</a>
+    </div>
+</div>
+{% endblock %}

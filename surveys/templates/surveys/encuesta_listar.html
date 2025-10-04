@@ -1,0 +1,52 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Listar Encuestas</h4>
+
+<p><a href="{% url 'encuesta_crear' %}" class="btn">Crear Nueva Encuesta</a></p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Título</th>
+            <th>Descripción</th>
+            <th>Fecha de creación</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for encuesta in encuestas %}
+            <tr>
+                <td>{{ encuesta.encuesta_id }}</td>
+                <td>{{ encuesta.titulo }}</td>
+                <td>{{ encuesta.descripcion|default:"Sin descripción" }}</td>
+                <td>{{ encuesta.fecha_creacion|date:"d/m/Y" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">No hay encuestas registradas.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if encuestas.has_other_pages %}
+    <div class="pagination">
+        {% if encuestas.has_previous %}
+            <a href="?page={{ encuestas.previous_page_number }}">&laquo; Anterior</a>
+        {% endif %}
+        
+        {% for num in encuestas.paginator.page_range %}
+            {% if encuestas.number == num %}
+                <span class="current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if encuestas.has_next %}
+            <a href="?page={{ encuestas.next_page_number }}">Siguiente &raquo;</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

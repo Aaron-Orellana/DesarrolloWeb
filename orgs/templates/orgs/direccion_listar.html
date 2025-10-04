@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Listar Direcciones</h4>
+
+<p><a href="{% url 'direccion_crear' %}" class="btn">Crear Nueva Dirección</a></p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>Usuario</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for direccion in direcciones %}
+            <tr>
+                <td>{{ direccion.direccion_id }}</td>
+                <td>{{ direccion.nombre }}</td>
+                <td>{{ direccion.departamento.nombre }}</td>
+                <td>{{ direccion.usuario.username|default:"Sin usuario" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">No hay direcciones registradas.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if direcciones.has_other_pages %}
+    <div class="pagination">
+        {% if direcciones.has_previous %}
+            <a href="?page={{ direcciones.previous_page_number }}">&laquo; Anterior</a>
+        {% endif %}
+        
+        {% for num in direcciones.paginator.page_range %}
+            {% if direcciones.number == num %}
+                <span class="current">{{ num }}</span>
+            {% else %}

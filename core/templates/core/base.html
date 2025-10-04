@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Administración</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
+        header { background-color: #3f51b5; color: white; padding: 15px; border-radius: 8px; }
+        header h1 { margin: 0; }
+        nav a { color: white; margin-right: 15px; text-decoration: none; }
+        nav a:hover { text-decoration: underline; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        .btn { display: inline-block; background: #3f51b5; color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none; }
+        .btn:hover { background: #2c3e9f; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Panel Principal</h1>
+    <nav>
+        <a href="{% url 'direccion_listar' %}">Direcciones</a>
+        <a href="{% url 'departamento_listar' %}">Departamentos</a>
+        <a href="{% url 'incidencia_listar' %}">Incidencias</a>
+        <a href="{% url 'encuesta_listar' %}">Encuestas</a>
+        <a href="{% url 'logout' %}">Cerrar sesión</a>
+    </nav>
+</header>
+
+<div class="container">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>
