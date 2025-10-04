@@ -1,0 +1,55 @@
+{% block content %}
+<h4>Listar Incidencias</h4>
+
+<p><a href="{% url 'incidencia_crear' %}" class="btn">Crear Nueva Incidencia</a></p>
+
+<table class="incidencias-table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Dirección</th>
+            <th>Departamento</th>
+            <th>Usuario Dirección</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for incidencia in incidencias %}
+            <tr>
+                <td>{{ incidencia.incidencia_id }}</td>
+                <td>{{ incidencia.nombre }}</td>
+                <td>{{ incidencia.descripcion|default:"Sin descripción" }}</td>
+                <td>{{ incidencia.direccion.nombre }}</td>
+                <td>{{ incidencia.departamento.nombre }}</td>
+                <td>{{ incidencia.direccion.usuario.username|default:"Sin usuario" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6">No hay incidencias registradas.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if incidencias.has_other_pages %}
+    <div class="pagination">
+        {% if incidencias.has_previous %}
+            <a href="?page={{ incidencias.previous_page_number }}">&laquo; Anterior</a>
+        {% endif %}
+        
+        {% for num in incidencias.paginator.page_range %}
+            {% if incidencias.number == num %}
+                <span class="current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+        
+        {% if incidencias.has_next %}
+            <a href="?page={{ incidencias.next_page_number }}">Siguiente &raquo;</a>
+        {% endif %}
+    </div>
+{% endif %}
+
+{% endblock %}
