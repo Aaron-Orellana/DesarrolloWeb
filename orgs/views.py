@@ -4,6 +4,7 @@ from .models import Direccion, Departamento
 from registration.models import Profile
 from django.contrib import messages
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 @login_required
 def departamento_crear(request):
@@ -61,7 +62,34 @@ def departamento_listar(request):
 
 @login_required
 def direccion_listar(request):
-    direcciones = Direccion.objects.all()
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+
+    direcciones_qs = (
+        Direccion.objects
+        .select_related('usuario')
+        .prefetch_related('Departamento')
+        .order_by('direccion_id')
+    )
+    direcciones = list(direcciones_qs)
+
+    usuario_ids = [d.usuario_id for d in direcciones if d.usuario_id]
+    usuarios_por_id = {u.id: u for u in User.objects.filter(id__in=usuario_ids)}
+
+    for direccion in direcciones:
+        direccion.usuario_auth = usuarios_por_id.get(direccion.usuario_id)
+        departamentos_rel = getattr(direccion, 'Departamento', None)
+        if departamentos_rel is not None:
+            direccion.departamentos_list = [dep.nombre for dep in departamentos_rel.all()]
+        else:
+            direccion.departamentos_list = []
+
     return render(request, 'orgs/direccion_listar.html', {'direcciones': direcciones})
 
 

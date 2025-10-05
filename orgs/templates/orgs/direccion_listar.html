@@ -19,8 +19,22 @@
             <tr>
                 <td>{{ direccion.direccion_id }}</td>
                 <td>{{ direccion.nombre }}</td>
-                <td>{{ direccion.departamento.nombre }}</td>
-                <td>{{ direccion.usuario.username|default:"Sin usuario" }}</td>
+                <td>
+                    {% if direccion.departamentos_list %}
+                        {{ direccion.departamentos_list|join:", " }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+                <td>
+                    {% if direccion.usuario_auth %}
+                        {{ direccion.usuario_auth.get_full_name|default:direccion.usuario_auth.username }}
+                    {% elif direccion.usuario_id %}
+                        ID {{ direccion.usuario_id }}
+                    {% else %}
+                        Sin usuario
+                    {% endif %}
+                </td>
             </tr>
         {% empty %}
             <tr>
@@ -30,13 +44,4 @@
     </tbody>
 </table>
 
-{% if direcciones.has_other_pages %}
-    <div class="pagination">
-        {% if direcciones.has_previous %}
-            <a href="?page={{ direcciones.previous_page_number }}">&laquo; Anterior</a>
-        {% endif %}
-        
-        {% for num in direcciones.paginator.page_range %}
-            {% if direcciones.number == num %}
-                <span class="current">{{ num }}</span>
-            {% else %}
+{% endblock %}

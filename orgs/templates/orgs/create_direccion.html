@@ -9,7 +9,7 @@
   </ul>
 {% endif %}
 
-<form method="post" action="{% url 'save_direccion' %}">
+<form method="post" action="{% url 'direccion_guardar' %}">
   {% csrf_token %}
   <p>
     <label>Usuario encargado:</label><br>
@@ -27,6 +27,6 @@
 
   <p>
     <input type="submit" value="Crear">
-    <a href="{% url 'main_direccion' %}">Cancelar</a>
+    <a href="{% url 'direccion_listar' %}">Cancelar</a>
   </p>
 </form>
