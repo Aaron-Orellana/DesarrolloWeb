@@ -9,7 +9,7 @@ from django.core.paginator import Paginator #Objeto para paginar resultados (usa
 def incidencia_crear(request):
     direcciones = Direccion.objects.all()
     departamentos = Departamento.objects.all() 
-    return render(request, 'incidencia_crear.html', {  
+    return render(request, 'catalogs/incidencia_crear.html', {  
         'direcciones': direcciones,
         'departamentos': departamentos,
     })
@@ -24,27 +24,27 @@ def incidencia_guardar(request):
 
         if not nombre:
             messages.error(request, 'El nombre de la incidencia es requerido.')
-            return redirect('incidencia_crear')
+            return redirect('catalogs/incidencia_crear')
 
         if not direccion_id or not departamento_id:
             messages.error(request, 'Debe seleccionar una dirección y un departamento.')
-            return redirect('incidencia_crear')
+            return redirect('catalogs/incidencia_crear')
 
         try:
             direccion = Direccion.objects.get(id=direccion_id)
         except Direccion.DoesNotExist:
             messages.error(request, 'La dirección seleccionada no existe.')
-            return redirect('incidencia_crear')
+            return redirect('catalogs/incidencia_crear')
 
         try:
             departamento = Departamento.objects.get(id=departamento_id)
         except Departamento.DoesNotExist:
             messages.error(request, 'El departamento seleccionado no existe.')
-            return redirect('incidencia_crear')
+            return redirect('catalogs/incidencia_crear')
 
         if departamento.direccion != direccion:
             messages.error(request, 'El departamento seleccionado no pertenece a la dirección elegida.')
-            return redirect('incidencia_crear')
+            return redirect('catalogs/incidencia_crear')
 
         incidencia = Incidencia(
             nombre=nombre,
@@ -55,9 +55,9 @@ def incidencia_guardar(request):
         incidencia.save()
 
         messages.success(request, 'Incidencia creada exitosamente.')
-        return redirect('incidencia_lista')
-    
-    return redirect('incidencia_crear')
+        return redirect('catalogs/incidencia_listar')
+
+    return redirect('catalogs/incidencia_crear')
 @login_required
 def incidencia_listar(request):
     incidencias_list = Incidencia.objects.all().order_by('-incidencia_id')  #ID auto incrementable, mas bajo primero
@@ -65,6 +65,6 @@ def incidencia_listar(request):
     page_number = request.GET.get('page')
     incidencias = paginator.get_page(page_number)
     
-    return render(request, 'incidencia_lista.html', {
+    return render(request, 'catalogs/incidencia_listar.html', {
         'incidencias': incidencias,
     })

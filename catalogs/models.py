@@ -44,6 +44,7 @@ class Incidencia(models.Model):
         indexes = [
             models.Index(fields=['nombre'], name='incidencia_nombre_idx'),
         ]
+        db_table = 'catalogs_incidencia'
 
     def __str__(self):
         return self.nombre
