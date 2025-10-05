@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 class Departamento(models.Model):
     #PK
@@ -51,11 +52,11 @@ class Direccion(models.Model):
 
     # Relación con usuario correspondiente
     usuario = models.ForeignKey(
-        'accounts.Usuario',   #
+        settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         db_column='Usuario_id',
         related_name='direcciones',
-        null=True,  # 
+        null=True,
         blank=True
     )
 

@@ -106,6 +106,7 @@ def direccion_crear(request):
 
     # Puedes filtrar usuarios si quieres (p. ej., que no estén ya usados en Direccion)
     usados = Direccion.objects.values_list('usuario_id', flat=True)
+    User = get_user_model()
     usuarios = User.objects.exclude(id__in=usados)
 
     template_name = 'orgs/create_direccion.html'
@@ -133,19 +134,20 @@ def direccion_guardar(request):
 
     if not usuario_id:
         messages.warning(request, 'Debes seleccionar un usuario.')
-        return redirect('direccion_crear')
+        return redirect('create_direccion')
 
     if not direccion:
         messages.warning(request, 'Debe ingresar una direccion')
-        return redirect('direccion_crear')
+        return redirect('create_direccion')
     
     # validar que exista el usuario
+    User = get_user_model()
     user = get_object_or_404(User, pk=usuario_id)
     
     # validar que no exista otra Dirección con ese usuario
     if Direccion.objects.filter(usuario_id=user.id).exists():
         messages.warning(request, 'Ese usuario ya tiene una Dirección asociada.')
-        return redirect('direccion_crear')
+        return redirect('create_direccion')
 
     # crear (forma correcta: usar *_id o pasar la instancia)
     Direccion.objects.create(usuario_id=user.id, nombre=direccion)
