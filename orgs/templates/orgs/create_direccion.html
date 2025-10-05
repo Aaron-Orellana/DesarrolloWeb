@@ -1,0 +1,32 @@
+<!-- apps/orgs/templates/orgs/create_direccion.html -->
+<h4>Crear nueva dirección</h4>
+
+{% if messages %}
+  <ul>
+    {% for m in messages %}
+      <li>{{ m }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<form method="post" action="{% url 'save_direccion' %}">
+  {% csrf_token %}
+  <p>
+    <label>Usuario encargado:</label><br>
+    <select name="usuario_id" required>
+      <option value="">-- Selecciona un usuario --</option>
+      {% for u in usuarios %}
+        <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} ({{ u.email }})</option>
+      {% endfor %}
+    </select>
+  </p>
+  <p>
+    <label>Dirección:</label><br>
+    <input type="text" name="direccion" required maxlength="255">
+  </p>
+
+  <p>
+    <input type="submit" value="Crear">
+    <a href="{% url 'main_direccion' %}">Cancelar</a>
+  </p>
+</form>

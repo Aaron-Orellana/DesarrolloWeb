@@ -17,13 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from core.urls import core_urlpatterns
+from orgs.urls import orgs_urlpatterns
+
 
 urlpatterns = [
     path('', include(core_urlpatterns)),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('registration.urls')),
+    path('orgs/', include(orgs_urlpatterns)),
     path('catalogs/', include('catalogs.urls')),   
-    path('orgs/', include('orgs.urls')),           
     path('surveys/', include('surveys.urls')),     
 ]

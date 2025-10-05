@@ -1,8 +1,9 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from .models import Direccion, Departamento
 from registration.models import Profile
 from django.contrib import messages
+from django.contrib.auth.models import User
 
 @login_required
 def departamento_crear(request):
@@ -62,3 +63,92 @@ def departamento_listar(request):
 def direccion_listar(request):
     direcciones = Direccion.objects.all()
     return render(request, 'orgs/direccion_listar.html', {'direcciones': direcciones})
+
+
+
+@login_required
+def main_direccion(request):
+    # Seguridad básica por perfil
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:  # solo Admin SECPLA
+        return redirect('logout')
+
+    direcciones_qs = Direccion.objects.select_related('usuario').all().order_by('direccion_id')
+    direcciones = list(direcciones_qs)
+
+    usuario_ids = [d.usuario_id for d in direcciones if d.usuario_id]
+    usuarios_por_id = {u.id: u for u in User.objects.filter(id__in=usuario_ids)}
+
+    for direccion in direcciones:
+        direccion.usuario_auth = usuarios_por_id.get(direccion.usuario_id)
+
+    template_name = 'orgs/main_direccion.html'
+    ctx = {'direcciones': direcciones}
+    return render(request, template_name, ctx)
+
+
+# Formulario crear
+@login_required
+def direccion_crear(request):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+
+    # Puedes filtrar usuarios si quieres (p. ej., que no estén ya usados en Direccion)
+    usados = Direccion.objects.values_list('usuario_id', flat=True)
+    usuarios = User.objects.exclude(id__in=usados)
+
+    template_name = 'orgs/create_direccion.html'
+    ctx = {'usuarios': usuarios}
+    return render(request, template_name, ctx)
+
+
+# Guardar
+@login_required
+def direccion_guardar(request):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+
+    if request.method != 'POST':
+        return redirect('main_direccion')
+
+    usuario_id = request.POST.get('usuario_id', '').strip()
+    direccion = request.POST.get('direccion')
+
+    if not usuario_id:
+        messages.warning(request, 'Debes seleccionar un usuario.')
+        return redirect('direccion_crear')
+
+    if not direccion:
+        messages.warning(request, 'Debe ingresar una direccion')
+        return redirect('direccion_crear')
+    
+    # validar que exista el usuario
+    user = get_object_or_404(User, pk=usuario_id)
+    
+    # validar que no exista otra Dirección con ese usuario
+    if Direccion.objects.filter(usuario_id=user.id).exists():
+        messages.warning(request, 'Ese usuario ya tiene una Dirección asociada.')
+        return redirect('direccion_crear')
+
+    # crear (forma correcta: usar *_id o pasar la instancia)
+    Direccion.objects.create(usuario_id=user.id, nombre=direccion)
+
+    messages.success(request, 'Dirección creada exitosamente.')
+    return redirect('main_direccion')

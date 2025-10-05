@@ -1,0 +1,52 @@
+<!-- apps/orgs/templates/orgs/main_direccion.html -->
+<h3>Direcciones</h3>
+
+{% if messages %}
+  <ul>
+    {% for m in messages %}
+      <li>{{ m }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+<p><a href="{% url 'create_direccion' %}">+ Nueva Dirección</a></p>
+
+<table border="1" cellpadding="6">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Usuario</th>
+      <th>Email</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for d in direcciones %}
+    <tr>
+      <td>{{ d.id }}</td>
+      <td>
+        {% if d.usuario_auth %}
+          {{ d.usuario_auth.get_full_name|default:d.usuario_auth.username }}
+        {% elif d.usuario_id %}
+          ID {{ d.usuario_id }}
+        {% else %}
+          Sin asignar
+        {% endif %}
+      </td>
+      <td>
+        {% if d.usuario_auth and d.usuario_auth.email %}
+          {{ d.usuario_auth.email }}
+        {% else %}
+          -
+        {% endif %}
+      </td>
+      <td>
+        <!-- Placeholders para Sprint siguiente -->
+        <span>Ver</span> | <span>Editar</span> | <span>Bloquear</span> | <span>Eliminar</span>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="4">No hay direcciones aún.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>

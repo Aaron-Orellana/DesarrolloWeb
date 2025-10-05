@@ -19,6 +19,7 @@ env/
 .venv/
 .env
 *.sqlite3-journal
+AGENTS.md
 
 # ==========================================
 # Archivos de Django
