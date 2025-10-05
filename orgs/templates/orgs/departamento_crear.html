@@ -1,0 +1,24 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Crear Departamento</h4>
+<form method="post" action="{% url 'departamento_guardar' %}">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="nombre">Nombre del departamento:</label>
+        <input type="text" id="nombre" name="nombre" placeholder="Ingrese el nombre" required maxlength="150"/>
+    </div>
+    <h3></h3>
+    <div class="form-group">
+        <label for="direccion">Dirección:</label>
+        <select id="direccion" name="direccion_id" class="form-control" required>
+            <option value="">Seleccione una dirección</option>
+            {% for d in direcciones %}
+                <option value="{{d.id}}">{{ d.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <h3></h3>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>
+{% endblock %}

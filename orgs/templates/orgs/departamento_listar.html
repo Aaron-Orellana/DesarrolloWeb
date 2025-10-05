@@ -18,7 +18,7 @@
             <tr>
                 <td>{{ departamento.departamento_id }}</td>
                 <td>{{ departamento.nombre }}</td>
-                <td>{{ departamento.descripcion|default:"Sin descripción" }}</td>
+                <td>{{ departamento.direccion.nombre }}</td>
             </tr>
         {% empty %}
             <tr>
