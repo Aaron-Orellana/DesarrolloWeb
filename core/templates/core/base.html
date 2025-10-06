@@ -15,6 +15,9 @@
         th { background-color: #f0f0f0; }
         .btn { display: inline-block; background: #3f51b5; color: white; padding: 6px 10px; border-radius: 4px; text-decoration: none; }
         .btn:hover { background: #2c3e9f; }
+        .alert { padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-danger { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
 <body>
@@ -29,6 +32,16 @@
         <a href="{% url 'logout' %}">Cerrar sesión</a>
     </nav>
 </header>
+<!-- Bloque mensajes de Django -->
+{% if messages %}
+  <div class="container">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        {{ message }}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
 
 <div class="container">
     {% block content %}

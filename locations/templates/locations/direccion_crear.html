@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Crear Dirección</h2>
+    <hr>
+
+    <form method="POST" action="{% url 'direccion_guardar' %}">
+        {% csrf_token %}
+
+        <div>
+            <label for="usuario_id"><strong>Usuario asociado:</strong></label><br>
+            <select name="usuario_id" id="usuario_id" required>
+                <option value="">-- Seleccione un usuario --</option>
+                {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}">{{ usuario.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div style="margin-top: 10px;">
+            <label for="nombre"><strong>Nombre de la dirección:</strong></label><br>
+            <input type="text" name="nombre" id="nombre" placeholder="Ej: Dirección de Obras" required>
+        </div>
+
+        <div style="margin-top: 15px;">
+            <button type="submit" class="btn">Guardar</button>
+            <a href="{% url 'direccion_listar' %}" class="btn">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

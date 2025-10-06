@@ -27,5 +27,6 @@ urlpatterns = [
     path('accounts/', include('registration.urls')),
     path('orgs/', include(orgs_urlpatterns)),
     path('catalogs/', include('catalogs.urls')),   
-    path('surveys/', include('surveys.urls')),     
+    path('surveys/', include('surveys.urls')), 
+
 ]
