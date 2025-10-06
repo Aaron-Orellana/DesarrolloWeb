@@ -5,9 +5,18 @@ from .models import Incidencia
 from orgs.models import Direccion, Departamento
 from django.core.paginator import Paginator #Objeto para paginar resultados (usado en vistas)
 from surveys.models import Encuesta
+from registration.models import Profile
 
 @login_required
 def incidencia_crear(request):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except:
+        messages.add_message(request, messages.INFO, 'Hubo un error')
+        return redirect('check_profile') 
+    if profile.group_id != 1:
+        return redirect('logout')
+
     direcciones = Direccion.objects.all()
     departamentos = Departamento.objects.all() 
     encuestas = Encuesta.objects.all().order_by('titulo')
@@ -19,6 +28,14 @@ def incidencia_crear(request):
 
 @login_required
 def incidencia_guardar(request):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except:
+        messages.add_message(request, messages.INFO, 'Hubo un error')
+        return redirect('check_profile') 
+    if profile.group_id != 1:
+        return redirect('logout')
+
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         descripcion = request.POST.get('descripcion', '')
@@ -63,6 +80,14 @@ def incidencia_guardar(request):
     return redirect('catalogs/incidencia_crear')
 @login_required
 def incidencia_listar(request):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except:
+        messages.add_message(request, messages.INFO, 'Hubo un error')
+        return redirect('check_profile') 
+    if profile.group_id != 1:
+        return redirect('logout')
+
     incidencias_list = Incidencia.objects.all().order_by('-incidencia_id')  #ID auto incrementable, mas bajo primero
     paginator = Paginator(incidencias_list, 10)
     page_number = request.GET.get('page')
