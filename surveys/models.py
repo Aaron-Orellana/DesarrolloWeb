@@ -4,14 +4,6 @@ from django.db import models
 class Encuesta(models.Model):
     titulo = models.CharField(max_length=240)
     descripcion = models.TextField()
-    incidencia = models.ForeignKey(
-        'catalogs.Incidencia',
-        on_delete=models.PROTECT,
-        db_column='Incidencia_id',
-        related_name='encuestas',
-        null=True,
-        blank=True
-    )
     prioridad = models.CharField(max_length=20)
     estado = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)

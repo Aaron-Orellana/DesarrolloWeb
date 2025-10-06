@@ -2,41 +2,30 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Crear Encuesta - Municipalidad</title>
+    <title>Crear Encuesta</title>
 </head>
 <body>
     <h4>Crear Nueva Encuesta</h4>
 
-    <!-- Mostrar mensajes -->
     {% if messages %}
-        <ul class="messages">
+        <ul>
             {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <li>{{ message }}</li>
             {% endfor %}
         </ul>
     {% endif %}
 
     <form method="post" action="{% url 'encuesta_guardar' %}">
         {% csrf_token %}
-        
+
         <p>
             <label for="titulo">Título:</label>
-            <input type="text" id="titulo" name="titulo" placeholder="Ingrese el título" required maxlength="240"/>
+            <input type="text" id="titulo" name="titulo" required maxlength="240">
         </p>
 
         <p>
             <label for="descripcion">Descripción:</label>
-            <textarea id="descripcion" name="descripcion" placeholder="Ingrese la descripción" rows="4" cols="50"></textarea>
-        </p>
-
-        <p>
-            <label for="incidencia">Tipo de Incidencia:</label>
-            <select id="incidencia" name="incidencia_tipos" required>
-                <option value="">Seleccione un tipo</option>
-                {% for tipo in incidencias %}
-                    <option value="{{ tipo.incidencia_id }}">{{ tipo.nombre }}</option>
-                {% endfor %}
-            </select>
+            <textarea id="descripcion" name="descripcion" rows="4" cols="50"></textarea>
         </p>
 
         <p>
@@ -49,8 +38,9 @@
             </select>
         </p>
 
-        <p><input type="submit" value="Crear Encuesta"/></p>
+        <p><input type="submit" value="Guardar Encuesta"></p>
         <p><a href="{% url 'encuesta_listar' %}">Volver al listado</a></p>
     </form>
 </body>
 </html>
+

@@ -4,14 +4,17 @@ from django.contrib.auth.decorators import login_required
 from .models import Incidencia
 from orgs.models import Direccion, Departamento
 from django.core.paginator import Paginator #Objeto para paginar resultados (usado en vistas)
+from surveys.models import Encuesta
 
 @login_required
 def incidencia_crear(request):
     direcciones = Direccion.objects.all()
     departamentos = Departamento.objects.all() 
+    encuestas = Encuesta.objects.all().order_by('titulo')
     return render(request, 'catalogs/incidencia_crear.html', {  
         'direcciones': direcciones,
         'departamentos': departamentos,
+        'encuestas': encuestas,
     })
 
 @login_required

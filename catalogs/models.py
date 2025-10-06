@@ -38,6 +38,15 @@ class Incidencia(models.Model):
         related_name='incidencias'
     )
 
+    encuesta = models.ForeignKey(
+        'surveys.Encuesta',
+        on_delete=models.PROTECT,
+        db_column='Encuesta_id',
+        related_name='incidencias',
+        null=True,
+        blank=True
+    )
+
     class Meta:
         verbose_name = 'Tipo de Incidencia'
         verbose_name_plural = 'Tipos de Incidencia'

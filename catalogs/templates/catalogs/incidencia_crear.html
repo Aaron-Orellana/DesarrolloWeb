@@ -45,7 +45,17 @@
                 <option value="">Seleccione una dirección primero</option>
             </select>
         </p>
-        
+
+        <p>
+            <label for="encuesta">Encuesta (opcional):</label>
+            <select id="encuesta" name="encuesta">
+                <option value="">-- Sin encuesta --</option>
+                {% for e in encuestas %}
+                    <option value="{{ e.id }}">{{ e.titulo }}</option>
+                {% endfor %}
+            </select>
+        </p>
+
         <p><input type="submit" value="Crear"/></p>
         
         <!-- Opciones ocultas para departamentos (para JavaScript) -->
