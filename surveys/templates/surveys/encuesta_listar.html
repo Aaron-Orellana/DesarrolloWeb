@@ -8,19 +8,19 @@
 <table class="table">
     <thead>
         <tr>
-            <th>ID</th>
+            <th>#</th>
             <th>Título</th>
-            <th>Descripción</th>
-            <th>Fecha de creación</th>
+            <th>Tipo de Incidencia</th>
+            <th>Prioridad</th>
         </tr>
     </thead>
     <tbody>
         {% for encuesta in encuestas %}
             <tr>
-                <td>{{ encuesta.encuesta_id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ encuesta.titulo }}</td>
-                <td>{{ encuesta.descripcion|default:"Sin descripción" }}</td>
-                <td>{{ encuesta.fecha_creacion|date:"d/m/Y" }}</td>
+                <td>{{ encuesta.incidencia }}</td>
+                <td>{{ encuesta.prioridad }}</td>
             </tr>
         {% empty %}
             <tr>
