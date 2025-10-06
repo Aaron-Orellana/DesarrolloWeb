@@ -46,7 +46,10 @@ def departamento_guardar(request):
             print("direccion no existe")
             messages.error(request, 'La dirección seleccionada no existe')
             return redirect('departamento_crear')
-        
+        existe = Departamento.objects.filter(direccion=direccion, nombre=nombre).exists()
+        if existe:
+            messages.error(request, 'Ya existe un departamento con ese nombre en la dirección seleccionada.')
+            return redirect('departamento_crear')
         # Guardar el departamento
         departamento_save = Departamento(
             nombre=nombre,
