@@ -27,25 +27,38 @@ def departamento_guardar(request):
     except:
         messages.add_message(request, messages.INFO, 'Hubo un error')
         return redirect('check_profile')
-    if profile.group_id == 1:
-        if request.method == 'POST':
-            nombre = request.POST.get('nombre')
-            direccion_id = request.POST.get('direccion_id')
-            if nombre == '' or direccion_id == '':
-                messages.add_message(request,messages.INFO,'Debes ingresar toda la información')
-                return redirect('departamento_crear')
-            departamento_save = Departamento(
-                nombre = nombre,
-                direccion_id = direccion_id,
-            )
-            departamento_save.save()
-            messages.add_message(request,messages.INFO,'Departamento ingresado con éxito')
-            return redirect('orgs/departamento/')
-        else:
-            messages.add_message(request, messages.INFO, 'Hubo un error')
-            return redirect('check_group_main')
-    else:
+    
+    if profile.group_id != 1:
         return redirect('logout')
+    
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        direccion_id = request.POST.get('direccion_id', '').strip()
+        
+        if not nombre or not direccion_id:
+            messages.warning(request, 'Debes ingresar toda la información')
+            return redirect('departamento_crear')
+        
+        # Verificar que la dirección existe
+        try:
+            direccion = Direccion.objects.get(pk=direccion_id)
+        except Direccion.DoesNotExist:
+            print("direccion no existe")
+            messages.error(request, 'La dirección seleccionada no existe')
+            return redirect('departamento_crear')
+        
+        # Guardar el departamento
+        departamento_save = Departamento(
+            nombre=nombre,
+            direccion=direccion
+        )
+        departamento_save.save()
+        
+        messages.success(request, 'Departamento ingresado con éxito')
+        return redirect('departamento_listar')  # Redirigir a la lista
+    else:
+        messages.warning(request, 'Método no permitido')
+        return redirect('departamento_crear')
 
 @login_required
 def departamento_listar(request):

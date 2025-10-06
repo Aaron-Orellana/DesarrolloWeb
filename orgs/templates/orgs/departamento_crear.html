@@ -14,7 +14,7 @@
         <select id="direccion" name="direccion_id" class="form-control" required>
             <option value="">Seleccione una dirección</option>
             {% for d in direcciones %}
-                <option value="{{d.id}}">{{ d.nombre }}</option>
+                <option value="{{d.direccion_id}}">{{ d.nombre }}</option>
             {% endfor %}
         </select>
     </div>
