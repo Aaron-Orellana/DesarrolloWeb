@@ -18,7 +18,7 @@ def departamento_crear(request):
         template_name = 'orgs/departamento_crear.html'
         return render(request, template_name, {'direcciones':direcciones})
     else:
-        redirect('logout')
+        return redirect('logout')
 
 @login_required
 def departamento_guardar(request):
