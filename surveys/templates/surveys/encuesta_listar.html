@@ -1,48 +1,61 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Listado de Encuestas</title>
-</head>
-<body>
-    <h4>Listar Encuestas</h4>
+{% extends 'core/base.html' %}
 
-    <p><a href="{% url 'encuesta_crear' %}">+ Crear Nueva Encuesta</a></p>
+{% block content %}
+<h4>Listar Encuestas</h4>
 
-    {% if encuestas %}
-        <table border="1" cellpadding="6" cellspacing="0">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Título</th>
-                    <th>Tipo (Primera Incidencia)</th>
-                    <th>Prioridad</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for encuesta in encuestas %}
-                    <tr>
-                        <td>{{ forloop.counter }}</td>
-                        <td>{{ encuesta.titulo }}</td>
+<p>
+    <a href="{% url 'encuesta_crear' %}" class="btn btn-success">+ Crear Nueva Encuesta</a>
+</p>
 
-                        <!-- Mostrar el primer tipo de incidencia si existe -->
-                        <td>
-                            {% if encuesta.incidencias.all %}
-                                {% with primera=encuesta.incidencias.all.0 %}
-                                    {{ primera.nombre }}
-                                {% endwith %}
-                            {% else %}
-                                —
-                            {% endif %}
-                        </td>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Título</th>
+            <th>Tipo (Primera Incidencia)</th>
+            <th>Prioridad</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for encuesta in encuestas %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ encuesta.titulo }}</td>
+                <td>
+                    {% if encuesta.incidencias.exists %}
+                        {{ encuesta.incidencias.first.nombre }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{{ encuesta.prioridad }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">No hay encuestas registradas.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 
-                        <td>{{ encuesta.prioridad }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No hay encuestas registradas.</p>
+{% if encuestas.has_other_pages %}
+<div class="pagination">
+    {% if encuestas.has_previous %}
+        <a href="?page={{ encuestas.previous_page_number }}" class="btn btn-outline-primary">&laquo; Anterior</a>
     {% endif %}
-</body>
-</html>
+
+    {% for num in encuestas.paginator.page_range %}
+        {% if encuestas.number == num %}
+            <span class="btn btn-primary disabled">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}" class="btn btn-outline-primary">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if encuestas.has_next %}
+        <a href="?page={{ encuestas.next_page_number }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

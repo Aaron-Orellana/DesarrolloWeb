@@ -1,46 +1,43 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Crear Encuesta</title>
-</head>
-<body>
-    <h4>Crear Nueva Encuesta</h4>
+{% extends 'core/base.html' %}
 
-    {% if messages %}
+{% block content %}
+<h4>Crear Nueva Encuesta</h4>
+
+{% if messages %}
+    <div class="alert alert-info">
         <ul>
             {% for message in messages %}
                 <li>{{ message }}</li>
             {% endfor %}
         </ul>
-    {% endif %}
+    </div>
+{% endif %}
 
-    <form method="post" action="{% url 'encuesta_guardar' %}">
-        {% csrf_token %}
+<form method="post" action="{% url 'encuesta_guardar' %}">
+    {% csrf_token %}
+    
+    <div class="form-group mb-3">
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" name="titulo" class="form-control" required maxlength="240">
+    </div>
 
-        <p>
-            <label for="titulo">Título:</label>
-            <input type="text" id="titulo" name="titulo" required maxlength="240">
-        </p>
+    <div class="form-group mb-3">
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" rows="4" class="form-control"></textarea>
+    </div>
 
-        <p>
-            <label for="descripcion">Descripción:</label>
-            <textarea id="descripcion" name="descripcion" rows="4" cols="50"></textarea>
-        </p>
+    <div class="form-group mb-3">
+        <label for="prioridad">Prioridad:</label>
+        <select id="prioridad" name="prioridad" class="form-control" required>
+            <option value="">Seleccione una prioridad</option>
+            {% for p in prioridades %}
+                <option value="{{ p }}">{{ p }}</option>
+            {% endfor %}
+        </select>
+    </div>
 
-        <p>
-            <label for="prioridad">Prioridad:</label>
-            <select id="prioridad" name="prioridad" required>
-                <option value="">Seleccione una prioridad</option>
-                {% for p in prioridades %}
-                    <option value="{{ p }}">{{ p }}</option>
-                {% endfor %}
-            </select>
-        </p>
-
-        <p><input type="submit" value="Guardar Encuesta"></p>
-        <p><a href="{% url 'encuesta_listar' %}">Volver al listado</a></p>
-    </form>
-</body>
-</html>
+    <button type="submit" class="btn btn-primary">Guardar Encuesta</button>
+    <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Volver al listado</a>
+</form>
+{% endblock %}
 
