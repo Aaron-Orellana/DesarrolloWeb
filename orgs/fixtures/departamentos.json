@@ -1,0 +1,43 @@
+[
+  {
+    "model": "orgs.departamento",
+    "pk": 1,
+    "fields": {
+      "nombre": "Departamento de Construcción",
+      "direccion": 1
+    }
+  },
+  {
+    "model": "orgs.departamento",
+    "pk": 2,
+    "fields": {
+      "nombre": "Departamento de Fiscalización",
+      "direccion": 1
+    }
+  },
+  {
+    "model": "orgs.departamento",
+    "pk": 3,
+    "fields": {
+      "nombre": "Departamento de Aseo y Ornato",
+      "direccion": 2
+    }
+  },
+  {
+    "model": "orgs.departamento",
+    "pk": 4,
+    "fields": {
+      "nombre": "Departamento de Seguridad Vecinal",
+      "direccion": 3
+    }
+  },
+  {
+    "model": "orgs.departamento",
+    "pk": 5,
+    "fields": {
+      "nombre": "Departamento de Actividades Culturales",
+      "direccion": 4
+    }
+  }
+]
+

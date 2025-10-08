@@ -1,0 +1,52 @@
+[
+  {
+    "model": "orgs.cuadrilla",
+    "pk": 1,
+    "fields": {
+      "nombre": "Cuadrilla Construcción 1",
+      "estado": "Activo",
+      "departamento": 1,
+      "usuario": null
+    }
+  },
+  {
+    "model": "orgs.cuadrilla",
+    "pk": 2,
+    "fields": {
+      "nombre": "Cuadrilla Construcción 2",
+      "estado": "Activo",
+      "departamento": 1,
+      "usuario": null
+    }
+  },
+  {
+    "model": "orgs.cuadrilla",
+    "pk": 3,
+    "fields": {
+      "nombre": "Cuadrilla Fiscalización",
+      "estado": "Activo",
+      "departamento": 2,
+      "usuario": null
+    }
+  },
+  {
+    "model": "orgs.cuadrilla",
+    "pk": 4,
+    "fields": {
+      "nombre": "Cuadrilla Aseo y Ornato",
+      "estado": "Activo",
+      "departamento": 3,
+      "usuario": null
+    }
+  },
+  {
+    "model": "orgs.cuadrilla",
+    "pk": 5,
+    "fields": {
+      "nombre": "Cuadrilla Seguridad Vecinal",
+      "estado": "Activo",
+      "departamento": 4,
+      "usuario": null
+    }
+  }
+]
