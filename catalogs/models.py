@@ -10,7 +10,7 @@ class Incidencia(models.Model):
     NOTA SOBRE FOREIGN KEYS:
     Usamos el formato "app_label.ModelName" en lugar de importar las clases,
     porque las tablas relacionadas (Direccion y Departamento) se encuentran
-    en otras apps del proyecto. Esto evita dependencias circulares y facilita
+    en ot   |ras apps del proyecto. Esto evita dependencias circulares y facilita
     la modularización.
     """
 
