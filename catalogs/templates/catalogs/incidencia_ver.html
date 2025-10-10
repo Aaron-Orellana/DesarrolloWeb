@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Detalle de Incidencia</h4>
+
+{% if messages %}
+<div class="alert alert-info">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<table class="table table-bordered">
+    <tr><th>ID</th><td>{{ incidencia.incidencia_id }}</td></tr>
+    <tr><th>Nombre</th><td>{{ incidencia.nombre }}</td></tr>
+    <tr><th>Descripción</th><td>{{ incidencia.descripcion|default:"Sin descripción" }}</td></tr>
+    <tr><th>Dirección</th><td>{{ incidencia.direccion.nombre }}</td></tr>
+    <tr><th>Departamento</th><td>{{ incidencia.departamento.nombre }}</td></tr>
+    <tr><th>Encuesta</th><td>{{ incidencia.encuesta.titulo|default:"—" }}</td></tr>
+</table>
+
+<a href="{% url 'incidencia_editar' incidencia.incidencia_id %}" class="btn btn-warning">Editar</a>
+<a href="{% url 'incidencia_eliminar' incidencia.incidencia_id %}" class="btn btn-danger" onclick="return confirm('¿Eliminar esta incidencia?')">Eliminar</a>
+<a href="{% url 'incidencia_listar' %}" class="btn btn-secondary">Volver</a>
+{% endblock %}

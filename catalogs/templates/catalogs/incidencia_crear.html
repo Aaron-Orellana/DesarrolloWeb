@@ -51,7 +51,7 @@
         <select id="encuesta" name="encuesta" class="form-control">
             <option value="">-- Sin encuesta --</option>
             {% for e in encuestas %}
-                <option value="{{ e.encuesta_id }}">{{ e.titulo }}</option>
+                <option value="{{ e.id }}">{{ e.titulo }}</option>
             {% endfor %}
         </select>
     </div>

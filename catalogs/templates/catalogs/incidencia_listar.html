@@ -7,7 +7,6 @@
     <a href="{% url 'incidencia_crear' %}" class="btn btn-success">+ Crear Nueva Incidencia</a>
 </p>
 
-<!-- Mensajes -->
 {% if messages %}
 <div class="alert-container">
     {% for message in messages %}
@@ -40,9 +39,8 @@
             <td>
                 <a href="{% url 'incidencia_ver' incidencia.incidencia_id %}" class="btn btn-outline-info btn-sm">Ver</a>
                 <a href="{% url 'incidencia_editar' incidencia.incidencia_id %}" class="btn btn-outline-warning btn-sm">Editar</a>
-                <a href="{% url 'incidencia_bloquear' incidencia.incidencia_id %}" class="btn btn-outline-secondary btn-sm">Bloquear</a>
                 <a href="{% url 'incidencia_eliminar' incidencia.incidencia_id %}" class="btn btn-outline-danger btn-sm"
-                   onclick="return confirm('¿Eliminar esta incidencia?')">Eliminar</a>
+                   onclick="return confirm('¿Eliminar esta incidencia?');">Eliminar</a>
             </td>
         </tr>
         {% empty %}
@@ -53,7 +51,6 @@
     </tbody>
 </table>
 
-<!-- Paginación (si usas Paginator) -->
 {% if incidencias.has_other_pages %}
 <div class="pagination">
     {% if incidencias.has_previous %}
@@ -74,3 +71,4 @@
 </div>
 {% endif %}
 {% endblock %}
+
