@@ -14,6 +14,8 @@
             <th>Título</th>
             <th>Tipo (Primera Incidencia)</th>
             <th>Prioridad</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -29,10 +31,35 @@
                     {% endif %}
                 </td>
                 <td>{{ encuesta.prioridad }}</td>
+                <td>{{ encuesta.estado|yesno:"Activo,Inactivo" }}</td>
+                <td>
+                    <a href="{% url 'encuesta_detalle' encuesta.pk %}" class="btn btn-sm btn-primary">
+                        <i class="bi bi-eye"></i> Ver Detalle
+                    </a>
+                    <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-sm btn-secondary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <form method="post" action="{% url 'encuesta_cambiar_estado' encuesta.pk %}" style="display:inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="accion" value="{% if encuesta.estado %}bloquear{% else %}activar{% endif %}">
+                        <button type="submit" class="btn btn-sm btn-warning">
+                            {% if encuesta.estado %}Bloquear{% else %}Activar{% endif %}
+                        </button>
+                    </form>
+                    <form
+                        method="post"
+                        action="{% url 'encuesta_eliminar' encuesta.pk %}"
+                        style="display:inline;"
+                        onsubmit="return confirm('¿Seguro que deseas eliminar esta encuesta?');"
+                    >
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
+                    </form>
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="4">No hay encuestas registradas.</td>
+                <td colspan="6">No hay encuestas registradas.</td>
             </tr>
         {% endfor %}
     </tbody>
