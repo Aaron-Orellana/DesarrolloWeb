@@ -12,6 +12,8 @@
             <th>Nombre</th>
             <th>Departamento</th>
             <th>Usuario</th>
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -27,18 +29,36 @@
                     {% endif %}
                 </td>
                 <td>
-                    {% if direccion.usuario_auth %}
-                        {{ direccion.usuario_auth.get_full_name|default:direccion.usuario_auth.username }}
+                    {% if direccion.usuario %}
+                        {{ direccion.usuario.get_full_name|default:direccion.usuario.username }}
                     {% elif direccion.usuario_id %}
                         ID {{ direccion.usuario_id }}
                     {% else %}
                         Sin usuario
                     {% endif %}
                 </td>
+                <td>{{ direccion.estado }}</td>
+                <td>
+                    {% if direccion.estado == 'Activo' %}
+                        <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}">
+                            {% csrf_token %}
+                            <input type="submit" value="Bloquear">
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'direccion_desbloquea' direccion.direccion_id %}">
+                            {% csrf_token %}
+                            <input type="submit" value="Desbloquear">
+                        </form>
+                    {% endif %}
+                    <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta dirección?');">
+                        {% csrf_token %}
+                        <input type="submit" value="Eliminar">
+                    </form>
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="4">No hay direcciones registradas.</td>
+                <td colspan="6">No hay direcciones registradas.</td>
             </tr>
         {% endfor %}
     </tbody>

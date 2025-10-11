@@ -59,6 +59,7 @@ class Cuadrilla(models.Model):
 class Direccion(models.Model):
     direccion_id = models.AutoField(primary_key=True, db_column='Direccion_id')
     nombre = models.CharField(max_length=150, unique=True)
+    estado = models.CharField(max_length=20, default='Activo')
 
     # Relación con usuario correspondiente
     usuario = models.ForeignKey(

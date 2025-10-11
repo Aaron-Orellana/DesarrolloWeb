@@ -198,3 +198,73 @@ def direccion_guardar(request):
 
     messages.success(request, 'Dirección creada exitosamente.')
     return redirect('main_direccion')
+
+def direccion_bloquea(request, direccion_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+    
+    if profile.group_id == 1:
+        direccion_count = Direccion.objects.filter(direccion_id=direccion_id).count()
+        if direccion_count <= 0:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('logout')
+        
+        Direccion.objects.filter(direccion_id=direccion_id).update(estado='Bloqueado')
+        messages.add_message(request, messages.INFO, 'Dirección bloqueada con éxito')
+        return redirect('main_direccion')
+    else:
+        return redirect('logout')
+
+def direccion_desbloquea(request, direccion_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+    
+    if profile.group_id == 1:
+        direccion_count = Direccion.objects.filter(direccion_id=direccion_id).count()
+        if direccion_count <= 0:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('logout')
+        
+        Direccion.objects.filter(direccion_id=direccion_id).update(estado='Activo')
+        messages.add_message(request, messages.INFO, 'Dirección desbloqueada con éxito')
+        return redirect('main_direccion')
+    else:
+        return redirect('logout')
+
+def direccion_elimina(request, direccion_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+    
+    if profile.group_id == 1:
+        direccion_count = Direccion.objects.filter(direccion_id=direccion_id).count()
+        if direccion_count <= 0:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('check_profile')
+        
+        try:
+            direccion = Direccion.objects.get(direccion_id=direccion_id)
+            direccion.delete()
+            messages.add_message(request, messages.INFO, 'Dirección eliminada con éxito')
+        except:
+            messages.add_message(request, messages.INFO, 'No se puede eliminar la dirección porque está asociada a un usuario')
+        return redirect('main_direccion')
+    else:
+        return redirect('logout')
