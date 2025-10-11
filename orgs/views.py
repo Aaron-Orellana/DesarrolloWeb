@@ -77,6 +77,81 @@ def departamento_listar(request):
         return redirect('logout')
 
 @login_required
+def departamento_ver(request, departamento_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except:
+        messages.add_message(request, messages.INFO, 'Hubo un error')
+        return redirect('logout')
+    if profile.group_id == 1:
+        try:
+            departamento_count = Departamento.objects.filter(pk=departamento_id).count()
+            if departamento_count <= 0:
+                messages.add_message(request, messages.INFO, 'Hubo un error')
+                return redirect('check_profile')
+            departamento_data = Departamento.objects.get(pk=departamento_id)
+        except:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('check_profile')
+        template_name = 'orgs/departamento_ver.html'
+        return render(request, template_name, {'departamento_data':departamento_data})
+    else:
+        return redirect('logout')
+
+@login_required
+def departamento_editar(request,departamento_id=None):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except:
+        messages.add_message(request, messages.INFO, 'Hubo un error')
+        return redirect('logout')
+    if profile.group_id == 1:
+        try:
+            if request.method == 'POST':
+                id_departamento = request.POST.get('id_departamento')
+                nombre = request.POST.get('nombre', '').strip() 
+                direccion_id = request.POST.get('direccion_id', '').strip()
+                departamento_count = Departamento.objects.filter(pk=id_departamento).count()
+                if departamento_count <= 0:
+                    messages.add_message(request, messages.INFO, 'Hubo un error')
+                    return redirect('logout')
+                if nombre == '' or direccion_id == '':
+                    messages.warning(request, 'Debes ingresar toda la información')
+                    return redirect('departamento_editar', departamento_id=departamento_id)
+                #Verificar que la Dirección exista
+                try:
+                    direccion_obj = Direccion.objects.get(pk=direccion_id)
+                except Direccion.DoesNotExist:
+                    messages.error(request, 'La dirección seleccionada no existe.')
+                    return redirect('departamento_editar', departamento_id=id_departamento)
+                #Validar si existe otro departamento con el mismo nombre en la direccion
+                existe = Departamento.objects.filter(direccion=direccion_obj, nombre=nombre).exclude(pk=id_departamento).exists()
+                if existe:
+                    messages.error(request, 'Ya existe otro departamento con ese nombre en la dirección seleccionada.')
+                    return redirect('departamento_editar', departamento_id=id_departamento)
+                Departamento.objects.filter(pk=id_departamento).update(nombre=nombre)
+                Departamento.objects.filter(pk=id_departamento).update(direccion_id=direccion_id)
+                messages.success(request, 'Departamento actualizado con éxito')
+                return redirect('departamento_listar')
+        except:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('check_profile')
+        try:
+            departamento_count = Departamento.objects.filter(pk=departamento_id).count()
+            if departamento_count <= 0:
+                messages.add_message(request, messages.INFO, 'Hubo un error')
+                return redirect('check_profile')
+            departamento_data = Departamento.objects.get(pk=departamento_id)
+            direcciones = Direccion.objects.all() 
+        except:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('logout')
+        template_name = 'orgs/departamento_editar.html'
+        return render(request, template_name, {'departamento_data':departamento_data, 'direcciones':direcciones})
+    else:
+        return redirect('logout')
+
+@login_required
 def direccion_listar(request):
     try:
         profile = Profile.objects.filter(user_id=request.user.id).get()

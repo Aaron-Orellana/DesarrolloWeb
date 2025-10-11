@@ -1,0 +1,16 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Ver Departamento</h4>
+<p><a href="{% url 'departamento_listar' %}" class="btn">Volver</a></p>
+</hr>
+<div class="form-group">
+    <label>Nombre del departamento:</label>
+    <input type="text" value="{{ departamento_data.nombre }}" readonly />
+</div>
+<p>
+<div class="form-group">
+    <label>Dirección asociada:</label>
+    <input type="text" value="{{ departamento_data.direccion.nombre }}" readonly />
+</div>
+{% endblock %}

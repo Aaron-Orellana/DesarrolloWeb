@@ -10,7 +10,8 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Descripción</th>
+            <th>Direccion</th>
+            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -19,6 +20,12 @@
                 <td>{{ departamento.departamento_id }}</td>
                 <td>{{ departamento.nombre }}</td>
                 <td>{{ departamento.direccion.nombre }}</td>
+                <td>
+                    <a href="{% url 'departamento_ver' departamento.departamento_id %}">Ver</a>
+                    <a href="{% url 'departamento_editar' departamento.departamento_id %}">Editar</a>
+                    <a href="">Bloquear</a>
+                    <a href="">Eliminar</a>
+                </td>
             </tr>
         {% empty %}
             <tr>
