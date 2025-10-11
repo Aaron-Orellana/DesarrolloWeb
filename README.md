@@ -101,6 +101,9 @@ python manage.py runserver
 **Nota**: Para el sprint 3 deberíamos ser capaces de poder crear usuarios en la misma web, sin tener que poner comandos en la base de datos.
 
 **Como cargar datos de prueba**
-python manage.py loaddata orgs/fixtures/direcciones.json
-python manage.py loaddata orgs/fixtures/departamentos.json
-python manage.py loaddata orgs/fixtures/cuadrillas.json
+
+`python manage.py loaddata orgs/fixtures/direcciones.json`
+
+`python manage.py loaddata orgs/fixtures/departamentos.json`
+
+`python manage.py loaddata orgs/fixtures/cuadrillas.json`
