@@ -178,11 +178,11 @@ def direccion_guardar(request):
 
     if not usuario_id:
         messages.warning(request, 'Debes seleccionar un usuario.')
-        return redirect('create_direccion')
+        return redirect('direccion_crear')
 
     if not direccion:
         messages.warning(request, 'Debe ingresar una direccion')
-        return redirect('create_direccion')
+        return redirect('direccion_crear')
     
     # validar que exista el usuario
     User = get_user_model()
@@ -191,13 +191,78 @@ def direccion_guardar(request):
     # validar que no exista otra Dirección con ese usuario
     if Direccion.objects.filter(usuario_id=user.id).exists():
         messages.warning(request, 'Ese usuario ya tiene una Dirección asociada.')
-        return redirect('create_direccion')
+        return redirect('direccion_crear')
 
     # crear (forma correcta: usar *_id o pasar la instancia)
     Direccion.objects.create(usuario_id=user.id, nombre=direccion)
 
     messages.success(request, 'Dirección creada exitosamente.')
-    return redirect('main_direccion')
+    return redirect('direccion_listar')
+
+@login_required
+def direccion_ver(request,direccion_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+    try:
+        direccion = Direccion.objects.get(pk=direccion_id)
+    except Direccion.DoesNotExist:
+        messages.error(request, 'La dirección no existe.')
+        return redirect('direccion_listar')
+    return render(request, 'orgs/direccion_ver.html',{'direccion':direccion})
+        
+@login_required
+def direccion_editar(request,direccion_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    if profile.group_id != 1:
+        return redirect('logout')
+    try:
+        direccion = Direccion.objects.get(pk=direccion_id)
+    except Direccion.DoesNotExist:
+        messages.error(request, 'La dirección no existe.')
+        return redirect('direccion_listar')
+
+    usados = Direccion.objects.exclude(pk=direccion_id).values_list('usuario_id', flat=True)
+    usuarios = User.objects.exclude(id__in=usados)
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        usuario_id = request.POST.get('usuario', '').strip()
+
+        #validaciones
+        if not nombre:
+            messages.error(request,' El nombre es obligatorio.')
+            return redirect('direccion_editar',direccion_id = direccion_id)
+        if not usuario_id:
+            messages.error(request, 'Debes seleccionar un usuario.')
+            return redirect('direccion_crear')
+        if Direccion.objects.filter(nombre=nombre).exclude(direccion_id=direccion_id).exists():
+            messages.error(request, 'Ya existe una dirección con ese nombre.')
+            return redirect('direccion_editar', direccion_id=direccion_id)
+        try:
+            usuario = User.objects.get(pk=usuario_id)
+        except User.DoesNotExist:
+            messages.error(request, 'El usuario seleccionado no existe.')
+            return redirect('direccion_editar', direccion_id=direccion_id)
+        direccion.nombre = nombre
+        direccion.usuario = usuario
+        direccion.save()
+        messages.success(request, 'Direccion actualizada correctamente.')
+        return redirect('direccion_listar')
+    return render(request, 'orgs/direccion_editar.html', {
+        'direccion': direccion,
+        'usuarios': usuarios,})
+    
+
 
 def direccion_bloquea(request, direccion_id):
     try:
@@ -217,7 +282,7 @@ def direccion_bloquea(request, direccion_id):
         
         Direccion.objects.filter(direccion_id=direccion_id).update(estado='Bloqueado')
         messages.add_message(request, messages.INFO, 'Dirección bloqueada con éxito')
-        return redirect('main_direccion')
+        return redirect('direccion_listar')
     else:
         return redirect('logout')
 
@@ -239,7 +304,7 @@ def direccion_desbloquea(request, direccion_id):
         
         Direccion.objects.filter(direccion_id=direccion_id).update(estado='Activo')
         messages.add_message(request, messages.INFO, 'Dirección desbloqueada con éxito')
-        return redirect('main_direccion')
+        return redirect('direccion_listar')
     else:
         return redirect('logout')
 
@@ -264,7 +329,7 @@ def direccion_elimina(request, direccion_id):
             direccion.delete()
             messages.add_message(request, messages.INFO, 'Dirección eliminada con éxito')
         except:
-            messages.add_message(request, messages.INFO, 'No se puede eliminar la dirección porque está asociada a un usuario')
-        return redirect('main_direccion')
+            messages.add_message(request, messages.INFO, 'No se puede eliminar la dirección porque está asociada a un departamento')
+        return redirect('direccion_listar')
     else:
         return redirect('logout')

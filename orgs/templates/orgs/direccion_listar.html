@@ -39,20 +39,22 @@
                 </td>
                 <td>{{ direccion.estado }}</td>
                 <td>
+                    <a href="{% url 'direccion_ver' direccion.direccion_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                    <a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-sm btn-outline-warning" role="button">Editar</a>
                     {% if direccion.estado == 'Activo' %}
-                        <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}">
+                        <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}"style="display:inline;">
                             {% csrf_token %}
-                            <input type="submit" value="Bloquear">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
                         </form>
                     {% else %}
-                        <form method="post" action="{% url 'direccion_desbloquea' direccion.direccion_id %}">
+                        <form method="post" action="{% url 'direccion_desbloquea' direccion.direccion_id %}"style="display:inline;">
                             {% csrf_token %}
-                            <input type="submit" value="Desbloquear">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Desbloquear</button>
                         </form>
                     {% endif %}
-                    <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta dirección?');">
+                    <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta dirección?');"style="display:inline;">
                         {% csrf_token %}
-                        <input type="submit" value="Eliminar">
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Eliminar</button>
                     </form>
                 </td>
             </tr>

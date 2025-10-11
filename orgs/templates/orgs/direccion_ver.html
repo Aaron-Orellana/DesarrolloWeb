@@ -1,0 +1,51 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Detalle de Dirección</h4>
+
+{% if messages %}
+<div class="alert alert-info">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<table class="table table-bordered">
+    <tr><th>ID</th><td>{{ direccion.direccion_id }}</td></tr>
+    <tr><th>Nombre</th><td>{{ direccion.nombre }}</td></tr>
+    <tr><th>Usuario asignado</th>
+        <td>
+            {% if direccion.usuario %}
+                {{ direccion.usuario.username }}
+            {% else %}
+                <em>Sin usuario asignado</em>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th>Estado</th>
+        <td>{{ direccion.estado }}</td>
+    </tr>
+</table>
+
+<a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-warning">Editar</a>
+{% if direccion.estado == 'Activo' %}
+    <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary btn-sm" onclick="return confirm('¿Estás seguro de que deseas bloquear esta dirección?');">Bloquear</button>
+    </form>
+{% else %}
+    <form method="post" action="{% url 'direccion_desbloquea' direccion.direccion_id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary btn-sm" onclick="return confirm('¿Estás seguro de que deseas desbloquear esta dirección?');">Desbloquear</button>
+    </form>
+{% endif %}
+
+<form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta dirección?');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+</form>
+
+<a href="{% url 'direccion_listar' %}" class="btn btn-secondary">Volver</a>
+{% endblock %}
