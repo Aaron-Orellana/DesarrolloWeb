@@ -10,6 +10,7 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
+            <th>Estado</th>
             <th>Direccion</th>
             <th>Acciones</th>
         </tr>
@@ -20,11 +21,25 @@
                 <td>{{ departamento.departamento_id }}</td>
                 <td>{{ departamento.nombre }}</td>
                 <td>{{ departamento.direccion.nombre }}</td>
+                <td>{{ departamento.estado }}</td>
                 <td>
-                    <a href="{% url 'departamento_ver' departamento.departamento_id %}">Ver</a>
-                    <a href="{% url 'departamento_editar' departamento.departamento_id %}">Editar</a>
-                    <a href="">Bloquear</a>
-                    <a href="">Eliminar</a>
+                    <a href="{% url 'departamento_ver' departamento.departamento_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
+                        <a href="{% url 'departamento_editar' departamento.departamento_id %}" class="btn btn-sm btn-outline-primary">Editar</a>
+                    {% if departamento.estado == 'Activo' %}
+                        <form method="post" action="{% url 'departamento_bloquea' departamento.departamento_id %}"style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                        </form>
+                    {% else %}
+                        <form method="post" action="{% url 'departamento_desbloquea' departamento.departamento_id %}"style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Desbloquear</button>
+                        </form>
+                    {% endif %}
+                    <form method="post" action="{% url 'departamento_elimina' departamento.departamento_id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este de?');"style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Eliminar</button>
+                    </form>
                 </td>
             </tr>
         {% empty %}

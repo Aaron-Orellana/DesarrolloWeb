@@ -12,6 +12,9 @@ orgs_urlpatterns = [
     path('departamentos/', views.departamento_listar, name='departamento_listar'),
     path('departamentos/ver/<int:departamento_id>/', views.departamento_ver, name='departamento_ver'),
     path('departamentos/editar/<int:departamento_id>/', views.departamento_editar, name='departamento_editar'),
+    path('departamentos/bloquea/<int:departamento_id>/', views.departamento_bloquea, name='departamento_bloquea'),
+    path('departamentos/desbloquea/<int:departamento_id>/', views.departamento_desbloquea, name='departamento_desbloquea'),
+    path('departamentos/elimina/<int:departamento_id>/', views.departamento_elimina, name='departamento_elimina'),
 
     path('direcciones/ver/<int:direccion_id>/', views.direccion_ver, name='direccion_ver'),
     path('direcciones/editar/<int:direccion_id>/', views.direccion_editar, name='direccion_editar'),

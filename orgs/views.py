@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from orgs.forms import DireccionForm , DepartamentoForm
+from django.db.models import ProtectedError
 
 
 @login_required
@@ -152,6 +153,72 @@ def departamento_editar(request,departamento_id=None):
         return render(request, template_name, {'departamento_data':departamento_data, 'direcciones':direcciones})
     else:
         return redirect('logout')
+
+def departamento_bloquea(request, departamento_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+    if profile.group_id != 1:
+        messages.warning(request, 'No tienes permiso para realizar esta acción.')
+        return redirect('logout')
+    try:
+        departamento_count = Departamento.objects.filter(departamento_id=departamento_id).count()
+        if departamento_count <= 0:
+            messages.error(request, 'El departamento no existe.')
+            return redirect('departamento_listar')
+        Departamento.objects.filter(departamento_id=departamento_id).update(estado='Bloqueado')  
+        messages.success(request, 'Departamento bloqueado con éxito')
+        return redirect('departamento_listar')
+    except Exception:
+        messages.error(request, 'Hubo un error al intentar bloquear el departamento.')
+        return redirect('departamento_listar')
+
+@login_required
+def departamento_desbloquea(request, departamento_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+    if profile.group_id != 1:
+        messages.warning(request, 'No tienes permiso para realizar esta acción.')
+        return redirect('logout')
+    try:
+        departamento_count = Departamento.objects.filter(departamento_id=departamento_id).count()
+        if departamento_count <= 0:
+            messages.error(request, 'El departamento no existe.')
+            return redirect('departamento_listar')
+        Departamento.objects.filter(departamento_id=departamento_id).update(estado='Activo')  
+        messages.success(request, 'Departamento activado con éxito')
+        return redirect('departamento_listar')
+    except Exception:
+        messages.error(request, 'Hubo un error al intentar activar el departamento.')
+        return redirect('departamento_listar')
+
+@login_required
+def departamento_elimina(request, departamento_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+    if profile.group_id != 1:
+        messages.warning(request, 'No tienes permiso para realizar esta acción.')
+        return redirect('logout')   
+    try:
+        departamento_count = Departamento.objects.filter(departamento_id=departamento_id).count()
+        if departamento_count <= 0:
+            messages.add_message(request, messages.INFO, 'Hubo un error')
+            return redirect('check_profile')
+        Departamento.objects.filter(pk=departamento_id).delete()
+        messages.success(request, 'Departamento eliminado con éxito')
+    except ProtectedError:
+        messages.error(request, 'No se puede eliminar el departamento porque existen registros que dependen de él.')
+    except Exception:
+        messages.error(request, 'Hubo un error inesperado al intentar eliminar el departamento.')
+    return redirect('departamento_listar')
 
 @login_required
 def direccion_listar(request):

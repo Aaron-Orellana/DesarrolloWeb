@@ -10,6 +10,7 @@ class Departamento(models.Model):
 
     #Campos simples
     nombre = models.CharField(max_length=150)
+    estado = models.CharField(max_length=20, default='Activo')
     
     #FK
     direccion = models.ForeignKey(
