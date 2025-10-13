@@ -4,40 +4,16 @@
 <h4>Crear Nueva Encuesta</h4>
 
 {% if messages %}
-    <div class="alert alert-info">
-        <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-        </ul>
-    </div>
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+  {% endfor %}
 {% endif %}
 
-<form method="post" action="{% url 'encuesta_guardar' %}">
-    {% csrf_token %}
-    
-    <div class="form-group mb-3">
-        <label for="titulo">Título:</label>
-        <input type="text" id="titulo" name="titulo" class="form-control" required maxlength="240">
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="descripcion">Descripción:</label>
-        <textarea id="descripcion" name="descripcion" rows="4" class="form-control"></textarea>
-    </div>
-
-    <div class="form-group mb-3">
-        <label for="prioridad">Prioridad:</label>
-        <select id="prioridad" name="prioridad" class="form-control" required>
-            <option value="">Seleccione una prioridad</option>
-            {% for p in prioridades %}
-                <option value="{{ p }}">{{ p }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Guardar Encuesta</button>
-    <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Volver al listado</a>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Guardar</button>
+  <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Volver</a>
 </form>
 {% endblock %}
 

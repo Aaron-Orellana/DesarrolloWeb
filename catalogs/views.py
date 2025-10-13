@@ -6,6 +6,7 @@ from orgs.models import Direccion, Departamento
 from django.core.paginator import Paginator #Objeto para paginar resultados (usado en vistas)
 from surveys.models import Encuesta
 from registration.models import Profile
+from catalogs.forms import IncidenciaForm
 
 
 @login_required
