@@ -46,6 +46,8 @@ class Incidencia(models.Model):
         null=True,
         blank=True
     )
+    estado = models.BooleanField(default=True, db_column='Estado')
+
 
     class Meta:
         verbose_name = 'Tipo de Incidencia'
