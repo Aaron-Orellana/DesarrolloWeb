@@ -23,6 +23,7 @@ from orgs.urls import orgs_urlpatterns
 urlpatterns = [
     path('', include(core_urlpatterns)),
     path('admin/', admin.site.urls),
+    path('registration/', include('registration.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('registration.urls')),
     path('orgs/', include(orgs_urlpatterns)),

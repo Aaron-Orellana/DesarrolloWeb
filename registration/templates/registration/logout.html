@@ -1,0 +1,10 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container text-center mt-5">
+    <h2 class="mb-3">Sesión cerrada correctamente</h2>
+    <p>Gracias por usar el sistema municipal. Tu sesión ha sido cerrada con éxito.</p>
+
+    <a href="{% url 'login' %}" class="btn btn-primary mt-4">Volver a Iniciar Sesión</a>
+</div>
+{% endblock %}

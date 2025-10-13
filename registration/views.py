@@ -70,6 +70,10 @@ def profile_edit(request):
     return render(request,template_name,{'profile':profile})
 
 
+#Funcion nueva pata eliminar sesion activa y redirige automaticamente al forms de iniciar sesion
+from django.contrib.auth import logout
 
-
-
+def logout_view(request):
+    logout(request)
+    # Para mostrar el template de confirmacion de cerrar sesion
+    return render(request, 'registration/logout.html')
