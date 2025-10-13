@@ -7,5 +7,6 @@ urlpatterns = [
     path('incidencias/', views.incidencia_listar, name='incidencia_listar'),
     path('incidencias/<int:incidencia_id>/ver/', views.incidencia_ver, name='incidencia_ver'),
     path('incidencias/<int:incidencia_id>/editar/', views.incidencia_editar, name='incidencia_editar'),
+    path('incidencias/<int:incidencia_id>/bloquear/', views.incidencia_bloquear, name='incidencia_bloquear'),
     path('incidencias/<int:incidencia_id>/eliminar/', views.incidencia_eliminar, name='incidencia_eliminar'),
 ]

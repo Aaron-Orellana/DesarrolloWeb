@@ -6,7 +6,6 @@ from orgs.models import Direccion, Departamento
 from django.core.paginator import Paginator #Objeto para paginar resultados (usado en vistas)
 from surveys.models import Encuesta
 from registration.models import Profile
-from catalogs.forms import IncidenciaForm
 
 
 @login_required
@@ -231,3 +230,33 @@ def incidencia_eliminar(request, incidencia_id):
     Incidencia.objects.filter(pk=incidencia_id).delete()
     messages.success(request, 'Incidencia eliminada correctamente.')
     return redirect('incidencia_listar')
+
+@login_required
+def incidencia_bloquear(request, incidencia_id):
+    try:
+        profile = Profile.objects.filter(user_id=request.user.id).get()
+    except:
+        messages.add_message(request, messages.INFO, 'Hubo un error')
+        return redirect('check_profile')
+    if profile.group_id != 1:
+        return redirect('logout')
+
+    if Incidencia.objects.filter(pk=incidencia_id).count() == 0:
+        messages.error(request, 'La incidencia no existe.')
+        return redirect('incidencia_listar')
+
+    incidencia = Incidencia.objects.get(pk=incidencia_id)
+
+    # Alternar estado
+    if incidencia.estado:
+        incidencia.estado = False
+        mensaje = f'La incidencia "{incidencia.nombre}" fue bloqueada'
+        messages.warning(request, mensaje)
+    else:
+        incidencia.estado = True
+        mensaje = f'La incidencia "{incidencia.nombre}" fue desbloqueada'
+        messages.success(request, mensaje)
+
+    incidencia.save()
+    return redirect('incidencia_listar')
+
