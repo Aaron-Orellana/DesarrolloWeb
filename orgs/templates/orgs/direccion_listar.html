@@ -3,9 +3,17 @@
 {% block content %}
 <h4>Listar Direcciones</h4>
 
-<p><a href="{% url 'direccion_crear' %}" class="btn">Crear Nueva Dirección</a></p>
+<p><a href="{% url 'direccion_crear' %}" class="btn btn-primary">Crear Nueva Dirección</a></p>
 
-<table class="table">
+{% if messages %}
+  <div class="alert alert-info">
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>ID</th>
@@ -40,21 +48,20 @@
                 <td>{{ direccion.estado }}</td>
                 <td>
                     <a href="{% url 'direccion_ver' direccion.direccion_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
-                    <a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-sm btn-outline-warning" role="button">Editar</a>
-                    {% if direccion.estado == 'Activo' %}
-                        <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}"style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
-                        </form>
-                    {% else %}
-                        <form method="post" action="{% url 'direccion_desbloquea' direccion.direccion_id %}"style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Desbloquear</button>
-                        </form>
-                    {% endif %}
-                    <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta dirección?');"style="display:inline;">
+                    <a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-sm btn-outline-warning">Editar</a>
+
+                    <!-- Bloquear/Activar -->
+                    <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Eliminar</button>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                            {% if direccion.estado == 'Activo' %}Bloquear{% else %}Activar{% endif %}
+                        </button>
+                    </form>
+
+                    <!-- Eliminar -->
+                    <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" style="display:inline;" onsubmit="return confirm('¿Deseas eliminar esta dirección?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
                     </form>
                 </td>
             </tr>

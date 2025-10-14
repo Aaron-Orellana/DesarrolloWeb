@@ -4,11 +4,11 @@
 <h4>Detalle de Dirección</h4>
 
 {% if messages %}
-<div class="alert alert-info">
+  <div class="alert alert-info">
     {% for message in messages %}
-        <p>{{ message }}</p>
+      <p>{{ message }}</p>
     {% endfor %}
-</div>
+  </div>
 {% endif %}
 
 <table class="table table-bordered">
@@ -23,28 +23,21 @@
             {% endif %}
         </td>
     </tr>
-    <tr>
-        <th>Estado</th>
-        <td>{{ direccion.estado }}</td>
-    </tr>
+    <tr><th>Estado</th><td>{{ direccion.estado }}</td></tr>
 </table>
 
 <a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-warning">Editar</a>
-{% if direccion.estado == 'Activo' %}
-    <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary btn-sm" onclick="return confirm('¿Estás seguro de que deseas bloquear esta dirección?');">Bloquear</button>
-    </form>
-{% else %}
-    <form method="post" action="{% url 'direccion_desbloquea' direccion.direccion_id %}" style="display:inline;">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary btn-sm" onclick="return confirm('¿Estás seguro de que deseas desbloquear esta dirección?');">Desbloquear</button>
-    </form>
-{% endif %}
 
-<form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta dirección?');">
+<form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" style="display:inline;">
     {% csrf_token %}
-    <button type="submit" class="btn btn-outline-danger btn-sm">Eliminar</button>
+    <button type="submit" class="btn btn-outline-primary">
+        {% if direccion.estado == 'Activo' %}Bloquear{% else %}Activar{% endif %}
+    </button>
+</form>
+
+<form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" style="display:inline;" onsubmit="return confirm('¿Deseas eliminar esta dirección?');">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-danger">Eliminar</button>
 </form>
 
 <a href="{% url 'direccion_listar' %}" class="btn btn-secondary">Volver</a>

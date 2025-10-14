@@ -2,15 +2,16 @@
 
 {% block content %}
 <h4>Ver Departamento</h4>
-<p><a href="{% url 'departamento_listar' %}" class="btn">Volver</a></p>
-</hr>
+
+<p><a href="{% url 'departamento_listar' %}" class="btn btn-secondary">Volver</a></p>
+
 <div class="form-group">
     <label>Nombre del departamento:</label>
-    <input type="text" value="{{ departamento_data.nombre }}" readonly />
+    <input type="text" value="{{ departamento_data.nombre }}" readonly class="form-control" />
 </div>
-<p>
+
 <div class="form-group">
     <label>Dirección asociada:</label>
-    <input type="text" value="{{ departamento_data.direccion.nombre }}" readonly />
+    <input type="text" value="{{ departamento_data.direccion.nombre }}" readonly class="form-control" />
 </div>
 {% endblock %}
