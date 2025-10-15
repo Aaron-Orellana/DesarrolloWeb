@@ -1,0 +1,60 @@
+[
+  {
+    "model": "surveys.encuesta",
+    "pk": 1,
+    "fields": {
+      "titulo": "Encuesta de Satisfacción General",
+      "descripcion": "Medir satisfacción de los usuarios en general",
+      "prioridad": "Alta",
+      "estado": true,
+      "fecha_creacion": "2025-10-14T20:00:00Z"
+    }
+  },
+  {
+    "model": "surveys.encuesta",
+    "pk": 2,
+    "fields": {
+      "titulo": "Encuesta de Feedback de Tickets",
+      "descripcion": "Evaluar la calidad del soporte en tickets",
+      "prioridad": "Media",
+      "estado": true,
+      "fecha_creacion": "2025-10-14T20:05:00Z"
+    }
+  },
+  {
+    "model": "surveys.pregunta",
+    "pk": 1,
+    "fields": {
+      "nombre": "¿Cómo calificaría nuestro servicio general?",
+      "tipo": "opción múltiple",
+      "encuesta": 1
+    }
+  },
+  {
+    "model": "surveys.pregunta",
+    "pk": 2,
+    "fields": {
+      "nombre": "¿Recomendaría nuestro producto a otros?",
+      "tipo": "Sí/No",
+      "encuesta": 1
+    }
+  },
+  {
+    "model": "surveys.pregunta",
+    "pk": 3,
+    "fields": {
+      "nombre": "¿El ticket fue resuelto a tiempo?",
+      "tipo": "Sí/No",
+      "encuesta": 2
+    }
+  },
+  {
+    "model": "surveys.pregunta",
+    "pk": 4,
+    "fields": {
+      "nombre": "Califique la atención del soporte",
+      "tipo": "Escala 1-5",
+      "encuesta": 2
+    }
+  }
+]

@@ -24,4 +24,4 @@ class Usuario(models.Model):
     perfil = models.ForeignKey(Perfil, on_delete=models.CASCADE, related_name="usuarios")
     
     def __str__(self):
-        return f"{self.email} - {self.perfil.nombre}"
+        return f"{self.email} - {self.perfil.tipo_perfil.nombre}"

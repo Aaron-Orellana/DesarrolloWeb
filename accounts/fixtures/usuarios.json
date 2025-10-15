@@ -1,0 +1,29 @@
+[
+  {
+    "model": "accounts.usuario",
+    "pk": 1,
+    "fields": {
+      "email": "admin@example.com",
+      "telefono": "123456789",
+      "perfil": 1
+    }
+  },
+  {
+    "model": "accounts.usuario",
+    "pk": 2,
+    "fields": {
+      "email": "empleado@example.com",
+      "telefono": "987654321",
+      "perfil": 2
+    }
+  },
+  {
+    "model": "accounts.usuario",
+    "pk": 3,
+    "fields": {
+      "email": "visitante@example.com",
+      "telefono": null,
+      "perfil": 3
+    }
+  }
+]
