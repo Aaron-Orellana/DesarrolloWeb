@@ -18,7 +18,6 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Departamento</th>
             <th>Usuario</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -29,13 +28,6 @@
             <tr>
                 <td>{{ direccion.direccion_id }}</td>
                 <td>{{ direccion.nombre }}</td>
-                <td>
-                    {% if direccion.departamentos_list %}
-                        {{ direccion.departamentos_list|join:", " }}
-                    {% else %}
-                        -
-                    {% endif %}
-                </td>
                 <td>
                     {% if direccion.usuario %}
                         {{ direccion.usuario.get_full_name|default:direccion.usuario.username }}
