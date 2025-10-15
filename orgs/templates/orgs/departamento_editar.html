@@ -2,34 +2,19 @@
 
 {% block content %}
 <h4>Editar Departamento: {{ departamento_data.nombre }}</h4>
-<p><a href="{% url 'departamento_listar' %}" class="btn">Volver</a></p>
-<form method="post" action="{% url 'departamento_editar' departamento_data.departamento_id %}">
-    {% csrf_token %}
-    
-    <input type="hidden" name="id_departamento" value="{{ departamento_data.departamento_id }}">
 
-    <div class="form-group">
-        <label for="nombre">Nombre del departamento:</label>
-        <input type="text" id="nombre" name="nombre" placeholder="Ingrese el nombre" value="{{ departamento_data.nombre }}" required maxlength="150"/>
-    </div>
-    
-    <h3></h3>
-    
-    <div class="form-group">
-        <label for="direccion">Dirección:</label>
-        <select id="direccion" name="direccion_id" class="form-control" required>
-            <option value="">Seleccione una dirección</option>
-            {% for d in direcciones %}
-                <option value="{{ d.direccion_id }}" 
-                    {% if d.direccion_id == departamento_data.direccion_id %}selected{% endif %}>
-                    {{ d.nombre }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    
-    <h3></h3>
-    
-    <button type="submit" class="btn btn-warning">Actualizar</button>
+{% if messages %}
+  <div class="alert alert-info">
+    {% for message in messages %}
+      <p>{{ message }}</p>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+    <a href="{% url 'departamento_listar' %}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}

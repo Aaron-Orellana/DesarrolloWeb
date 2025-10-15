@@ -1,32 +1,20 @@
-<!-- apps/orgs/templates/orgs/create_direccion.html -->
+{% extends 'core/base.html' %}
+
+{% block content %}
 <h4>Crear nueva dirección</h4>
 
 {% if messages %}
-  <ul>
-    {% for m in messages %}
-      <li>{{ m }}</li>
+  <div class="alert alert-info">
+    {% for message in messages %}
+      <p>{{ message }}</p>
     {% endfor %}
-  </ul>
+  </div>
 {% endif %}
 
-<form method="post" action="{% url 'direccion_guardar' %}">
-  {% csrf_token %}
-  <p>
-    <label>Usuario encargado:</label><br>
-    <select name="usuario_id" required>
-      <option value="">-- Selecciona un usuario --</option>
-      {% for u in usuarios %}
-        <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }} ({{ u.email }})</option>
-      {% endfor %}
-    </select>
-  </p>
-  <p>
-    <label>Dirección:</label><br>
-    <input type="text" name="direccion" required maxlength="255">
-  </p>
-
-  <p>
-    <input type="submit" value="Crear">
-    <a href="{% url 'direccion_listar' %}">Cancelar</a>
-  </p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a href="{% url 'direccion_listar' %}" class="btn btn-secondary">Cancelar</a>
 </form>
+{% endblock %}
