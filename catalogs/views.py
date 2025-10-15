@@ -30,18 +30,32 @@ def incidencia_crear(request):
     if not profile or profile.group_id != 1:
         return redirect('logout')
 
+    direcciones = Direccion.objects.filter(estado=True).order_by('nombre')
+    departamentos = Departamento.objects.filter(estado=True).order_by('nombre')
+    encuestas = Encuesta.objects.filter(estado=True).order_by('titulo')
+
     if request.method == 'POST':
         form = IncidenciaForm(request.POST)
         if form.is_valid():
-            incidencia = form.save()
-            messages.success(request, f'Incidencia "{incidencia.nombre}" creada correctamente.')
+            incidencia = form.save(commit=False)
+            
+            if incidencia.departamento.direccion != incidencia.direccion:
+                messages.error(request, 'El departamento no pertenece a la dirección seleccionada.')
+                return redirect('incidencia_crear')
+            incidencia.save()
+            messages.success(request, f'✅ Incidencia "{incidencia.nombre}" creada correctamente.')
             return redirect('incidencia_listar')
         else:
-            messages.error(request, 'Por favor corrige los errores del formulario.')
+            messages.error(request, 'Corrige los errores del formulario.')
     else:
         form = IncidenciaForm()
 
-    return render(request, 'catalogs/incidencia_crear.html', {'form': form})
+    return render(request, 'catalogs/incidencia_crear.html', {
+        'form': form,
+        'direcciones': direcciones,
+        'departamentos': departamentos,
+        'encuestas': encuestas
+    })
 
 
 @login_required
@@ -65,15 +79,21 @@ def incidencia_editar(request, incidencia_id):
     if request.method == 'POST':
         form = IncidenciaForm(request.POST, instance=incidencia)
         if form.is_valid():
-            form.save()
+            incidencia = form.save(commit=False)
+            if incidencia.departamento.direccion != incidencia.direccion:
+                messages.error(request, 'El departamento no pertenece a la dirección seleccionada.')
+                return redirect('incidencia_editar', incidencia_id=incidencia_id)
+            
+            incidencia.save()
             messages.success(request, f'Incidencia "{incidencia.nombre}" actualizada correctamente.')
             return redirect('incidencia_listar')
         else:
-            messages.error(request, 'Por favor corrige los errores del formulario.')
+            messages.error(request, 'Corregir errores del formulario.')
     else:
         form = IncidenciaForm(instance=incidencia)
 
     return render(request, 'catalogs/incidencia_editar.html', {'form': form, 'incidencia': incidencia})
+
 
 
 @login_required
@@ -102,3 +122,4 @@ def incidencia_bloquear(request, incidencia_id):
     messages.success(request, f'Incidencia "{incidencia.nombre}" {estado_str} correctamente.')
     return redirect('incidencia_listar')
 
+    

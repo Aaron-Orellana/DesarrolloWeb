@@ -1,12 +1,13 @@
 from django import forms
 from .models import Incidencia
+from orgs.models import Direccion, Departamento
+from surveys.models import Encuesta
 
 class IncidenciaForm(forms.ModelForm):
     class Meta:
         model = Incidencia
-        # Campos que quieres mostrar en el formulario
         fields = ['nombre', 'descripcion', 'direccion', 'departamento', 'encuesta']
-        # Opcional: etiquetas más amigables
+       
         labels = {
             'nombre': 'Nombre de la Incidencia',
             'descripcion': 'Descripción',
@@ -14,7 +15,7 @@ class IncidenciaForm(forms.ModelForm):
             'departamento': 'Departamento',
             'encuesta': 'Encuesta asociada',
         }
-        # Opcional: widgets para mejorar la UI
+       
         widgets = {
             'nombre': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ingrese el nombre'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Ingrese la descripción'}),
@@ -22,3 +23,10 @@ class IncidenciaForm(forms.ModelForm):
             'departamento': forms.Select(attrs={'class': 'form-select'}),
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
         }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['direccion'].queryset = Direccion.objects.filter(estado='Activo').order_by('nombre')
+        self.fields['departamento'].queryset = Departamento.objects.filter(estado='Activo').order_by('nombre')
+        self.fields['encuesta'].queryset = Encuesta.objects.filter(estado=True).order_by('titulo')
+
+      

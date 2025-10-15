@@ -2,9 +2,15 @@ from django.db import models
 
 
 class Encuesta(models.Model):
+    PRIORIDAD_CHOICES = [
+        ('Alta', 'Alta'),
+        ('Media', 'Media'),
+        ('Baja', 'Baja'),
+    ]
+
     titulo = models.CharField(max_length=240)
     descripcion = models.TextField()
-    prioridad = models.CharField(max_length=20)
+    prioridad = models.CharField(max_length=20, choices=PRIORIDAD_CHOICES, blank=True, null=True)
     estado = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
 

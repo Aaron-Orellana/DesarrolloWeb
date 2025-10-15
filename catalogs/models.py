@@ -48,7 +48,6 @@ class Incidencia(models.Model):
     )
     estado = models.BooleanField(default=True, db_column='Estado')
 
-
     class Meta:
         verbose_name = 'Tipo de Incidencia'
         verbose_name_plural = 'Tipos de Incidencia'
