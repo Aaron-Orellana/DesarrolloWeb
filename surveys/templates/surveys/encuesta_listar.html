@@ -12,7 +12,6 @@
         <tr>
             <th>#</th>
             <th>Título</th>
-            <th>Tipo (Primera Incidencia)</th>
             <th>Prioridad</th>
             <th>Estado</th>
             <th>Acciones</th>
@@ -23,13 +22,6 @@
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ encuesta.titulo }}</td>
-                <td>
-                    {% if encuesta.incidencias.exists %}
-                        {{ encuesta.incidencias.first.nombre }}
-                    {% else %}
-                        —
-                    {% endif %}
-                </td>
                 <td>{{ encuesta.prioridad }}</td>
                 <td>{{ encuesta.estado|yesno:"Activo,Inactivo" }}</td>
                 <td>
