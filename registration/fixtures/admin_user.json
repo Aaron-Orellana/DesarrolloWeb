@@ -3,6 +3,14 @@
     "model": "auth.group",
     "pk": 1,
     "fields": {
+      "name": "Usuarios",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 2,
+    "fields": {
       "name": "Administradores",
       "permissions": []
     }
@@ -21,7 +29,7 @@
       "is_staff": true,
       "is_active": true,
       "date_joined": "2024-01-01T00:00:00Z",
-      "groups": [1],
+      "groups": [2],
       "user_permissions": []
     }
   },
@@ -30,11 +38,21 @@
     "pk": 1,
     "fields": {
       "user": 1,
-      "group": 1,
+      "group": 2,
       "phone": "",
       "mobile": "",
       "token_app_session": "",
-      "first_session": "Si"
+      "first_session": "Si",
+      "role_type": "secpla",
+      "role_object_id": 1
+    }
+  },
+  {
+    "model": "orgs.secpla",
+    "pk": 1,
+    "fields": {
+      "nombre": "Secretaría Comunal de Planificación",
+      "profile": 1
     }
   }
 ]

@@ -13,7 +13,7 @@
             <th>Usuario</th>
             <th>Nombre completo</th>
             <th>Email</th>
-            <th>Grupo</th>
+            <th>Rol</th>
             <th>Estado</th>
             <th>Acciones</th>
         </tr>
@@ -25,7 +25,7 @@
                 <td>{{ user.username }}</td>
                 <td>{{ user.get_full_name|default:"-" }}</td>
                 <td>{{ user.email }}</td>
-                <td>{{ item.group_name }}</td>
+                <td>{{ item.role_label }}</td>
                 <td>{{ user.is_active|yesno:"Activo,Bloqueado" }}</td>
                 <td>
                     <a href="{% url 'user_edit' user.pk %}" class="btn">Editar</a>

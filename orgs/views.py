@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from registration.models import Profile
+from registration.utils import has_admin_role
 from .models import Direccion, Departamento
 from .forms import DireccionForm, DepartamentoForm  
 
@@ -15,8 +16,6 @@ def direccion_listar(request):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
     
-    if profile.group_id != 1:
-        return redirect('logout')
 
     direcciones = Direccion.objects.select_related('profile__user').all().order_by('direccion_id')
     return render(request, 'orgs/direccion_listar.html', {'direcciones': direcciones})
@@ -32,8 +31,6 @@ def direccion_crear(request):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
 
-    if profile.group_id != 1:
-        return redirect('logout')
 
     if request.method == 'POST':
         form = DireccionForm(request.POST)
@@ -56,8 +53,6 @@ def direccion_editar(request, direccion_id):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
     
-    if profile.group_id != 1:
-        return redirect('logout')
 
     direccion = get_object_or_404(Direccion, pk=direccion_id)
 
@@ -112,8 +107,6 @@ def departamento_listar(request):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
     
-    if profile.group_id != 1:
-        return redirect('logout')
 
     departamentos = Departamento.objects.select_related('direccion').all()
     return render(request, 'orgs/departamento_listar.html', {'departamentos': departamentos})
@@ -127,8 +120,6 @@ def departamento_crear(request):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
     
-    if profile.group_id != 1:
-        return redirect('logout')
 
     if request.method == 'POST':
         form = DepartamentoForm(request.POST)
@@ -152,8 +143,6 @@ def departamento_editar(request, departamento_id):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
     
-    if profile.group_id != 1:
-        return redirect('logout')
 
     departamento = get_object_or_404(Departamento, pk=departamento_id)
 

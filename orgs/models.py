@@ -47,6 +47,14 @@ class Departamento(models.Model):
         db_column='Direccion_id',
         related_name='Departamento'
     )
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='departamentos',
+        null=True,
+        blank=True
+    )
 
     class Meta:
         constraints = [

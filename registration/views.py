@@ -4,18 +4,17 @@ from .forms import (
     AdminUserCreateForm,
     AdminUserUpdateForm,
 )
-from django.views.generic import CreateView, View
+from django.views.generic import CreateView
 from django.views.generic.edit import UpdateView
-from django.contrib.auth.views import LoginView
-from django.contrib.auth.models import User, Group
+from django.contrib.auth.models import User
 from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
-from django.core.exceptions import ObjectDoesNotExist
 from .models import Profile
+from .utils import clear_profile_role, get_role_display, has_admin_role
 
 class SignUpView(CreateView):
     form_class = UserCreationFormWithEmail
@@ -81,15 +80,11 @@ from django.contrib.auth import logout
 
 
 def _admin_gate(request):
-    """Devuelve el perfil del usuario si pertenece al grupo administrador (id=1)."""
-    try:
-        profile = Profile.objects.get(user_id=request.user.id)
-    except Profile.DoesNotExist:
+    """Devuelve el perfil del usuario si pertenece al rol administrativo (Secpla)."""
+    profile = Profile.objects.filter(user_id=request.user.id).first()
+    if not profile:
         messages.info(request, 'Hubo un error con tu perfil.')
         return None, redirect('login')
-
-    if profile.group_id != 1:
-        return None, redirect('logout')
 
     return profile, None
 
@@ -107,14 +102,7 @@ def user_list(request):
             profile = user.profile
         except Profile.DoesNotExist:  # pragma: no cover - señal debería crearlo
             profile = None
-        if profile:
-            try:
-                group_name = profile.group.name
-            except ObjectDoesNotExist:
-                group_name = '-'
-        else:
-            group_name = '-'
-        user_entries.append({'user': user, 'group_name': group_name})
+        user_entries.append({'user': user, 'role_label': get_role_display(profile)})
     return render(request, 'registration/user_list.html', {'users': user_entries})
 
 
@@ -187,6 +175,12 @@ def user_delete(request, pk):
         if user.pk == request.user.pk:
             messages.warning(request, 'No puedes eliminar tu propio usuario.')
             return redirect('user_list')
+        try:
+            profile = user.profile
+        except Profile.DoesNotExist:
+            profile = None
+        if profile:
+            clear_profile_role(profile)
         user.delete()
         messages.success(request, 'Usuario eliminado correctamente.')
         return redirect('user_list')

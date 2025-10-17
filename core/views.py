@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.conf import settings #importa el archivo settings
 from django.contrib import messages #habilita la mesajería entre vistas
 from django.contrib.auth.decorators import login_required #habilita el decorador que se niega el acceso a una función si no se esta logeado
-from django.contrib.auth.models import Group, User # importa los models de usuarios y grupos
+from django.contrib.auth.models import User # importa los models de usuarios
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator #permite la paqinación
 from django.db.models import Avg, Count, Q #agrega funcionalidades de agregación a nuestros QuerySets
 from django.http import (HttpResponse, HttpResponseBadRequest,
@@ -12,6 +12,7 @@ from django.template import RequestContext # contexto del sistema
 from django.views.decorators.csrf import csrf_exempt #decorador que nos permitira realizar conexiones csrf
 
 from registration.models import Profile #importa el modelo profile, el que usaremos para los perfiles de usuarios
+from registration.utils import has_admin_role
 
 # Create your views here.
 def home(request):
@@ -29,7 +30,7 @@ def check_profile(request):
     except:
         messages.add_message(request, messages.INFO, 'Hubo un error con su usuario, por favor contactese con los administradores')              
         return redirect('login')
-    if profile.group_id == 1:        
+    if has_admin_role(profile):        
         return redirect('main_admin')
     else:
         return redirect('logout')
@@ -42,7 +43,7 @@ def main_admin(request):
     except:
         messages.add_message(request, messages.INFO, 'Hubo un error con su usuario, por favor contactese con los administradores')              
         return redirect('login')
-    if profile.group_id == 1:        
+    if has_admin_role(profile):        
         template_name = 'core/main_admin.html'
         return render(request,template_name)
     else:

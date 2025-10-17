@@ -5,15 +5,12 @@ from django.core.paginator import Paginator
 from django.db.models.deletion import ProtectedError
 
 from registration.models import Profile
+from registration.utils import has_admin_role
 from .models import Encuesta
 from .forms import EncuestaForm
 
 @login_required
 def encuesta_listar(request):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     encuestas = Encuesta.objects.all().order_by('-id')
     paginator = Paginator(encuestas, 10)
     page_number = request.GET.get('page')
@@ -24,10 +21,6 @@ def encuesta_listar(request):
 
 @login_required
 def encuesta_crear(request):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     if request.method == 'POST':
         form = EncuestaForm(request.POST)
         if form.is_valid():
@@ -42,20 +35,12 @@ def encuesta_crear(request):
 
 @login_required
 def encuesta_detalle(request, encuesta_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     return render(request, 'surveys/encuesta_detalle.html', {'encuesta': encuesta})
 
 
 @login_required
 def encuesta_editar(request, encuesta_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
 
     if request.method == 'POST':
@@ -73,10 +58,6 @@ def encuesta_editar(request, encuesta_id):
 
 @login_required
 def encuesta_cambiar_estado(request, encuesta_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
 
     if request.method == 'POST':
@@ -97,10 +78,6 @@ def encuesta_cambiar_estado(request, encuesta_id):
 
 @login_required
 def encuesta_eliminar(request, encuesta_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
 
     if request.method == 'POST':

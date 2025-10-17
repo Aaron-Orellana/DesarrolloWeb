@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from registration.models import Profile
+from registration.utils import has_admin_role
 from orgs.models import Direccion, Departamento
 
 from surveys.models import Encuesta
@@ -12,9 +13,6 @@ from .forms import IncidenciaForm
 
 @login_required
 def incidencia_listar(request):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
 
     incidencias_list = Incidencia.objects.all().order_by('-incidencia_id')
     paginator = Paginator(incidencias_list, 10)
@@ -26,10 +24,6 @@ def incidencia_listar(request):
 
 @login_required
 def incidencia_crear(request):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     direcciones = Direccion.objects.filter(estado=True).order_by('nombre')
     departamentos = Departamento.objects.filter(estado=True).order_by('nombre')
     encuestas = Encuesta.objects.filter(estado=True).order_by('titulo')
@@ -60,20 +54,12 @@ def incidencia_crear(request):
 
 @login_required
 def incidencia_ver(request, incidencia_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
     return render(request, 'catalogs/incidencia_ver.html', {'incidencia': incidencia})
 
 
 @login_required
 def incidencia_editar(request, incidencia_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
-
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
 
     if request.method == 'POST':
@@ -98,9 +84,6 @@ def incidencia_editar(request, incidencia_id):
 
 @login_required
 def incidencia_eliminar(request, incidencia_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
 
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
     incidencia.delete()
@@ -110,9 +93,6 @@ def incidencia_eliminar(request, incidencia_id):
 
 @login_required
 def incidencia_bloquear(request, incidencia_id):
-    profile = Profile.objects.filter(user_id=request.user.id).first()
-    if not profile or profile.group_id != 1:
-        return redirect('logout')
 
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
     incidencia.estado = not incidencia.estado
