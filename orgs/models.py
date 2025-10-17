@@ -1,5 +1,33 @@
 from django.db import models
-from django.conf import settings
+from registration.models import Profile
+
+class Secpla(models.Model):
+    #pk
+    secpla_id = models.BigAutoField(
+        primary_key=True,
+        db_column='Secpla_id'
+    )
+
+    #FK
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='secplas',
+        null=True,
+        blank=True
+    )
+    nombre = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Secpla"
+        verbose_name_plural = "Secplas"
+        ordering = ["nombre"]
+
+    def __str__(self):
+        if self.profile:
+            return f"{self.nombre} ({self.profile})"
+        return self.nombre
 
 class Departamento(models.Model):
     #PK
@@ -39,11 +67,14 @@ class Cuadrilla(models.Model):
         db_column='Departamento_id',
         related_name='Cuadrilla'
     )
-    usuario = models.IntegerField(
+    profile = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
         db_column='Usuario_id',
-        null=True,      # permite valores nulos
+        related_name='cuadrillas',
+        null=True,
         blank=True
-    )  
+    )
 
     def __str__(self):
         return self.nombre
@@ -52,19 +83,14 @@ class Cuadrilla(models.Model):
         verbose_name = 'Cuadrilla'
         verbose_name_plural = 'Cuadrillas'
 
-# Create your models here.
-
-#Creacion tabla Direccion
-
-
 class Direccion(models.Model):
     direccion_id = models.AutoField(primary_key=True, db_column='Direccion_id')
     nombre = models.CharField(max_length=150, unique=True)
     estado = models.CharField(max_length=20, default='Activo')
 
-    # Relación con usuario correspondiente
-    usuario = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    # Relación con el perfil responsable
+    profile = models.ForeignKey(
+        Profile,
         on_delete=models.PROTECT,
         db_column='Usuario_id',
         related_name='direcciones',
@@ -90,11 +116,13 @@ class Territorial(models.Model):
     nombre = models.CharField(max_length=100, unique=True)
     
     #FK
-    usuario = models.ForeignKey(
-        'accounts.Usuario', 
+    profile = models.ForeignKey(
+        Profile, 
         on_delete=models.PROTECT,
         db_column='Usuario_id',
-        related_name='Territorial'
+        related_name='territoriales',
+        null=True,
+        blank=True
     )
 
     class Meta:
@@ -103,4 +131,6 @@ class Territorial(models.Model):
         ordering = ["nombre"]
 
     def __str__(self):
-        return f"{self.nombre} ({self.usuario})"
+        if self.profile:
+            return f"{self.nombre} ({self.profile})"
+        return self.nombre

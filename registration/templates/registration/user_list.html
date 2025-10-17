@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Gestión de usuarios</h4>
+
+<p>
+    <a href="{% url 'user_create' %}" class="btn">Crear usuario</a>
+</p>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Nombre completo</th>
+            <th>Email</th>
+            <th>Grupo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in users %}
+            {% with user=item.user %}
+            <tr>
+                <td>{{ user.username }}</td>
+                <td>{{ user.get_full_name|default:"-" }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ item.group_name }}</td>
+                <td>{{ user.is_active|yesno:"Activo,Bloqueado" }}</td>
+                <td>
+                    <a href="{% url 'user_edit' user.pk %}" class="btn">Editar</a>
+                    {% if user.pk != request.user.pk %}
+                        <form action="{% url 'user_toggle_active' user.pk %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn">
+                                {% if user.is_active %}Bloquear{% else %}Activar{% endif %}
+                            </button>
+                        </form>
+                        <a href="{% url 'user_delete' user.pk %}" class="btn">Eliminar</a>
+                    {% else %}
+                        <span class="btn" style="background:#999;">Acciones limitadas</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endwith %}
+        {% empty %}
+            <tr>
+                <td colspan="6">No hay usuarios registrados.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

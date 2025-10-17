@@ -1,0 +1,40 @@
+[
+  {
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+      "name": "Administradores",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.user",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$Wv0YRnXp09L9MC6oqzoDkb$cqoG2d1sorsoI4nZpdCar07CS4dx4lfBu5AWAKS0HNM=",
+      "last_login": null,
+      "is_superuser": true,
+      "username": "admin",
+      "first_name": "Super",
+      "last_name": "Admin",
+      "email": "admin@example.com",
+      "is_staff": true,
+      "is_active": true,
+      "date_joined": "2024-01-01T00:00:00Z",
+      "groups": [1],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "registration.profile",
+    "pk": 1,
+    "fields": {
+      "user": 1,
+      "group": 1,
+      "phone": "",
+      "mobile": "",
+      "token_app_session": "",
+      "first_session": "Si"
+    }
+  }
+]

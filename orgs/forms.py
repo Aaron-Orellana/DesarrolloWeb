@@ -1,11 +1,15 @@
 from django import forms
 from .models import Direccion, Departamento
+from registration.models import Profile
 
 # ---------- FORMULARIO DINÁMICO DE DIRECCIÓN ----------
 class DireccionForm(forms.ModelForm):
     class Meta:
         model = Direccion
-        fields = ['nombre', 'estado', 'usuario']
+        fields = ['nombre', 'estado', 'profile']
+        labels = {
+            'profile': 'Responsable',
+        }
         widgets = {
             'nombre': forms.TextInput(attrs={
                 'class': 'form-control',
@@ -14,8 +18,12 @@ class DireccionForm(forms.ModelForm):
             'estado': forms.Select(choices=[('Activo', 'Activo'), ('Inactivo', 'Inactivo')], attrs={
                 'class': 'form-select'
             }),
-            'usuario': forms.Select(attrs={'class': 'form-select'}),
+            'profile': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['profile'].queryset = Profile.objects.select_related('user').order_by('user__username')
 
 
 # ---------- FORMULARIO DINÁMICO DE DEPARTAMENTO ----------

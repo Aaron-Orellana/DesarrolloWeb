@@ -1,4 +1,9 @@
-from .forms import UserCreationFormWithEmail, EmailForm
+from .forms import (
+    UserCreationFormWithEmail,
+    EmailForm,
+    AdminUserCreateForm,
+    AdminUserUpdateForm,
+)
 from django.views.generic import CreateView, View
 from django.views.generic.edit import UpdateView
 from django.contrib.auth.views import LoginView
@@ -7,8 +12,9 @@ from django.utils.decorators import method_decorator
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from .models import Profile
 
 class SignUpView(CreateView):
@@ -72,6 +78,120 @@ def profile_edit(request):
 
 #Funcion nueva pata eliminar sesion activa y redirige automaticamente al forms de iniciar sesion
 from django.contrib.auth import logout
+
+
+def _admin_gate(request):
+    """Devuelve el perfil del usuario si pertenece al grupo administrador (id=1)."""
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.info(request, 'Hubo un error con tu perfil.')
+        return None, redirect('login')
+
+    if profile.group_id != 1:
+        return None, redirect('logout')
+
+    return profile, None
+
+
+@login_required
+def user_list(request):
+    _, response = _admin_gate(request)
+    if response:
+        return response
+
+    users = User.objects.select_related('profile__group').order_by('username')
+    user_entries = []
+    for user in users:
+        try:
+            profile = user.profile
+        except Profile.DoesNotExist:  # pragma: no cover - señal debería crearlo
+            profile = None
+        if profile:
+            try:
+                group_name = profile.group.name
+            except ObjectDoesNotExist:
+                group_name = '-'
+        else:
+            group_name = '-'
+        user_entries.append({'user': user, 'group_name': group_name})
+    return render(request, 'registration/user_list.html', {'users': user_entries})
+
+
+@login_required
+def user_create(request):
+    _, response = _admin_gate(request)
+    if response:
+        return response
+
+    if request.method == 'POST':
+        form = AdminUserCreateForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario creado correctamente.')
+            return redirect('user_list')
+        messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = AdminUserCreateForm()
+    return render(request, 'registration/user_form.html', {'form': form, 'title': 'Crear usuario'})
+
+
+@login_required
+def user_edit(request, pk):
+    _, response = _admin_gate(request)
+    if response:
+        return response
+
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        form = AdminUserUpdateForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Usuario actualizado correctamente.')
+            return redirect('user_list')
+        messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = AdminUserUpdateForm(instance=user)
+    return render(request, 'registration/user_form.html', {'form': form, 'title': 'Editar usuario'})
+
+
+@login_required
+def user_toggle_active(request, pk):
+    _, response = _admin_gate(request)
+    if response:
+        return response
+
+    if request.method != 'POST':
+        return redirect('user_list')
+
+    user = get_object_or_404(User, pk=pk)
+    if user.pk == request.user.pk:
+        messages.warning(request, 'No puedes bloquear tu propio usuario.')
+        return redirect('user_list')
+
+    user.is_active = not user.is_active
+    user.save(update_fields=['is_active'])
+    estado = 'activado' if user.is_active else 'bloqueado'
+    messages.success(request, f'Usuario {estado} correctamente.')
+    return redirect('user_list')
+
+
+@login_required
+def user_delete(request, pk):
+    _, response = _admin_gate(request)
+    if response:
+        return response
+
+    user = get_object_or_404(User, pk=pk)
+    if request.method == 'POST':
+        if user.pk == request.user.pk:
+            messages.warning(request, 'No puedes eliminar tu propio usuario.')
+            return redirect('user_list')
+        user.delete()
+        messages.success(request, 'Usuario eliminado correctamente.')
+        return redirect('user_list')
+
+    return render(request, 'registration/user_confirm_delete.html', {'user_obj': user})
 
 def logout_view(request):
     logout(request)

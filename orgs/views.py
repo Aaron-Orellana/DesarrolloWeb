@@ -18,7 +18,7 @@ def direccion_listar(request):
     if profile.group_id != 1:
         return redirect('logout')
 
-    direcciones = Direccion.objects.select_related('usuario').all().order_by('direccion_id')
+    direcciones = Direccion.objects.select_related('profile__user').all().order_by('direccion_id')
     return render(request, 'orgs/direccion_listar.html', {'direcciones': direcciones})
 
 
@@ -201,4 +201,3 @@ def departamento_eliminar(request, departamento_id):
     except:
         messages.error(request, 'No se puede eliminar: puede tener dependencias.')
     return redirect('departamento_listar')
-

@@ -14,12 +14,12 @@
 <table class="table table-bordered">
     <tr><th>ID</th><td>{{ direccion.direccion_id }}</td></tr>
     <tr><th>Nombre</th><td>{{ direccion.nombre }}</td></tr>
-    <tr><th>Usuario asignado</th>
+    <tr><th>Responsable</th>
         <td>
-            {% if direccion.usuario %}
-                {{ direccion.usuario.username }}
+            {% if direccion.profile and direccion.profile.user %}
+                {{ direccion.profile.user.get_full_name|default:direccion.profile.user.username }}
             {% else %}
-                <em>Sin usuario asignado</em>
+                <em>Sin responsable</em>
             {% endif %}
         </td>
     </tr>

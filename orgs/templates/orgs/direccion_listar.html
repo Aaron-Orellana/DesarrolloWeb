@@ -29,12 +29,12 @@
                 <td>{{ direccion.direccion_id }}</td>
                 <td>{{ direccion.nombre }}</td>
                 <td>
-                    {% if direccion.usuario %}
-                        {{ direccion.usuario.get_full_name|default:direccion.usuario.username }}
-                    {% elif direccion.usuario_id %}
-                        ID {{ direccion.usuario_id }}
+                    {% if direccion.profile and direccion.profile.user %}
+                        {{ direccion.profile.user.get_full_name|default:direccion.profile.user.username }}
+                    {% elif direccion.profile_id %}
+                        ID Perfil {{ direccion.profile_id }}
                     {% else %}
-                        Sin usuario
+                        Sin responsable
                     {% endif %}
                 </td>
                 <td>{{ direccion.estado }}</td>

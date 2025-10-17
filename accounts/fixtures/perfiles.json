@@ -1,5 +1,0 @@
-[
-  {"model": "accounts.perfil", "pk": 1, "fields": {"nombre": "Administrador"}},
-  {"model": "accounts.perfil", "pk": 2, "fields": {"nombre": "Empleado"}},
-  {"model": "accounts.perfil", "pk": 3, "fields": {"nombre": "Visitante"}}
-]
