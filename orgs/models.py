@@ -38,7 +38,7 @@ class Departamento(models.Model):
 
     #Campos simples
     nombre = models.CharField(max_length=150)
-    estado = models.CharField(max_length=20, default='Activo')
+    estado = models.BooleanField(default=True, db_column='Estado')
     
     #FK
     direccion = models.ForeignKey(
@@ -68,7 +68,7 @@ class Departamento(models.Model):
 class Cuadrilla(models.Model):
     cuadrilla_id = models.AutoField(primary_key=True) 
     nombre = models.CharField(max_length=100) 
-    estado = models.CharField(max_length=20, default='Activo') 
+    estado = models.BooleanField(default=True, db_column='Estado')
     departamento = models.ForeignKey(
         Departamento,
         on_delete=models.PROTECT,
@@ -94,7 +94,7 @@ class Cuadrilla(models.Model):
 class Direccion(models.Model):
     direccion_id = models.AutoField(primary_key=True, db_column='Direccion_id')
     nombre = models.CharField(max_length=150, unique=True)
-    estado = models.CharField(max_length=20, default='Activo')
+    estado = models.BooleanField(default=True, db_column='Estado')
 
     # Relación con el perfil responsable
     profile = models.ForeignKey(

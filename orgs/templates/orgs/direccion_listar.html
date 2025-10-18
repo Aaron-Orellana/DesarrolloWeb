@@ -37,7 +37,13 @@
                         Sin responsable
                     {% endif %}
                 </td>
-                <td>{{ direccion.estado }}</td>
+                <td>
+                {% if direccion.estado %}
+                    <span class="badge bg-success">Activa</span>
+                {% else %}
+                    <span class="badge bg-secondary">Bloqueada</span>
+                {% endif %}
+                </td>
                 <td>
                     <a href="{% url 'direccion_ver' direccion.direccion_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
                     <a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-sm btn-outline-warning">Editar</a>
@@ -45,9 +51,11 @@
                     <!-- Bloquear/Activar -->
                     <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" style="display:inline;">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-primary">
-                            {% if direccion.estado == 'Activo' %}Bloquear{% else %}Activar{% endif %}
-                        </button>
+                        {% if direccion.estado %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                        {% endif %}
                     </form>
 
                     <!-- Eliminar -->

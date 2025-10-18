@@ -7,13 +7,7 @@
     <a href="{% url 'incidencia_crear' %}" class="btn btn-success">+ Crear Nueva Incidencia</a>
 </p>
 
-{% if messages %}
-<div class="alert-container">
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-</div>
-{% endif %}
+
 
 <table class="table table-striped">
     <thead>
@@ -48,9 +42,14 @@
             <td>
                 <a href="{% url 'incidencia_ver' incidencia.incidencia_id %}" class="btn btn-outline-info btn-sm">Ver</a>
                 <a href="{% url 'incidencia_editar' incidencia.incidencia_id %}" class="btn btn-outline-warning btn-sm">Editar</a>
-                <a href="{% url 'incidencia_bloquear' incidencia.incidencia_id %}" class="btn btn-outline-secondary btn-sm">
-                    {% if incidencia.estado %}Bloquear{% else %}Desbloquear{% endif %}
-                </a>
+                <form method="post" action="{% url 'incidencia_bloquear' incidencia.incidencia_id %}" style="display:inline;">
+                    {% csrf_token %}
+                    {% if incidencia.estado %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Bloquear</button>
+                    {% else %}
+                    <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                    {% endif %}
+                </form>
                 <a href="{% url 'incidencia_eliminar' incidencia.incidencia_id %}" class="btn btn-outline-danger btn-sm"
                    onclick="return confirm('¿Eliminar esta incidencia?');">Eliminar</a>
             </td>

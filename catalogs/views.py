@@ -96,9 +96,8 @@ def incidencia_bloquear(request, incidencia_id):
 
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
     incidencia.estado = not incidencia.estado
+    estado_str = "activada" if incidencia.estado else "bloqueada"
     incidencia.save(update_fields=['estado'])
-
-    estado_str = "bloqueada" if not incidencia.estado else "activada"
     messages.success(request, f'Incidencia "{incidencia.nombre}" {estado_str} correctamente.')
     return redirect('incidencia_listar')
 

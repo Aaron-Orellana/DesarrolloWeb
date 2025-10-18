@@ -6,7 +6,7 @@ from registration.models import Profile
 class DireccionForm(forms.ModelForm):
     class Meta:
         model = Direccion
-        fields = ['nombre', 'estado', 'profile']
+        fields = ['nombre', 'profile']
         labels = {
             'profile': 'Responsable',
         }
@@ -15,9 +15,7 @@ class DireccionForm(forms.ModelForm):
                 'class': 'form-control',
                 'placeholder': 'Ingrese el nombre de la dirección'
             }),
-            'estado': forms.Select(choices=[('Activo', 'Activo'), ('Inactivo', 'Inactivo')], attrs={
-                'class': 'form-select'
-            }),
+
             'profile': forms.Select(attrs={'class': 'form-select'}),
         }
 
@@ -43,4 +41,4 @@ class DepartamentoForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Solo mostrar direcciones activas
-        self.fields['direccion'].queryset = Direccion.objects.filter(estado='Activo')
+        self.fields['direccion'].queryset = Direccion.objects.filter(estado=True)

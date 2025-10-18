@@ -22,22 +22,27 @@
                 <td>{{ departamento.departamento_id }}</td>
                 <td>{{ departamento.nombre }}</td>
                 <td>{{ departamento.direccion.nombre }}</td>
-                <td>{{ departamento.estado }}</td>
+                <td>
+                {% if departamento.estado %}
+                    <span class="badge bg-success">Activo</span>
+                {% else %}
+                    <span class="badge bg-secondary">Bloqueado</span>
+                {% endif %}
+                </td>
                 <td>
                     <a href="{% url 'departamento_ver' departamento.departamento_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
                     <a href="{% url 'departamento_editar' departamento.departamento_id %}" class="btn btn-sm btn-outline-warning">Editar</a>
-
-                    {% if departamento.estado == 'Activo' %}
-                        <form method="post" action="{% url 'departamento_bloquear' departamento.departamento_id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
-                        </form>
-                    {% else %}
-                        <form method="post" action="{% url 'departamento_bloquear' departamento.departamento_id %}" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
-                        </form>
-                    {% endif %}
+                    
+                
+                    <form method="post" action="{% url 'departamento_bloquear' departamento.departamento_id %}" style="display:inline;">
+                        {% csrf_token %}
+                        {% if departamento.estado %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                        {% endif %}
+                    </form>
+                    
 
                     <form method="post" action="{% url 'departamento_eliminar' departamento.departamento_id %}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar este departamento?');">
                         {% csrf_token %}

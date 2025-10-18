@@ -23,20 +23,27 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ encuesta.titulo }}</td>
                 <td>{{ encuesta.prioridad }}</td>
-                <td>{{ encuesta.estado|yesno:"Activo,Inactivo" }}</td>
                 <td>
-                    <a href="{% url 'encuesta_detalle' encuesta.pk %}" class="btn btn-sm btn-primary">
+                {% if encuesta.estado %}
+                    <span class="badge bg-success">Activa</span>
+                {% else %}
+                    <span class="badge bg-secondary">Bloqueada</span>
+                {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'encuesta_ver' encuesta.pk %}" class="btn btn-sm btn-primary">
                         <i class="bi bi-eye"></i> Ver Detalle
                     </a>
                     <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-sm btn-secondary">
                         <i class="bi bi-pencil"></i> Editar
                     </a>
-                    <form method="post" action="{% url 'encuesta_cambiar_estado' encuesta.pk %}" style="display:inline;">
+                    <form method="post" action="{% url 'encuesta_bloquear' encuesta.pk %}" style="display:inline;">
                         {% csrf_token %}
-                        <input type="hidden" name="accion" value="{% if encuesta.estado %}bloquear{% else %}activar{% endif %}">
-                        <button type="submit" class="btn btn-sm btn-warning">
-                            {% if encuesta.estado %}Bloquear{% else %}Activar{% endif %}
-                        </button>
+                        {% if encuesta.estado %}
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                        {% else %}
+                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                        {% endif %}
                     </form>
                     <form
                         method="post"

@@ -7,7 +7,7 @@
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit" class="btn btn-primary">Actualizar</button>
-  <a href="{% url 'encuesta_detalle' encuesta.pk %}" class="btn btn-secondary">Cancelar</a>
+  <a href="{% url 'encuesta_listar'%}" class="btn btn-secondary">Cancelar</a>
 </form>
 {% endblock %}
 

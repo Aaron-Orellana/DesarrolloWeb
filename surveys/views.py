@@ -34,9 +34,9 @@ def encuesta_crear(request):
 
 
 @login_required
-def encuesta_detalle(request, encuesta_id):
+def encuesta_ver(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    return render(request, 'surveys/encuesta_detalle.html', {'encuesta': encuesta})
+    return render(request, 'surveys/encuesta_ver.html', {'encuesta': encuesta})
 
 
 @login_required
@@ -48,7 +48,7 @@ def encuesta_editar(request, encuesta_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Encuesta actualizada correctamente.')
-            return redirect('encuesta_detalle', encuesta_id=encuesta.id)
+            return redirect('encuesta_listar')
         
     else:
         form = EncuestaForm(instance=encuesta)
@@ -57,23 +57,13 @@ def encuesta_editar(request, encuesta_id):
 
 
 @login_required
-def encuesta_cambiar_estado(request, encuesta_id):
+def encuesta_bloquear(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-
-    if request.method == 'POST':
-        accion = request.POST.get('accion')
-        if accion == 'bloquear' and encuesta.estado:
-            encuesta.estado = False
-            encuesta.save(update_fields=['estado'])
-            messages.success(request, 'Encuesta bloqueada correctamente.')
-        elif accion == 'activar' and not encuesta.estado:
-            encuesta.estado = True
-            encuesta.save(update_fields=['estado'])
-            messages.success(request, 'Encuesta activada correctamente.')
-        else:
-            messages.error(request, 'La acción no es válida para el estado actual.')
-
-    return redirect('encuesta_detalle', encuesta_id=encuesta.id)
+    encuesta.estado = not encuesta.estado
+    estado_str = "activada" if encuesta.estado else "bloqueada"
+    encuesta.save(update_fields=['estado'])
+    messages.success(request, f'Encuesta "{encuesta.titulo}" {estado_str} correctamente.')
+    return redirect('encuesta_listar')
 
 
 @login_required
@@ -83,9 +73,9 @@ def encuesta_eliminar(request, encuesta_id):
     if request.method == 'POST':
         try:
             encuesta.delete()
-            messages.success(request, 'Encuesta eliminada correctamente.')
+            messages.success(request, f'Encuesta {encuesta.titulo} eliminada correctamente.')
             return redirect('encuesta_listar')
         except ProtectedError:
             messages.error(request, 'No se puede eliminar porque está asociada a otros registros.')
 
-    return redirect('encuesta_detalle', encuesta_id=encuesta.id)
+    return redirect('encuesta_listar')

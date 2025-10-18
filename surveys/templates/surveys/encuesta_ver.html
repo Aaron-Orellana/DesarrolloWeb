@@ -5,7 +5,7 @@
 
 <div class="mb-3">
     <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-primary">Editar</a>
-    <form method="post" action="{% url 'encuesta_cambiar_estado' encuesta.pk %}" style="display:inline;">
+    <form method="post" action="{% url 'encuesta_bloquear' encuesta.pk %}" style="display:inline;">
         {% csrf_token %}
         <input type="hidden" name="accion" value="{% if encuesta.estado %}bloquear{% else %}activar{% endif %}">
         <button type="submit" class="btn btn-warning">

@@ -25,8 +25,8 @@ class IncidenciaForm(forms.ModelForm):
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['direccion'].queryset = Direccion.objects.filter(estado='Activo').order_by('nombre')
-        self.fields['departamento'].queryset = Departamento.objects.filter(estado='Activo').order_by('nombre')
+        self.fields['direccion'].queryset = Direccion.objects.filter(estado=True).order_by('nombre')
+        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True).order_by('nombre')
         self.fields['encuesta'].queryset = Encuesta.objects.filter(estado=True).order_by('titulo')
 
       

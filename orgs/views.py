@@ -79,13 +79,10 @@ def direccion_ver(request, direccion_id):
 @login_required
 def direccion_bloquear(request, direccion_id):
     direccion = get_object_or_404(Direccion, pk=direccion_id)
-    if direccion.estado == 'Activo':
-        direccion.estado = 'Inactivo'
-        messages.warning(request, f'La dirección "{direccion.nombre}" fue bloqueada.')
-    else:
-        direccion.estado = 'Activo'
-        messages.success(request, f'La dirección "{direccion.nombre}" fue activada.')
-    direccion.save()
+    direccion.estado = not direccion.estado
+    estado_str = "activada" if direccion.estado else "bloqueada"
+    messages.success(request, f'dirección "{direccion.nombre}" {estado_str} correctamente.')
+    direccion.save(update_fields=['estado'])
     return redirect('direccion_listar')
 
 
@@ -94,7 +91,7 @@ def direccion_eliminar(request, direccion_id):
     direccion = get_object_or_404(Direccion, pk=direccion_id)
     try:
         direccion.delete()
-        messages.success(request, 'Dirección eliminada correctamente.')
+        messages.success(request, f'Dirección {direccion.nombre} eliminada correctamente.')
     except:
         messages.error(request, 'No se puede eliminar: la dirección tiene departamentos asociados.')
     return redirect('direccion_listar')
@@ -171,13 +168,11 @@ def departamento_ver(request, departamento_id):
 @login_required
 def departamento_bloquear(request, departamento_id):
     departamento = get_object_or_404(Departamento, pk=departamento_id)
-    if departamento.estado == 'Activo':
-        departamento.estado = 'Inactivo'
-        messages.warning(request, f'El departamento "{departamento.nombre}" fue bloqueado.')
-    else:
-        departamento.estado = 'Activo'
-        messages.success(request, f'El departamento "{departamento.nombre}" fue activado.')
-    departamento.save()
+    departamento.estado = not departamento.estado
+    
+    estado_str = "activado" if departamento.estado else "bloqueado"
+    departamento.save(update_fields=['estado'])
+    messages.success(request, f'departamento "{departamento.nombre}" {estado_str} correctamente.')
     return redirect('departamento_listar')
 
 
@@ -186,7 +181,7 @@ def departamento_eliminar(request, departamento_id):
     departamento = get_object_or_404(Departamento, pk=departamento_id)
     try:
         departamento.delete()
-        messages.success(request, 'Departamento eliminado correctamente.')
+        messages.success(request, f'Departamento {departamento.nombre} eliminado correctamente.')
     except:
         messages.error(request, 'No se puede eliminar: puede tener dependencias.')
     return redirect('departamento_listar')
