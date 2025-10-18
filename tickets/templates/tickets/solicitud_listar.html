@@ -1,0 +1,75 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Listado Completo de Solicitudes de Incidencia</h4>
+
+{% if messages %}
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+{% endif %}
+
+<p><a href="{% url 'solicitud_crear' %}" class="btn btn-primary">Crear Nueva Solicitud</a></p>
+
+<div style="overflow-x: auto;"> 
+<table class="table table-striped table-hover table-sm">
+    <thead>
+        <tr>
+            <th># Solicitud</th>
+            <th>Encuesta</th>
+            <th>Tipo Incidencia</th>
+            <th>Territorial</th>
+            <th>Vecino</th>
+            <th>Ubicación</th>
+            <th>Cuadrilla</th>
+            <th>Estado</th>
+            <th>Descripción</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for solicitud in solicitudes %}
+            <tr>
+                <td>{{ solicitud.solicitud_incidencia_id }}</td>
+                <td>{{ solicitud.encuesta.titulo }}</td>
+                <td>{{ solicitud.incidencia.nombre }}</td>
+                <td>{{ solicitud.territorial.nombre }}</td>
+                <td>{{ solicitud.vecino.email|default:'[Sin Email]' }}</td>
+                <td>{{ solicitud.ubicacion.nombre }}</td>
+
+                <td>
+                    {% if solicitud.cuadrilla %}
+                        <span class="badge bg-secondary">{{ solicitud.cuadrilla.nombre }}</span>
+                    {% else %}
+                        <span class="text-secondary">—</span>
+                    {% endif %}
+                </td>
+                
+                <td>
+                    {% if solicitud.estado == 'Activa' %}
+                        <span class="badge bg-success">{{ solicitud.estado }}</span>
+                    {% elif solicitud.estado == 'Bloqueada' %}
+                        <span class="badge bg-danger">{{ solicitud.estado }}</span>
+                    {% else %}
+                        <span class="badge bg-info">{{ solicitud.estado }}</span>
+                    {% endif %}
+                </td>
+                
+                <td title="{{ solicitud.descripcion|striptags|truncatechars:100 }}">{{ solicitud.descripcion|truncatechars:30 }}</td>
+                
+                <td>{{ solicitud.fecha|date:"d/m/Y H:i" }}</td>
+                
+                <td>
+                    <a href="{% url 'solicitud_editar' solicitud.solicitud_incidencia_id %}" class="btn btn-sm btn-warning">Editar</a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="11" class="text-center">No hay solicitudes de incidencia registradas.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

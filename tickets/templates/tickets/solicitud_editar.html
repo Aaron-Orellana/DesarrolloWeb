@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Editar Solicitud de Incidencia #{{ solicitud.solicitud_incidencia_id }}</h4>
+
+{% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    
+    {{ form.as_p }}
+    
+    <button type="submit" class="btn btn-warning">Actualizar</button>
+    
+    <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

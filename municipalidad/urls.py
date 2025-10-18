@@ -29,5 +29,6 @@ urlpatterns = [
     path('orgs/', include(urlpatterns)),
     path('catalogs/', include('catalogs.urls')),   
     path('surveys/', include('surveys.urls')), 
+    path('tickets/', include('tickets.urls')),
 
 ]

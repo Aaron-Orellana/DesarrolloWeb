@@ -29,25 +29,33 @@ class SolicitudIncidencia(models.Model):
         'orgs.Territorial',
         on_delete=models.PROTECT,
         db_column='Territorial_id',
-        related_name='solicitudes_incidencia'
+        related_name='solicitudes_incidencia',
+        null=True, 
+        blank=True
     )
     vecino = models.ForeignKey(
         'locations.Vecino',
         on_delete=models.PROTECT,
         db_column='Vecino_id',
-        related_name='solicitudes_incidencia'
+        related_name='solicitudes_incidencia',
+        null=True, 
+        blank=True
     )
     cuadrilla = models.ForeignKey(
         'orgs.Cuadrilla',
         on_delete=models.PROTECT,
         db_column='Cuadrilla_id',
-        related_name='solicitudes_incidencia'
+        related_name='solicitudes_incidencia',
+        null=True, 
+        blank=True
     )
     ubicacion = models.ForeignKey(
         'locations.Ubicacion',
         on_delete=models.PROTECT,
         db_column='Ubicacion_id',
-        related_name='solicitudes_incidencia'
+        related_name='solicitudes_incidencia',
+        null=True, 
+        blank=True
     )
 
     # Campos simples
