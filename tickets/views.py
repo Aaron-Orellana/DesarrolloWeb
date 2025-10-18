@@ -46,7 +46,7 @@ def solicitud_editar(request, solicitud_incidencia_id):
         if form.is_valid():
             form.save() 
             messages.success(request, f'Solicitud #{solicitud.pk} actualizada con éxito.')
-            return redirect('solicitud_detalle', solicitud_incidencia_id=solicitud.pk)
+            return redirect('solicitud_listar')
         else:
             messages.error(request, 'Error al guardar. Revise los datos del formulario.')
     else:
