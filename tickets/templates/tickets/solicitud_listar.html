@@ -62,6 +62,8 @@
                 
                 <td>
                     <a href="{% url 'solicitud_editar' solicitud.solicitud_incidencia_id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <a href="{% url 'multimedia_listar' solicitud.solicitud_incidencia_id %}" class="btn btn-sm btn-info">Ver Multimedia</a>
+                    <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" class="btn btn-sm btn-success">Subir Multimedia</a>
                 </td>
             </tr>
         {% empty %}
