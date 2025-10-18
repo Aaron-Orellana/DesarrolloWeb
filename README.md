@@ -68,6 +68,12 @@ python manage.py migrate
 python manage.py runserver
 ```
 
+6. **Añadir media al settings.py**
+```bash
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+```
+
 
 **Como cargar datos de prueba**
 
