@@ -5,6 +5,9 @@ from registration.models import Profile
 from registration.utils import has_admin_role
 from .models import Direccion, Departamento
 from .forms import DireccionForm, DepartamentoForm  
+from django.utils.timezone import now
+from tickets.models import SolicitudIncidencia
+from orgs.models import Cuadrilla
 
 
 
@@ -185,3 +188,54 @@ def departamento_eliminar(request, departamento_id):
     except:
         messages.error(request, 'No se puede eliminar: puede tener dependencias.')
     return redirect('departamento_listar')
+
+@login_required
+def mis_incidencias_cuadrilla(request):
+    if request.user.profile.role_type not in ['cuadrilla', 'secpla']:
+        messages.error(request, "No tienes permiso para acceder a este panel.")
+        return redirect('home')
+
+    # Si es cuadrilla, obtenemos solo incidencias de su cuadrilla
+    if request.user.profile.role_type == 'cuadrilla':
+        try:
+            cuadrilla = Cuadrilla.objects.get(pk=request.user.profile.role_object_id)
+        except Cuadrilla.DoesNotExist:
+            messages.error(request, "No tienes una cuadrilla asignada.")
+            return redirect('home')
+        incidencias = SolicitudIncidencia.objects.filter(cuadrilla=cuadrilla)
+        es_supervisor = False  
+
+    # Si es secpla temporalmente vera todas las incidencias y tendra permiso para actuar
+    elif request.user.profile.role_type == 'secpla':
+        incidencias = SolicitudIncidencia.objects.all()
+        cuadrilla = None 
+        es_supervisor = True  # Esto indica que puede ver todo y actuar por ahora
+
+    context = {
+        'incidencias': incidencias,
+        'cuadrilla': cuadrilla,
+        'es_supervisor': es_supervisor  
+    }
+    return render(request, 'orgs/mis_incidencias_cuadrilla.html', context)
+
+@login_required
+def marcar_en_proceso(request, pk):
+    if request.user.profile.role_type not in ['cuadrilla', 'secpla']:
+        messages.error(request, "No tienes permiso para realizar esta acción.")
+        return redirect('mis_incidencias_cuadrilla')
+
+    incidencia = get_object_or_404(SolicitudIncidencia, pk=pk)
+
+    # Si es cuadrilla solo puede modificar incidencias de su propia cuadrilla
+    if request.user.profile.role_type == 'cuadrilla':
+        cuadrilla = Cuadrilla.objects.get(pk=request.user.profile.role_object_id)
+        if incidencia.cuadrilla != cuadrilla:
+            messages.error(request, "No puedes modificar incidencias de otra cuadrilla.")
+            return redirect('mis_incidencias_cuadrilla')
+
+    incidencia.estado = "En Proceso"
+    incidencia.fecha_inicio = now()
+    incidencia.save()
+
+    messages.success(request, "La incidencia fue marcada como 'En Proceso'.")
+    return redirect('mis_incidencias_cuadrilla')    

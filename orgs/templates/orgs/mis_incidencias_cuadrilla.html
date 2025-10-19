@@ -1,0 +1,68 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card" style="padding: 20px; border-radius: 10px;">
+
+        {% if es_supervisor %}
+            <h3>Panel de Mis Incidencias</h3>
+        {% else %}
+            <h3>Panel de Mis Incidencias - Cuadrilla: {{ cuadrilla.nombre }}</h3>
+        {% endif %}
+
+        <table class="table table-striped mt-3">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Incidencia</th>
+                    <th>Cuadrilla</th>
+                    <th>Estado</th>
+                    <th>Fecha creación</th>
+                    <th>Fecha inicio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if incidencias %}
+                    {% for incidencia in incidencias %}
+                        <tr>
+                            <td>{{ incidencia.pk }}</td>
+                            <td>{{ incidencia.incidencia }}</td>
+                            <td>
+                                {% if incidencia.cuadrilla %}
+                                    {{ incidencia.cuadrilla.nombre }}
+                                {% else %}
+                                    Sin asignar
+                                {% endif %}
+                            </td>
+                            <td>{{ incidencia.estado }}</td>
+                            <td>{{ incidencia.fecha|date:"d-m-Y H:i" }}</td>
+                            <td>
+                                {% if incidencia.fecha_inicio %}
+                                    {{ incidencia.fecha_inicio|date:"d-m-Y H:i" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if incidencia.estado != "En Proceso" %}
+                                    <a href="{% url 'marcar_en_proceso' incidencia.pk %}" class="btn btn-warning btn-sm">
+                                        Marcar En Proceso
+                                    </a>
+                                {% else %}
+                                    <span class="text-success">En Proceso</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No hay incidencias registradas.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+{% endblock %}

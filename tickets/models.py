@@ -62,6 +62,8 @@ class SolicitudIncidencia(models.Model):
     estado = models.CharField(max_length=50, db_column='Estado')
     descripcion = models.TextField(null=True, blank=True, db_column='Descripción')
     fecha = models.DateTimeField(default=timezone.now, db_column='Fecha')
+    fecha_inicio = models.DateTimeField(null=True, blank=True, db_column='Fecha_inicio')
+
 
     class Meta:
         verbose_name = 'Solicitud de Incidencia'

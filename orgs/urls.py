@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import mis_incidencias_cuadrilla, marcar_en_proceso
 
 urlpatterns = [
     path('direcciones/', views.direccion_listar, name='direccion_listar'),
@@ -15,5 +16,7 @@ urlpatterns = [
     path('departamentos/ver/<int:departamento_id>/', views.departamento_ver, name='departamento_ver'),
     path('departamentos/bloquear/<int:departamento_id>/', views.departamento_bloquear, name='departamento_bloquear'),
     path('departamentos/eliminar/<int:departamento_id>/', views.departamento_eliminar, name='departamento_eliminar'),
+    path('mis-incidencias/', mis_incidencias_cuadrilla, name='mis_incidencias_cuadrilla'),
+    path('marcar-en-proceso/<int:pk>/', marcar_en_proceso, name='marcar_en_proceso'),
 
 ]
