@@ -8,6 +8,8 @@ from .forms import DireccionForm, DepartamentoForm
 from django.utils.timezone import now
 from tickets.models import SolicitudIncidencia
 from orgs.models import Cuadrilla
+from django.db.models import Q
+from django.core.paginator import Paginator
 
 
 
@@ -18,12 +20,39 @@ def direccion_listar(request):
     except Profile.DoesNotExist:
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
-    
 
+    q = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    responsable = request.GET.get('responsable', '').strip()
     direcciones = Direccion.objects.select_related('profile__user').all().order_by('direccion_id')
-    return render(request, 'orgs/direccion_listar.html', {'direcciones': direcciones})
 
+    filtros = Q()
+    if q:
+        filtros &= Q(nombre__icontains=q)
+    if estado:
+        if estado == 'activa':
+            filtros &= Q(estado=True)
+        elif estado == 'bloqueada':
+            filtros &= Q(estado=False)
+    if responsable:
+        filtros &= Q(profile__user__username__icontains=responsable) | Q(profile__user__first_name__icontains=responsable) | Q(profile__user__last_name__icontains=responsable)
 
+    direcciones = direcciones.filter(filtros)
+    paginator = Paginator(direcciones, 10)
+    page_number = request.GET.get('page')
+    direcciones_page = paginator.get_page(page_number)
+    sin_resultados = not direcciones.exists()
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = query_params.urlencode()
+
+    return render(request, 'orgs/direccion_listar.html', {
+        'direcciones': direcciones_page,
+        'sin_resultados': sin_resultados,
+        'query_string': query_string,
+        'request': request,
+    })
 
 @login_required
 
@@ -106,10 +135,42 @@ def departamento_listar(request):
     except Profile.DoesNotExist:
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
-    
 
-    departamentos = Departamento.objects.select_related('direccion').all()
-    return render(request, 'orgs/departamento_listar.html', {'departamentos': departamentos})
+    q = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    direccion_id = request.GET.get('direccion', '').strip()
+    departamentos = Departamento.objects.select_related('direccion').all().order_by('departamento_id')
+    direcciones = Direccion.objects.all().order_by('nombre')  
+
+    filtros = Q()
+    if q:
+        filtros &= Q(nombre__icontains=q)
+    if estado:
+        if estado == 'activo':
+            filtros &= Q(estado=True)
+        elif estado == 'bloqueado':
+            filtros &= Q(estado=False)
+    if direccion_id:
+        filtros &= Q(direccion__direccion_id=direccion_id)
+
+    departamentos = departamentos.filter(filtros)
+    paginator = Paginator(departamentos, 10)
+    page_number = request.GET.get('page')
+    departamentos_page = paginator.get_page(page_number)
+    sin_resultados = not departamentos.exists()
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = query_params.urlencode()
+
+    return render(request, 'orgs/departamento_listar.html', {
+        'departamentos': departamentos_page,
+        'direcciones': direcciones,
+        'sin_resultados': sin_resultados,
+        'query_string': query_string,
+        'request': request,
+    })
+
 
 
 @login_required

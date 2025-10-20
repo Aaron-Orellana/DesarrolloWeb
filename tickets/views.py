@@ -9,6 +9,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.core.exceptions import PermissionDenied
 from django.views.generic.edit import CreateView
+from django.db.models import Q
+from django.core.paginator import Paginator
+from datetime import datetime
+
 @login_required
 def solicitud_listar(request):
     try:
@@ -16,8 +20,48 @@ def solicitud_listar(request):
     except Profile.DoesNotExist:
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
-    solicitudes = SolicitudIncidencia.objects.select_related('incidencia', 'cuadrilla', 'ubicacion', 'territorial', 'vecino').all().order_by('-fecha')
-    return render(request, 'tickets/solicitud_listar.html', {'solicitudes': solicitudes})
+
+    q = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    cuadrilla = request.GET.get('cuadrilla', '').strip()
+    fecha = request.GET.get('fecha', '').strip()
+
+    solicitudes = SolicitudIncidencia.objects.select_related(
+        'incidencia', 'cuadrilla', 'ubicacion', 'territorial', 'vecino', 'encuesta'
+    ).all().order_by('-fecha')
+
+    filtros = Q()
+    if q:
+        filtros &= Q(encuesta__titulo__icontains=q) | Q(incidencia__nombre__icontains=q) | Q(vecino__email__icontains=q)
+    if estado:
+        filtros &= Q(estado__iexact=estado)  
+    if cuadrilla:
+        filtros &= Q(cuadrilla__nombre__icontains=cuadrilla)
+    if fecha:
+        try:
+            fecha_dt = datetime.strptime(fecha, "%Y-%m-%d")
+            filtros &= Q(fecha__date=fecha_dt.date())
+        except ValueError:
+            messages.warning(request, "Formato de fecha desde inválido. Usa YYYY-MM-DD.")
+
+    solicitudes = solicitudes.filter(filtros)
+    paginator = Paginator(solicitudes, 10)
+    page_number = request.GET.get('page')
+    solicitudes_page = paginator.get_page(page_number)
+    sin_resultados = not solicitudes.exists()
+    if sin_resultados:
+        messages.info(request, 'No se encontraron resultados con los filtros seleccionados.')
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = query_params.urlencode()
+
+    return render(request, 'tickets/solicitud_listar.html', {
+        'solicitudes': solicitudes_page,
+        'sin_resultados': sin_resultados,
+        'query_string': query_string,
+        'request': request,
+    })
 
 @login_required
 def solicitud_crear(request):

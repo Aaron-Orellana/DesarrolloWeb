@@ -3,7 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models.deletion import ProtectedError
-
+from django.db.models import Q
 from registration.models import Profile
 from registration.utils import has_admin_role
 from .models import Encuesta, Pregunta
@@ -12,11 +12,48 @@ from .forms import EncuestaForm,PreguntaForm
 @login_required
 def encuesta_listar(request):
     encuestas = Encuesta.objects.all().order_by('-id')
+
+    # Obtener parámetros GET
+    q = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    prioridad = request.GET.get('prioridad', '').strip()
+
+    # Construir queryset dinámico con Q
+    filtros = Q()
+    if q:
+        filtros &= Q(titulo__icontains=q)
+    if estado == 'activa':
+        filtros &= Q(estado=True)
+    elif estado == 'bloqueada':
+        filtros &= Q(estado=False)
+    if prioridad:
+        filtros &= Q(prioridad__iexact=prioridad)
+
+    encuestas = encuestas.filter(filtros)
+
+    # Paginación
     paginator = Paginator(encuestas, 10)
     page_number = request.GET.get('page')
     encuestas_page = paginator.get_page(page_number)
 
-    return render(request, 'surveys/encuesta_listar.html', {'encuestas': encuestas_page})
+    # Verificar si no hay resultados
+    sin_resultados = not encuestas.exists()
+    if sin_resultados:
+        messages.info(request, 'No se encontraron resultados con los filtros seleccionados.')
+
+    # Mantener filtros en la URL para paginación
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = query_params.urlencode()
+
+    return render(request, 'surveys/encuesta_listar.html', {
+        'encuestas': encuestas_page,
+        'sin_resultados': sin_resultados,
+        'query_string': query_string,  # se usa para paginación
+        'request': request,  # para mantener valores en inputs
+    })
+
 
 
 @login_required
@@ -80,6 +117,7 @@ def encuesta_eliminar(request, encuesta_id):
 
     return redirect('encuesta_listar')
 
+
 @login_required
 def pregunta_listar(request):
     try:
@@ -87,8 +125,38 @@ def pregunta_listar(request):
     except Profile.DoesNotExist:
         messages.error(request, 'Hubo un error con su perfil.')
         return redirect('logout')
-    preguntas = Pregunta.objects.select_related('encuesta').all().order_by('encuesta__titulo', 'nombre')
-    return render(request, 'surveys/pregunta_listar.html', {'preguntas': preguntas})
+    
+    q = request.GET.get('q', '').strip()
+    tipo = request.GET.get('tipo', '').strip()
+    estado = request.GET.get('estado', '').strip()
+    encuesta_titulo = request.GET.get('encuesta', '').strip()
+
+    preguntas = Pregunta.objects.select_related('encuesta').all()
+
+    if q:
+        preguntas = preguntas.filter(
+            Q(nombre__icontains=q) |
+            Q(encuesta__titulo__icontains=q)
+        )
+    if tipo:
+        preguntas = preguntas.filter(tipo__iexact=tipo)
+    if estado:
+        if estado == 'activa':
+            preguntas = preguntas.filter(encuesta__estado=True)
+        elif estado == 'inactiva':
+            preguntas = preguntas.filter(encuesta__estado=False)
+    if encuesta_titulo:
+        preguntas = preguntas.filter(encuesta__titulo__icontains=encuesta_titulo)
+
+    preguntas = preguntas.order_by('encuesta__titulo', 'nombre')
+
+    if not preguntas.exists():
+        messages.info(request, 'No se encontraron resultados con los filtros seleccionados.')
+
+    return render(request, 'surveys/pregunta_listar.html', {
+        'preguntas': preguntas
+    })
+
 
 @login_required
 def pregunta_crear(request):

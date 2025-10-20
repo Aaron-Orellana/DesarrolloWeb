@@ -1,13 +1,34 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<h4>Listar Encuestas</h4>
+<h4>Listado de Encuestas</h4>
+
+
+<form method="get" class="mb-3">
+    <input type="text" name="q" placeholder="Buscar por título..." value="{{ request.GET.q }}">
+    
+    <select name="estado">
+        <option value="">Todos los estados</option>
+        <option value="activa" {% if request.GET.estado == 'activa' %}selected{% endif %}>Activa</option>
+        <option value="bloqueada" {% if request.GET.estado == 'bloqueada' %}selected{% endif %}>Bloqueada</option>
+    </select>
+
+    <select name="prioridad">
+        <option value="">Todas las prioridades</option>
+        <option value="Alta" {% if request.GET.prioridad == 'Alta' %}selected{% endif %}>Alta</option>
+        <option value="Media" {% if request.GET.prioridad == 'Media' %}selected{% endif %}>Media</option>
+        <option value="Baja" {% if request.GET.prioridad == 'Baja' %}selected{% endif %}>Baja</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Limpiar</a>
+</form>
 
 <p>
     <a href="{% url 'encuesta_crear' %}" class="btn btn-success">+ Crear Nueva Encuesta</a>
 </p>
 
-<table class="table table-striped">
+<table class="table table-striped table-hover table-sm">
     <thead>
         <tr>
             <th>#</th>
@@ -18,68 +39,61 @@
         </tr>
     </thead>
     <tbody>
-        {% for encuesta in encuestas %}
+        {% if encuestas %}
+            {% for encuesta in encuestas %}
             <tr>
                 <td>{{ forloop.counter }}</td>
                 <td>{{ encuesta.titulo }}</td>
                 <td>{{ encuesta.prioridad }}</td>
                 <td>
-                {% if encuesta.estado %}
-                    <span class="badge bg-success">Activa</span>
-                {% else %}
-                    <span class="badge bg-secondary">Bloqueada</span>
-                {% endif %}
+                    {% if encuesta.estado %}
+                        <span class="badge bg-success">Activa</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Bloqueada</span>
+                    {% endif %}
                 </td>
                 <td>
-                    <a href="{% url 'encuesta_ver' encuesta.pk %}" class="btn btn-sm btn-primary">
-                        <i class="bi bi-eye"></i> Ver Detalle
-                    </a>
-                    <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-sm btn-secondary">
-                        <i class="bi bi-pencil"></i> Editar
-                    </a>
+                    <a href="{% url 'encuesta_ver' encuesta.pk %}" class="btn btn-sm btn-primary">Ver</a>
+                    <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-sm btn-secondary">Editar</a>
                     <form method="post" action="{% url 'encuesta_bloquear' encuesta.pk %}" style="display:inline;">
                         {% csrf_token %}
                         {% if encuesta.estado %}
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
                         {% else %}
-                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                            <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
                         {% endif %}
                     </form>
-                    <form
-                        method="post"
-                        action="{% url 'encuesta_eliminar' encuesta.pk %}"
-                        style="display:inline;"
-                        onsubmit="return confirm('¿Seguro que deseas eliminar esta encuesta?');"
-                    >
+                    <form method="post" action="{% url 'encuesta_eliminar' encuesta.pk %}" style="display:inline;" onsubmit="return confirm('¿Seguro que deseas eliminar esta encuesta?');">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-sm btn-danger">Eliminar</button>
                     </form>
                 </td>
             </tr>
-        {% empty %}
+            {% endfor %}
+        {% else %}
             <tr>
-                <td colspan="6">No hay encuestas registradas.</td>
+                <td colspan="5" class="text-center">No hay encuestas registradas o coincidentes con los filtros.</td>
             </tr>
-        {% endfor %}
+        {% endif %}
     </tbody>
 </table>
 
 {% if encuestas.has_other_pages %}
 <div class="pagination">
     {% if encuestas.has_previous %}
-        <a href="?page={{ encuestas.previous_page_number }}" class="btn btn-outline-primary">&laquo; Anterior</a>
+        <a href="?page={{ encuestas.previous_page_number }}&{{ query_string }}" class="btn btn-outline-primary">&laquo; Anterior</a>
     {% endif %}
 
     {% for num in encuestas.paginator.page_range %}
         {% if encuestas.number == num %}
             <span class="btn btn-primary disabled">{{ num }}</span>
         {% else %}
-            <a href="?page={{ num }}" class="btn btn-outline-primary">{{ num }}</a>
+            <a href="?page={{ num }}&{{ query_string }}" class="btn btn-outline-primary">{{ num }}</a>
         {% endif %}
     {% endfor %}
 
     {% if encuestas.has_next %}
-        <a href="?page={{ encuestas.next_page_number }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
+        <a href="?page={{ encuestas.next_page_number }}&{{ query_string }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
     {% endif %}
 </div>
 {% endif %}

@@ -3,16 +3,42 @@
 {% block content %}
 <h4>Listar Departamentos</h4>
 
-<p><a href="{% url 'departamento_crear' %}" class="btn">Crear Nuevo Departamento</a></p>
+<form method="get" class="mb-3">
+    <input type="text" name="q" placeholder="Buscar por nombre" value="{{ request.GET.q }}">
 
-<table class="table">
+    <select name="estado">
+        <option value="">Todos los estados</option>
+        <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activo</option>
+        <option value="bloqueado" {% if request.GET.estado == 'bloqueado' %}selected{% endif %}>Bloqueado</option>
+    </select>
+
+    <select name="direccion">
+        <option value="">Todas las Direcciones</option>
+        {% for dir in direcciones %}
+            <option value="{{ dir.direccion_id }}" {% if request.GET.direccion == dir.direccion_id|stringformat:"s" %}selected{% endif %}>
+                {{ dir.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+    <a href="{% url 'departamento_listar' %}" class="btn btn-secondary">Limpiar</a>
+</form>
+
+<p><a href="{% url 'departamento_crear' %}" class="btn btn-success">Crear Nuevo Departamento</a></p>
+
+{% if sin_resultados %}
+    <div class="alert alert-warning">No se encontraron resultados con los filtros aplicados.</div>
+{% endif %}
+
+<div style="overflow-x:auto;">
+<table class="table table-bordered table-hover table-sm">
     <thead>
         <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Dirección</th>
             <th>Estado</th>
-            
             <th>Acciones</th>
         </tr>
     </thead>
@@ -23,26 +49,24 @@
                 <td>{{ departamento.nombre }}</td>
                 <td>{{ departamento.direccion.nombre }}</td>
                 <td>
-                {% if departamento.estado %}
-                    <span class="badge bg-success">Activo</span>
-                {% else %}
-                    <span class="badge bg-secondary">Bloqueado</span>
-                {% endif %}
+                    {% if departamento.estado %}
+                        <span class="badge bg-success">Activo</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Bloqueado</span>
+                    {% endif %}
                 </td>
                 <td>
                     <a href="{% url 'departamento_ver' departamento.departamento_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
                     <a href="{% url 'departamento_editar' departamento.departamento_id %}" class="btn btn-sm btn-outline-warning">Editar</a>
-                    
-                
+
                     <form method="post" action="{% url 'departamento_bloquear' departamento.departamento_id %}" style="display:inline;">
                         {% csrf_token %}
                         {% if departamento.estado %}
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
                         {% else %}
-                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                            <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
                         {% endif %}
                     </form>
-                    
 
                     <form method="post" action="{% url 'departamento_eliminar' departamento.departamento_id %}" style="display:inline;" onsubmit="return confirm('¿Estás seguro de eliminar este departamento?');">
                         {% csrf_token %}
@@ -52,11 +76,31 @@
             </tr>
         {% empty %}
             <tr>
-                <td colspan="5">No hay departamentos registrados.</td>
+                <td colspan="5" class="text-center">No hay departamentos registrados.</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 
+{% if departamentos.has_other_pages %}
+<div class="pagination">
+    {% if departamentos.has_previous %}
+        <a href="?page={{ departamentos.previous_page_number }}&{{ query_string }}" class="btn btn-outline-primary">&laquo; Anterior</a>
+    {% endif %}
+
+    {% for num in departamentos.paginator.page_range %}
+        {% if departamentos.number == num %}
+            <span class="btn btn-primary disabled">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}&{{ query_string }}" class="btn btn-outline-primary">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if departamentos.has_next %}
+        <a href="?page={{ departamentos.next_page_number }}&{{ query_string }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
 
 {% endblock %}
