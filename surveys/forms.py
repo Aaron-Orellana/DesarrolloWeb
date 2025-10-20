@@ -1,5 +1,5 @@
 from django import forms
-from .models import Encuesta
+from .models import Encuesta, Pregunta
 
 class EncuestaForm(forms.ModelForm):
     class Meta:
@@ -21,3 +21,17 @@ class EncuestaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['prioridad'].empty_label = "---------"
+
+class PreguntaForm(forms.ModelForm):
+    class Meta:
+        model = Pregunta
+        fields = ['encuesta', 'nombre', 'tipo']
+        
+        widgets = {
+            'encuesta': forms.Select(attrs={'class': 'form-select'}),
+            'nombre': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Escriba el texto completo de la pregunta'}),
+            'tipo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Texto, Opción Múltiple'}), 
+        }
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['encuesta'].queryset = Encuesta.objects.filter(estado=True)

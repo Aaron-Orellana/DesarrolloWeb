@@ -6,8 +6,8 @@ from django.db.models.deletion import ProtectedError
 
 from registration.models import Profile
 from registration.utils import has_admin_role
-from .models import Encuesta
-from .forms import EncuestaForm
+from .models import Encuesta, Pregunta
+from .forms import EncuestaForm,PreguntaForm
 
 @login_required
 def encuesta_listar(request):
@@ -79,3 +79,54 @@ def encuesta_eliminar(request, encuesta_id):
             messages.error(request, 'No se puede eliminar porque está asociada a otros registros.')
 
     return redirect('encuesta_listar')
+
+@login_required
+def pregunta_listar(request):
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'Hubo un error con su perfil.')
+        return redirect('logout')
+    preguntas = Pregunta.objects.select_related('encuesta').all().order_by('encuesta__titulo', 'nombre')
+    return render(request, 'surveys/pregunta_listar.html', {'preguntas': preguntas})
+
+@login_required
+def pregunta_crear(request):
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'Hubo un error con su perfil.')
+        return redirect('logout')
+    if request.method == 'POST':
+        form = PreguntaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Pregunta creada y asignada a encuesta con éxito.')
+            return redirect('pregunta_listar') 
+        else:
+            messages.error(request, 'Error al guardar. Revise los datos del formulario.')
+            
+    else:
+        form = PreguntaForm()
+    return render(request, 'surveys/pregunta_crear.html', {'form': form, 'accion': 'Crear'})
+
+@login_required
+def pregunta_editar(request, pregunta_id):
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'Hubo un error con su perfil.')
+        return redirect('logout')
+    pregunta = get_object_or_404(Pregunta, pk=pregunta_id)
+    if request.method == 'POST':
+        form = PreguntaForm(request.POST, instance=pregunta)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Pregunta actualizada con éxito.')
+            return redirect('pregunta_listar')
+        else:
+            messages.error(request, 'Error al guardar. Revise los datos del formulario.')
+            
+    else:
+        form = PreguntaForm(instance=pregunta)
+    return render(request, 'surveys/pregunta_editar.html', {'form': form, 'accion': 'Editar', 'pregunta': pregunta})
