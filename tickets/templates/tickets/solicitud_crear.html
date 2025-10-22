@@ -15,6 +15,13 @@
     {% csrf_token %}
     
     {{ form.as_p }}
+
+    <div>
+    <label for="comentario">Comentario extra:</label>
+    <textarea name="comentario" id="comentario" style="white-space: pre-wrap; overflow-wrap: break-word;" rows='2' cols='50'  placeholder='Opcional para documentar el cambio de estado de la solicitud.'>{{ request.POST.comentario|default_if_none:'' }}</textarea>
+    
+    </div>
+    <div>
     
     <button type="submit" class="btn btn-primary">Guardar Solicitud</button>
     <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary">Cancelar</a>

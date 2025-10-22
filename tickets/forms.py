@@ -30,7 +30,7 @@ class SolicitudIncidenciaForm(forms.ModelForm):
             'vecino': forms.Select(attrs={'class': 'form-select'}),
             'ubicacion': forms.Select(attrs={'class': 'form-select'}),
             'cuadrilla': forms.Select(attrs={'class': 'form-select'}), 
-            'estado': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Recibida, Pendiente, En Proceso'}),
+            'estado': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalle la naturaleza de la incidencia'}),
         }
         
@@ -38,4 +38,4 @@ class SolicitudIncidenciaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['cuadrilla'].queryset = Cuadrilla.objects.filter(estado=True)
         if not self.instance.pk:
-            self.initial['estado'] = 'Recibida'
+            self.initial['estado'] = 'Pendiente'

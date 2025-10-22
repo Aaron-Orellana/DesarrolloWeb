@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.db import models
 from django.core.exceptions import ValidationError
 import os
+from registration.models import Profile
 # Create your models here.
 
 
@@ -59,7 +60,16 @@ class SolicitudIncidencia(models.Model):
     )
 
     # Campos simples
-    estado = models.CharField(max_length=50, db_column='Estado')
+    Estados = [
+        ('Pendiente', 'Pendiente'),
+        ('Derivada', 'Derivada'),
+        ('En Proceso', 'En Proceso'),
+        ('Finalizada', 'Finalizada'),
+        ('Aprobada', 'Aprobada'),
+        ('Rechazada', 'Rechazada'),
+    ]
+    estado = models.CharField(max_length=50, db_column='Estado',choices=Estados)
+
     descripcion = models.TextField(null=True, blank=True, db_column='Descripción')
     fecha = models.DateTimeField(default=timezone.now, db_column='Fecha')
     fecha_inicio = models.DateTimeField(null=True, blank=True, db_column='Fecha_inicio')
@@ -71,39 +81,52 @@ class SolicitudIncidencia(models.Model):
 
     def __str__(self):
         return f'Solicitud #{self.pk} - {self.estado}'
-
-
-class HistorialEstadoEncuesta(models.Model):
-    # PK
-    historial_id = models.BigAutoField(
-        primary_key=True,
-        db_column='Historial_Estado_ID'
+    
+    def registrar_log(solicitud, profile, from_estado,to_estado,fecha, comentario = None):
+        nota = f"El estado cambió de {from_estado} a {to_estado}."
+        if comentario:
+            nota += f"\n{comentario}"  # agrega el comentario si existe
+        IncidenciaLog.objects.create(
+        solicitud=solicitud,
+        profile=profile,
+        from_estado=from_estado,
+        to_estado=to_estado,
+        fecha=fecha,
+        nota=nota
     )
 
-    # FK hacia SolicitudIncidencia
+
+class IncidenciaLog(models.Model):
+    log_id = models.BigAutoField(primary_key=True, db_column='Incidencia_Log_ID')
+
     solicitud = models.ForeignKey(
         SolicitudIncidencia,
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         db_column='Solicitud_Incidencia_ID',
-        related_name='historial_estados'
+        related_name='logs'
     )
 
-    # Campos simples
-    estado = models.CharField(max_length=50, db_column='Estado')
-    usuario = models.ForeignKey(
-        'auth.User',
+    profile = models.ForeignKey(
+        Profile,
         on_delete=models.PROTECT,
         db_column='Usuario_id',
-        related_name='historial_estados'
+        related_name='incidencia_logs'
     )
-    fecha = models.DateTimeField(auto_now_add=True, db_column='Fecha')
+
+    from_estado = models.CharField(max_length=50, db_column='Desde')
+    to_estado = models.CharField(max_length=50, db_column='Hasta')
+    fecha = models.DateTimeField(default=timezone.now, db_column='Fecha')
+    nota = models.TextField(blank=True, null=True, db_column='Nota')
+
+    
 
     class Meta:
-        verbose_name = 'Historial de Estado'
-        verbose_name_plural = 'Historial de Estados'
+        verbose_name = 'Log de Incidencia'
+        verbose_name_plural = 'Logs de Incidencias'
+        ordering = ['-fecha']
 
     def __str__(self):
-        return f'{self.solicitud} - {self.estado} ({self.fecha})'
+        return f"{self.solicitud} | {self.estado_anterior} → {self.estado_actual} ({self.fecha:%d-%m-%Y %H:%M})"
 
 
 def validar_tipo_archivo(valor):

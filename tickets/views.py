@@ -12,6 +12,7 @@ from django.views.generic.edit import CreateView
 from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import datetime
+from django.utils.timezone import now
 
 @login_required
 def solicitud_listar(request):
@@ -72,8 +73,23 @@ def solicitud_crear(request):
         return redirect('logout')
     if request.method == 'POST':
         form = SolicitudIncidenciaForm(request.POST)
+        comentario = request.POST.get('comentario', '').strip()
         if form.is_valid():
-            form.save() 
+            solicitud = form.save(commit=False)
+
+            if solicitud.cuadrilla:
+                estado_anterior = solicitud.estado
+                solicitud.estado = 'Derivada'
+                
+            solicitud.save()
+            if solicitud.cuadrilla:
+                solicitud.registrar_log(
+                    profile= request.user.profile,
+                    from_estado = estado_anterior, 
+                    to_estado = solicitud.estado,
+                    fecha = now(),
+                    comentario =comentario
+                    )
             messages.success(request, 'Solicitud de incidencia creada correctamente.')
             return redirect('solicitud_listar')
         else:
@@ -90,10 +106,32 @@ def solicitud_editar(request, solicitud_incidencia_id):
         messages.error(request, 'Hubo un error con tu perfil.')
         return redirect('logout')
     solicitud = get_object_or_404(SolicitudIncidencia, pk=solicitud_incidencia_id)
+    cuadrilla_anterior = solicitud.cuadrilla
     if request.method == 'POST':
         form = SolicitudIncidenciaForm(request.POST, instance=solicitud)
+        comentario = request.POST.get('comentario', '').strip()
         if form.is_valid():
-            form.save() 
+            solicitud = form.save(commit=False)
+            estado_anterior = solicitud.estado
+            cuadrilla_actual = solicitud.cuadrilla
+            
+            if cuadrilla_anterior != cuadrilla_actual:
+                if cuadrilla_actual:
+                    solicitud.estado = 'Derivada'
+                else:
+                    solicitud.estado = 'Pendiente'
+                
+
+            solicitud.save()
+            if estado_anterior != solicitud.estado:
+                solicitud.registrar_log(
+                    profile=request.user.profile,
+                    from_estado=estado_anterior,
+                    to_estado=solicitud.estado,
+                    fecha=now(),
+                    comentario = comentario
+                )
+
             messages.success(request, f'Solicitud #{solicitud.pk} actualizada con éxito.')
             return redirect('solicitud_listar')
         else:
@@ -101,6 +139,16 @@ def solicitud_editar(request, solicitud_incidencia_id):
     else:
         form = SolicitudIncidenciaForm(instance=solicitud)
     return render(request, 'tickets/solicitud_editar.html', {'form': form, 'solicitud': solicitud})
+
+
+@login_required
+def solicitud_ver(request, solicitud_incidencia_id):
+    solicitud = get_object_or_404(SolicitudIncidencia, pk=solicitud_incidencia_id)
+    logs = solicitud.logs.all() 
+    return render(request, 'tickets/solicitud_ver.html', {'solicitud': solicitud,'logs': logs,})
+
+
+
 
 
 class MultimediaListView(LoginRequiredMixin, ListView):
@@ -147,3 +195,5 @@ class MultimediaCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context['solicitud'] = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
         return context
+    
+    

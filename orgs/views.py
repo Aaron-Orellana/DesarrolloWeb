@@ -293,10 +293,17 @@ def marcar_en_proceso(request, pk):
         if incidencia.cuadrilla != cuadrilla:
             messages.error(request, "No puedes modificar incidencias de otra cuadrilla.")
             return redirect('mis_incidencias_cuadrilla')
-
+    estado_anterior = incidencia.estado
     incidencia.estado = "En Proceso"
     incidencia.fecha_inicio = now()
     incidencia.save()
+
+    incidencia.registrar_log(
+        profile= request.user.profile,
+        from_estado = estado_anterior, 
+        to_estado = incidencia.estado,
+        fecha = now()
+    )
 
     messages.success(request, "La incidencia fue marcada como 'En Proceso'.")
     return redirect('mis_incidencias_cuadrilla')    
