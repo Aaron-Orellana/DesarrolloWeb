@@ -97,12 +97,21 @@ Este módulo permite restringir el acceso a vistas según el grupo (rol) del usu
 
 ## 🧩 Decorador `@role_required` (vistas basadas en función)
 
+### Parametros que acepta:
+
+Secpla
+Direcciones
+Departamentos
+Cuadrillas
+Territoriales
+
+
 ## 📘 Ejemplo básico
 ```python
 from core.decorators import role_required
 from django.shortcuts import render
 
-@role_required("Administradores", "Supervisores")
+@role_required("Secpla", "Direccion")
 def panel_admin(request):
     return render(request, "panel_admin.html")
 ```

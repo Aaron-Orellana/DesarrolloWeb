@@ -24,4 +24,10 @@ urlpatterns = [
     path('cuadrillas/editar/<int:cuadrilla_id>/', views.cuadrilla_editar, name='cuadrilla_editar'),
     path('cuadrillas/ver/<int:cuadrilla_id>/', views.cuadrilla_ver, name='cuadrilla_ver'),
     path('cuadrillas/bloquear/<int:cuadrilla_id>/', views.cuadrilla_bloquear, name='cuadrilla_bloquear'),
+
+    path('territoriales/', views.territorial_listar, name='territorial_listar'),
+    path('territoriales/crear/', views.territorial_crear, name='territorial_crear'),
+    path('territoriales/editar/<int:territorial_id>/', views.territorial_editar, name='territorial_editar'),
+    path('territoriales/ver/<int:territorial_id>/', views.territorial_ver, name='territorial_ver'),
+    path('territoriales/eliminar/<int:territorial_id>/', views.territorial_eliminar, name='territorial_eliminar'),
 ]

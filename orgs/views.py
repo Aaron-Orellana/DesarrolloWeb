@@ -2,16 +2,16 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from registration.models import Profile
-from registration.utils import has_admin_role
-from .models import Direccion, Departamento
-from .forms import DireccionForm, DepartamentoForm, CuadrillaForm
+from registration.utils import has_admin_role, clear_profile_role
+from .models import Direccion, Departamento, Territorial
+from .forms import DireccionForm, DepartamentoForm, CuadrillaForm, TerritorialForm
 from django.utils.timezone import now
 from tickets.models import SolicitudIncidencia
 from orgs.models import Cuadrilla
 from django.db.models import Q
 from django.core.paginator import Paginator
 
-
+from core.decorators import role_required
 
 @login_required
 def direccion_listar(request):
@@ -61,8 +61,7 @@ def direccion_listar(request):
         'request': request,
     })
 
-@login_required
-
+@role_required("Administradores", "Cuadrillas")
 def direccion_crear(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -140,6 +139,69 @@ def direccion_eliminar(request, direccion_id):
     except:
         messages.error(request, 'No se puede eliminar: la dirección tiene departamentos asociados.')
     return redirect('direccion_listar')
+
+
+@login_required
+def territorial_listar(request):
+    territoriales = Territorial.objects.select_related("profile__user").order_by("nombre")
+    q = request.GET.get("q", "").strip()
+    if q:
+        territoriales = territoriales.filter(
+            Q(nombre__icontains=q)
+            | Q(profile__user__first_name__icontains=q)
+            | Q(profile__user__last_name__icontains=q)
+            | Q(profile__user__username__icontains=q)
+        )
+
+    paginator = Paginator(territoriales, 10)
+    page_number = request.GET.get('page')
+    territoriales_page = paginator.get_page(page_number)
+
+    return render(request, 'orgs/territorial_listar.html', {
+        'territoriales': territoriales_page,
+        'query': q,
+        'request': request,
+    })
+
+
+@login_required
+def territorial_crear(request):
+    if request.method == "POST":
+        form = TerritorialForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Territorial creado correctamente.")
+            return redirect("territorial_listar")
+        messages.error(request, "Corrige los errores del formulario.")
+    else:
+        form = TerritorialForm()
+    return render(request, "orgs/territorial_crear.html", {"form": form})
+
+
+@login_required
+def territorial_editar(request, territorial_id):
+    territorial = get_object_or_404(Territorial, pk=territorial_id)
+    if request.method == "POST":
+        form = TerritorialForm(request.POST, instance=territorial)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Territorial actualizado correctamente.")
+            return redirect("territorial_listar")
+        messages.error(request, "Corrige los errores del formulario.")
+    else:
+        form = TerritorialForm(instance=territorial)
+    return render(request, "orgs/territorial_editar.html", {"form": form, "territorial": territorial})
+
+
+@login_required
+def territorial_eliminar(request, territorial_id):
+    territorial = get_object_or_404(Territorial, pk=territorial_id)
+    profile = territorial.profile
+    territorial.delete()
+    if profile:
+        clear_profile_role(profile)
+    messages.success(request, "Territorial eliminado correctamente.")
+    return redirect("territorial_listar")
 
 @login_required
 def departamento_listar(request):
@@ -419,6 +481,15 @@ def cuadrilla_ver(request, cuadrilla_id):
     cuadrilla = get_object_or_404(Cuadrilla.objects.select_related('departamento').prefetch_related(
             'memberships__usuario_id__user'),pk=cuadrilla_id)
     return render(request, 'orgs/cuadrilla_ver.html', {'cuadrilla': cuadrilla})
+
+
+@login_required
+def territorial_ver(request, territorial_id):
+    territorial = get_object_or_404(
+        Territorial.objects.select_related('profile__user'),
+        pk=territorial_id
+    )
+    return render(request, 'orgs/territorial_ver.html', {'territorial': territorial})
 
 @login_required
 def cuadrilla_bloquear(request, cuadrilla_id):

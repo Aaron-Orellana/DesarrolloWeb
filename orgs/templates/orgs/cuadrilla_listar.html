@@ -73,6 +73,7 @@
                     {% endif %}
                 </td>
                 <td>
+                    <a href="{% url 'cuadrilla_ver' cuadrilla.cuadrilla_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
                     <a href="{% url 'cuadrilla_editar' cuadrilla.cuadrilla_id %}" class="btn btn-sm btn-warning">Editar</a>
                     <form method="post" action="{% url 'cuadrilla_bloquear' cuadrilla.cuadrilla_id %}" style="display:inline;">
                         {% csrf_token %}

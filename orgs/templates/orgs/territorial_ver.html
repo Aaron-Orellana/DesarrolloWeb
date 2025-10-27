@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Territorial: {{ territorial.nombre }}</h4>
+
+<table class="table table-bordered">
+    <tr>
+        <th>Responsable</th>
+        <td>
+            {% if territorial.profile %}
+                {{ territorial.profile.user.get_full_name|default:territorial.profile.user.username }}
+            {% else %}
+                <em>Sin asignar</em>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<div class="d-flex gap-2">
+    <a href="{% url 'territorial_editar' territorial.pk %}" class="btn btn-warning">Editar</a>
+    <a href="{% url 'territorial_listar' %}" class="btn btn-secondary">Volver</a>
+</div>
+{% endblock %}

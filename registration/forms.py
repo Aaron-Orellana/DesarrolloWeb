@@ -32,7 +32,7 @@ class EmailForm(forms.ModelForm):
         return email
 
 class AdminUserCreateForm(forms.ModelForm):
-    role = forms.ChoiceField(label="Rol", required=True, choices=())
+    role = forms.ChoiceField(label="Rol", required=False, choices=())
     password1 = forms.CharField(widget=forms.PasswordInput, label="Contraseña")
     password2 = forms.CharField(widget=forms.PasswordInput, label="Confirmar contraseña")
     phone = forms.CharField(required=False, label="Teléfono fijo", max_length=30)

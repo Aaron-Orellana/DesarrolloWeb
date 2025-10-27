@@ -1,482 +1,414 @@
+from __future__ import annotations
+
+from typing import Iterable, Optional, Set
+
 from django import forms
+from django.contrib.auth.models import Group
 from django.db import transaction
+from django.db.models import Q
+
 from registration.models import Profile
+from registration.utils import DEFAULT_GROUP_NAME, ROLE_GROUP_NAMES
 
 from .models import (
+    Cuadrilla,
     CuadrillaMembership,
     Departamento,
     DepartamentoMembership,
     Direccion,
     DireccionMembership,
-    Secpla,
     Territorial,
-    Cuadrilla,
 )
 
 
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
 def _ordered_profiles_queryset():
-    """
-    Perfila la lista de usuarios disponibles ordenada por nombre completo / username.
-    """
-    return Profile.objects.select_related('user').order_by(
-        'user__first_name',
-        'user__last_name',
-        'user__username',
+    return Profile.objects.select_related("user").order_by(
+        "user__first_name",
+        "user__last_name",
+        "user__username",
     )
 
 
-def _blocked_profile_ids(
-    *,
-    exclude_direccion: Direccion | None = None,
-    exclude_departamento: Departamento | None = None,
-    exclude_cuadrilla=None,
-    exclude_secpla=None,
-    exclude_territorial=None,
-):
-    blocked: set[int] = set()
-
-    direcciones_qs = DireccionMembership.objects.all()
-    if exclude_direccion and getattr(exclude_direccion, "pk", None):
-        direcciones_qs = direcciones_qs.exclude(direccion=exclude_direccion)
-    blocked.update(direcciones_qs.values_list('usuario_id_id', flat=True))
-
-    departamentos_qs = DepartamentoMembership.objects.all()
-    if exclude_departamento and getattr(exclude_departamento, "pk", None):
-        departamentos_qs = departamentos_qs.exclude(departamento=exclude_departamento)
-    blocked.update(departamentos_qs.values_list('usuario_id_id', flat=True))
-
-    cuadrillas_qs = CuadrillaMembership.objects.all()
-    if exclude_cuadrilla and getattr(exclude_cuadrilla, "pk", None):
-        cuadrillas_qs = cuadrillas_qs.exclude(cuadrilla=exclude_cuadrilla)
-    blocked.update(cuadrillas_qs.values_list('usuario_id_id', flat=True))
-
-    secpla_qs = Secpla.objects.filter(profile__isnull=False)
-    exclude_secpla_pk = getattr(exclude_secpla, "pk", exclude_secpla)
-    if exclude_secpla_pk:
-        secpla_qs = secpla_qs.exclude(pk=exclude_secpla_pk)
-    blocked.update(secpla_qs.values_list('profile_id', flat=True))
-
-    territorial_qs = Territorial.objects.filter(profile__isnull=False)
-    exclude_territorial_pk = getattr(exclude_territorial, "pk", exclude_territorial)
-    if exclude_territorial_pk:
-        territorial_qs = territorial_qs.exclude(pk=exclude_territorial_pk)
-    blocked.update(territorial_qs.values_list('profile_id', flat=True))
-
-    return blocked
+def _role_group(role_key: str) -> Group:
+    group_name = ROLE_GROUP_NAMES.get(role_key, DEFAULT_GROUP_NAME)
+    group, _ = Group.objects.get_or_create(name=group_name)
+    return group
 
 
-def _available_profiles_for_direccion(instance: Direccion | None):
-    qs = _ordered_profiles_queryset()
-    blocked_ids = _blocked_profile_ids(exclude_direccion=instance)
-    if blocked_ids:
-        qs = qs.exclude(pk__in=blocked_ids)
-    return qs
+def _assign_role(profile: Profile, role_key: str, object_id: int) -> None:
+    group = _role_group(role_key)
+    profile.role_type = role_key
+    profile.role_object_id = object_id
+    profile.group = group
+    profile.save(update_fields=["role_type", "role_object_id", "group"])
+    profile.user.groups.set([group])
 
 
-def _available_profiles_for_departamento(instance: Departamento | None):
-    qs = _ordered_profiles_queryset()
-    blocked_ids = _blocked_profile_ids(exclude_departamento=instance)
-    if blocked_ids:
-        qs = qs.exclude(pk__in=blocked_ids)
-    return qs
+def _clear_role(profile: Profile) -> None:
+    default_group, _ = Group.objects.get_or_create(name=DEFAULT_GROUP_NAME)
+    profile.role_type = None
+    profile.role_object_id = None
+    profile.group = default_group
+    profile.save(update_fields=["role_type", "role_object_id", "group"])
+    profile.user.groups.set([default_group])
 
-class DireccionForm(forms.ModelForm):
+
+def _format_profiles(profiles: Iterable[Profile]) -> str:
+    names = []
+    for profile in profiles:
+        user = profile.user
+        full_name = user.get_full_name().strip()
+        names.append(full_name or user.username)
+    return ", ".join(names)
+
+
+def _holds_current_role(profile: Profile, role_key: str, instance_pk: Optional[int]) -> bool:
+    return (
+        profile.role_type == role_key
+        and instance_pk is not None
+        and profile.role_object_id == instance_pk
+    )
+
+
+# ---------------------------------------------------------------------------
+# Base form -> evitar duplicidad de usuarios
+# ---------------------------------------------------------------------------
+
+class BaseRoleMembershipForm(forms.ModelForm):
+    role_key: str = ""
+    membership_model = None
+    membership_fk_name: str = ""
+
     miembros = forms.ModelMultipleChoiceField(
         queryset=Profile.objects.none(),
         required=False,
-        label='Miembros',
-        widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': 10}),
-        help_text='Usuarios que pertenecen a la dirección.',
+        label="Miembros",
+        widget=forms.SelectMultiple(attrs={"class": "form-select", "size": 10}),
     )
-    encargados = forms.ModelChoiceField(
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        queryset = self._available_profiles_queryset()
+
+        self.fields["miembros"].queryset = queryset
+        self._current_member_ids = self._load_current_member_ids()
+        if self._current_member_ids:
+            self.fields["miembros"].initial = list(self._current_member_ids)
+
+        if "encargados" in self.fields:
+            self.fields["encargados"].queryset = queryset
+            self.fields["encargados"].initial = self._load_encargados_ids()
+
+    # ------------------------------------------------------------------ utils
+
+    def _load_current_member_ids(self) -> Set[int]:
+        if not getattr(self.instance, "pk", None):
+            return set()
+        return set(
+            self.membership_model.objects.filter(
+                **{self.membership_fk_name: self.instance}
+            ).values_list("usuario_id_id", flat=True)
+        )
+
+    def _load_encargados_ids(self) -> Set[int]:
+        if (
+            not hasattr(self.membership_model, "es_encargado")
+            or not getattr(self.instance, "pk", None)
+        ):
+            return set()
+        return set(
+            self.membership_model.objects.filter(
+                **{self.membership_fk_name: self.instance},
+                es_encargado=True,
+            ).values_list("usuario_id_id", flat=True)
+        )
+
+    def _available_profiles_queryset(self):
+        filters = Q(role_type__isnull=True)
+        if getattr(self.instance, "pk", None):
+            filters |= Q(
+                role_type=self.role_key,
+                role_object_id=self.instance.pk,
+            )
+        return _ordered_profiles_queryset().filter(filters).distinct()
+
+    # ----------------------------------------------------------------- clean
+
+    def clean(self):
+        cleaned_data = super().clean()
+        miembros = cleaned_data.get("miembros") or []
+        instance_pk = getattr(self.instance, "pk", None)
+
+        conflicts = [
+            profile for profile in miembros
+            if profile.role_type
+            and not _holds_current_role(profile, self.role_key, instance_pk)
+        ]
+        if conflicts:
+            self.add_error(
+                "miembros",
+                f"Ya están asignados a otro rol: {_format_profiles(conflicts)}.",
+            )
+
+        return cleaned_data
+
+    # ----------------------------------------------------------------- persist
+
+    def _sync_memberships(
+        self,
+        instance,
+        miembros: Iterable[Profile],
+        encargados_ids: Optional[Set[int]] = None,
+    ) -> None:
+        selected_profiles = list(miembros)
+        selected_ids = {profile.pk for profile in selected_profiles}
+
+        existing_qs = self.membership_model.objects.filter(
+            **{self.membership_fk_name: instance}
+        )
+        existing = {
+            membership.usuario_id_id: membership
+            for membership in existing_qs
+        }
+
+        # Remove non-selected members
+        for pk, membership in list(existing.items()):
+            if pk in selected_ids:
+                continue
+            profile = membership.usuario_id
+            membership.delete()
+            if _holds_current_role(profile, self.role_key, instance.pk):
+                _clear_role(profile)
+
+        # Add or update selected members
+        for profile in selected_profiles:
+            membership = existing.get(profile.pk)
+            es_encargado = (
+                profile.pk in encargados_ids if encargados_ids is not None else None
+            )
+
+            if membership is None:
+                fields = {self.membership_fk_name: instance, "usuario_id": profile}
+                if hasattr(self.membership_model, "es_encargado") and es_encargado is not None:
+                    fields["es_encargado"] = es_encargado
+                membership = self.membership_model.objects.create(**fields)
+            elif (
+                hasattr(membership, "es_encargado")
+                and es_encargado is not None
+                and membership.es_encargado != es_encargado
+            ):
+                membership.es_encargado = es_encargado
+                membership.save(update_fields=["es_encargado"])
+
+            _assign_role(profile, self.role_key, instance.pk)
+
+    @transaction.atomic
+    def save(self, commit: bool = True):
+        instance = super().save(commit=True)
+        miembros = list(self.cleaned_data.get("miembros") or [])
+
+        encargados_ids: Optional[Set[int]] = None
+        if "encargados" in self.cleaned_data:
+            encargados_ids = {
+                profile.pk for profile in (self.cleaned_data.get("encargados") or [])
+            }
+
+        self._sync_memberships(instance, miembros, encargados_ids)
+        return instance
+
+
+# ---------------------------------------------------------------------------
+# Concrete forms
+# ---------------------------------------------------------------------------
+
+class DireccionForm(BaseRoleMembershipForm):
+    role_key = "direccion"
+    membership_model = DireccionMembership
+    membership_fk_name = "direccion"
+
+    encargados = forms.ModelMultipleChoiceField(
         queryset=Profile.objects.none(),
         required=False,
-        label='Encargados',
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        help_text='Selecciona que miembro es encargado.',
+        label="Encargados",
+        widget=forms.SelectMultiple(attrs={"class": "form-select", "size": 6}),
+        help_text="Selecciona cuáles de los miembros son encargados.",
     )
 
     class Meta:
         model = Direccion
-        fields = ['nombre', 'estado', 'miembros', 'encargados']
+        fields = ["nombre", "estado", "miembros", "encargados"]
         labels = {
-            'nombre': 'Nombre',
-            'estado': 'Activa',
+            "nombre": "Nombre",
+            "estado": "Activa",
         }
         widgets = {
-            'nombre': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ingrese el nombre de la dirección'
+            "nombre": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Ingrese el nombre de la dirección",
             }),
-            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            "estado": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        perfiles_qs = _available_profiles_for_direccion(self.instance)
-        self.fields['miembros'].queryset = perfiles_qs
-        self.fields['encargados'].queryset = perfiles_qs
-
-        if self.instance.pk:
-            memberships = list(
-                self.instance.memberships.select_related('usuario_id__user')
-            )
-            miembros_ids = [m.usuario_id_id for m in memberships]
-            encargados_ids = [m.usuario_id_id for m in memberships if m.es_encargado]
-            self.fields['miembros'].initial = miembros_ids
-            self.fields['encargados'].initial = encargados_ids
 
     def clean(self):
         cleaned_data = super().clean()
-        miembros = set(cleaned_data.get('miembros') or [])
-        encargados = set(cleaned_data.get('encargados') or [])
+        miembros = set(cleaned_data.get("miembros") or [])
+        encargados = set(cleaned_data.get("encargados") or [])
         if encargados and not encargados.issubset(miembros):
             self.add_error(
-                'encargados',
-                'Los encargados deben formar parte del listado de miembros seleccionados.'
+                "encargados",
+                "Los encargados deben formar parte del listado de miembros seleccionados.",
             )
-
-        if miembros:
-            conflicts = DireccionMembership.objects.filter(usuario_id__in=miembros)
-            if self.instance.pk:
-                conflicts = conflicts.exclude(direccion=self.instance)
-            conflicts = conflicts.select_related('usuario_id__user', 'direccion')
-            if conflicts.exists():
-                conflict_names = ", ".join(
-                    membership.usuario_id.user.get_full_name() or membership.usuario_id.user.username
-                    for membership in conflicts
-                )
-                self.add_error(
-                    'miembros',
-                    f'Los siguientes usuarios ya pertenecen a otra dirección: {conflict_names}.'
-                )
-            departamentos_conflict = DepartamentoMembership.objects.filter(
-                usuario_id__in=miembros
-            ).select_related('usuario_id__user', 'departamento')
-            if departamentos_conflict.exists():
-                conflict_names = ", ".join(
-                    membership.usuario_id.user.get_full_name() or membership.usuario_id.user.username
-                    for membership in departamentos_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya pertenecen a un departamento y no pueden estar en una dirección: {conflict_names}.'
-                )
-            cuadrillas_conflict = CuadrillaMembership.objects.filter(
-                usuario_id__in=miembros
-            ).select_related('usuario_id__user', 'cuadrilla')
-            if cuadrillas_conflict.exists():
-                conflict_names = ", ".join(
-                    membership.usuario_id.user.get_full_name() or membership.usuario_id.user.username
-                    for membership in cuadrillas_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya pertenecen a una cuadrilla: {conflict_names}.'
-                )
-            secpla_conflict = Secpla.objects.filter(profile_id__in=[profile.pk for profile in miembros]).select_related('profile__user')
-            if secpla_conflict.exists():
-                conflict_names = ", ".join(
-                    secpla.profile.user.get_full_name() or secpla.profile.user.username
-                    for secpla in secpla_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya ejercen como Secpla: {conflict_names}.'
-                )
-            territorial_conflict = Territorial.objects.filter(profile_id__in=[profile.pk for profile in miembros]).select_related('profile__user')
-            if territorial_conflict.exists():
-                conflict_names = ", ".join(
-                    territorial.profile.user.get_full_name() or territorial.profile.user.username
-                    for territorial in territorial_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya ejercen como Territorial: {conflict_names}.'
-                )
         return cleaned_data
 
-    @transaction.atomic
-    def save(self, commit=True):
-        direccion = super().save(commit=commit)
-        if commit:
-            self._sync_memberships(direccion)
-        return direccion
 
-    def _sync_memberships(self, direccion: Direccion) -> None:
-        miembros = list(self.cleaned_data.get('miembros') or [])
-        encargados = {profile.pk for profile in (self.cleaned_data.get('encargados') or [])}
-        existing = {
-            membership.usuario_id_id: membership
-            for membership in direccion.memberships.all()
-        }
+class DepartamentoForm(BaseRoleMembershipForm):
+    role_key = "departamento"
+    membership_model = DepartamentoMembership
+    membership_fk_name = "departamento"
 
-        selected_ids = {profile.pk for profile in miembros}
-        # Eliminar usuarios que ya no pertenecen.
-        to_delete = [pk for pk in existing.keys() if pk not in selected_ids]
-        if to_delete:
-            direccion.memberships.filter(usuario_id_id__in=to_delete).delete()
-
-        for profile in miembros:
-            membership = existing.get(profile.pk)
-            es_encargado = profile.pk in encargados
-            if membership is None:
-                DireccionMembership.objects.create(
-                    direccion=direccion,
-                    usuario_id=profile,
-                    es_encargado=es_encargado,
-                )
-            elif membership.es_encargado != es_encargado:
-                membership.es_encargado = es_encargado
-                membership.save(update_fields=['es_encargado'])
-
-
-class DepartamentoForm(forms.ModelForm):
-    miembros = forms.ModelMultipleChoiceField(
+    encargados = forms.ModelMultipleChoiceField(
         queryset=Profile.objects.none(),
         required=False,
-        label='Miembros',
-        widget=forms.SelectMultiple(attrs={'class': 'form-select', 'size': 10}),
-        help_text='Usuarios asociados al departamento.',
-    )
-    encargados = forms.ModelChoiceField(
-        queryset=Profile.objects.none(),
-        required=False,
-        label='Encargados',
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        help_text='Selecciona que miembro es encargado.',
+        label="Encargados",
+        widget=forms.SelectMultiple(attrs={"class": "form-select", "size": 6}),
+        help_text="Encargados dentro de los miembros seleccionados.",
     )
 
     class Meta:
         model = Departamento
-        fields = ['nombre', 'estado', 'direccion', 'miembros', 'encargados']
+        fields = ["nombre", "estado", "direccion", "miembros", "encargados"]
         widgets = {
-            'nombre': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Ingrese el nombre del departamento'
+            "nombre": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Ingrese el nombre del departamento",
             }),
-            'direccion': forms.Select(attrs={'class': 'form-select'}),
-            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            "direccion": forms.Select(attrs={"class": "form-select"}),
+            "estado": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
-            'nombre': 'Nombre',
-            'direccion': 'Dirección',
-            'estado': 'Activo',
+            "nombre": "Nombre",
+            "direccion": "Dirección",
+            "estado": "Activo",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['direccion'].queryset = Direccion.objects.filter(estado=True)
-        perfiles_qs = _ordered_profiles_queryset()
-        perfiles_qs = _available_profiles_for_departamento(self.instance)
-        self.fields['miembros'].queryset = perfiles_qs
-        self.fields['encargados'].queryset = perfiles_qs
-
-        if self.instance.pk:
-            memberships = list(
-                self.instance.memberships.select_related('usuario_id__user')
-            )
-            miembros_ids = [m.usuario_id_id for m in memberships]
-            encargados_ids = [m.usuario_id_id for m in memberships if m.es_encargado]
-            self.fields['miembros'].initial = miembros_ids
-            self.fields['encargados'].initial = encargados_ids
+        self.fields["direccion"].queryset = Direccion.objects.filter(estado=True)
 
     def clean(self):
         cleaned_data = super().clean()
-        miembros = set(cleaned_data.get('miembros') or [])
-        encargados = set(cleaned_data.get('encargados') or [])
+        miembros = set(cleaned_data.get("miembros") or [])
+        encargados = set(cleaned_data.get("encargados") or [])
         if encargados and not encargados.issubset(miembros):
             self.add_error(
-                'encargados',
-                'Los encargados deben formar parte del listado de miembros seleccionados.'
+                "encargados",
+                "Los encargados deben formar parte del listado de miembros seleccionados.",
             )
-        if miembros:
-            conflicts = DepartamentoMembership.objects.filter(usuario_id__in=miembros)
-            if self.instance.pk:
-                conflicts = conflicts.exclude(departamento=self.instance)
-            conflicts = conflicts.select_related('usuario_id__user', 'departamento')
-            if conflicts.exists():
-                conflict_names = ", ".join(
-                    membership.usuario_id.user.get_full_name() or membership.usuario_id.user.username
-                    for membership in conflicts
-                )
-                self.add_error(
-                    'miembros',
-                    f'Ya son parte de otro departamento: {conflict_names}.'
-                )
-            direcciones_conflict = DireccionMembership.objects.filter(
-                usuario_id__in=miembros
-            ).select_related('usuario_id__user', 'direccion')
-            if direcciones_conflict.exists():
-                conflict_names = ", ".join(
-                    membership.usuario_id.user.get_full_name() or membership.usuario_id.user.username
-                    for membership in direcciones_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya pertenecen a una dirección y no pueden estar en un departamento: {conflict_names}.'
-                )
-            cuadrillas_conflict = CuadrillaMembership.objects.filter(
-                usuario_id__in=miembros
-            ).select_related('usuario_id__user', 'cuadrilla')
-            if cuadrillas_conflict.exists():
-                conflict_names = ", ".join(
-                    membership.usuario_id.user.get_full_name() or membership.usuario_id.user.username
-                    for membership in cuadrillas_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya pertenecen a una cuadrilla: {conflict_names}.'
-                )
-            secpla_conflict = Secpla.objects.filter(profile_id__in=[profile.pk for profile in miembros]).select_related('profile__user')
-            if secpla_conflict.exists():
-                conflict_names = ", ".join(
-                    secpla.profile.user.get_full_name() or secpla.profile.user.username
-                    for secpla in secpla_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya ejercen como Secpla: {conflict_names}.'
-                )
-            territorial_conflict = Territorial.objects.filter(profile_id__in=[profile.pk for profile in miembros]).select_related('profile__user')
-            if territorial_conflict.exists():
-                conflict_names = ", ".join(
-                    territorial.profile.user.get_full_name() or territorial.profile.user.username
-                    for territorial in territorial_conflict
-                )
-                self.add_error(
-                    'miembros',
-                    f'Estos usuarios ya ejercen como Territorial: {conflict_names}.'
-                )
         return cleaned_data
 
-    @transaction.atomic
-    def save(self, commit=True):
-        departamento = super().save(commit=commit)
-        if commit:
-            self._sync_memberships(departamento)
-        return departamento
 
-    def _sync_memberships(self, departamento: Departamento) -> None:
-        miembros = list(self.cleaned_data.get('miembros') or [])
-        encargados = {profile.pk for profile in (self.cleaned_data.get('encargados') or [])}
-        existing = {
-            membership.usuario_id_id: membership
-            for membership in departamento.memberships.all()
-        }
+class CuadrillaForm(BaseRoleMembershipForm):
+    role_key = "cuadrilla"
+    membership_model = CuadrillaMembership
+    membership_fk_name = "cuadrilla"
 
-        selected_ids = {profile.pk for profile in miembros}
-        to_delete = [pk for pk in existing.keys() if pk not in selected_ids]
-        if to_delete:
-            departamento.memberships.filter(usuario_id_id__in=to_delete).delete()
-
-        for profile in miembros:
-            membership = existing.get(profile.pk)
-            es_encargado = profile.pk in encargados
-            if membership is None:
-                DepartamentoMembership.objects.create(
-                    departamento=departamento,
-                    usuario_id=profile,
-                    es_encargado=es_encargado,
-                )
-            elif membership.es_encargado != es_encargado:
-                membership.es_encargado = es_encargado
-                membership.save(update_fields=['es_encargado'])
-
-class CuadrillaForm(forms.ModelForm):
-    miembros = forms.ModelMultipleChoiceField(
-        queryset= Profile.objects.none(),
-        required=False,
-        label='Miembros de la Cuadrilla',
-        widget= forms.SelectMultiple(attrs={'class': 'form-select', 'size': 10}),
-        help_text='Usuarios asociados a la cuadrilla.',
-    )
-    
     class Meta:
         model = Cuadrilla
-        fields = ['nombre', 'estado', 'departamento', 'miembros'] 
-        
+        fields = ["nombre", "estado", "departamento", "miembros"]
         widgets = {
-            'nombre': forms.TextInput(attrs={
-                'class': 'form-control', 
-                'placeholder': 'Nombre de la cuadrilla'
+            "nombre": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Ingrese el nombre de la cuadrilla",
             }),
-            'departamento': forms.Select(attrs={'class': 'form-select'}),
-            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            "departamento": forms.Select(attrs={"class": "form-select"}),
+            "estado": forms.CheckboxInput(attrs={"class": "form-check-input"}),
         }
         labels = {
-            'nombre': 'Nombre',
-            'departamento': 'Departamento Asignado',
-            'estado': 'Activa',
+            "nombre": "Nombre",
+            "departamento": "Departamento",
+            "estado": "Activa",
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        instance_to_exclude = self.instance if self.instance and self.instance.pk else None
-        blocked_ids = _blocked_profile_ids(exclude_cuadrilla=instance_to_exclude)
-        base_qs = _ordered_profiles_queryset()
-        if blocked_ids:
-            self.fields['miembros'].queryset = base_qs.exclude(pk__in=blocked_ids)
-        else:
-            self.fields['miembros'].queryset = base_qs
-            
-        if self.instance and self.instance.pk: 
-            miembros_ids = list(
-                self.instance.memberships.values_list('usuario_id_id', flat=True)
-            )
-            self.fields['miembros'].initial = miembros_ids
+        self.fields["departamento"].queryset = Departamento.objects.filter(estado=True)
 
-        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
-        self.fields['departamento'].empty_label = "--- Seleccione Departamento ---"
-        self.fields['miembros'].empty_label = None
 
-        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
-        self.fields['departamento'].empty_label = "--- Seleccione Departamento ---"
-        self.fields['miembros'].empty_label = None 
+class TerritorialForm(forms.ModelForm):
+    profile = forms.ModelChoiceField(
+        queryset=Profile.objects.none(),
+        required=False,
+        label="Responsable",
+        widget=forms.Select(attrs={"class": "form-select"}),
+    )
 
-    def clean(self):
-        cleaned_data = super().clean()
-        miembros = set(cleaned_data.get('miembros') or [])
-        
-        if miembros:
-            # Re-verificamos la unicidad de pertenencia a Cuadrilla (por si el queryset fue manipulado)
-            cuadrillas_conflict = CuadrillaMembership.objects.filter(usuario_id__in=miembros)
-            if self.instance.pk:
-                cuadrillas_conflict = cuadrillas_conflict.exclude(cuadrilla=self.instance)
-            
-            if cuadrillas_conflict.exists():
-                conflict_names = ", ".join(
-                    m.usuario_id.user.get_full_name() or m.usuario_id.user.username
-                    for m in cuadrillas_conflict.select_related('usuario_id__user')
-                )
-                self.add_error('miembros', f'Estos usuarios ya pertenecen a otra cuadrilla: {conflict_names}.')
-            
-        return cleaned_data
-        
-    @transaction.atomic
-    def save(self, commit=True):
-        cuadrilla = super().save(commit=commit)
-        if commit:
-            self._sync_memberships(cuadrilla)
-        return cuadrilla
-
-    def _sync_memberships(self, cuadrilla: Cuadrilla) -> None:
-        """Sincroniza la tabla CuadrillaMembership con los miembros seleccionados."""
-        miembros_seleccionados = list(self.cleaned_data.get('miembros') or [])
-        existing_memberships = {
-            m.usuario_id_id: m 
-            for m in CuadrillaMembership.objects.filter(cuadrilla=cuadrilla)
+    class Meta:
+        model = Territorial
+        fields = ["nombre", "profile"]
+        labels = {
+            "nombre": "Nombre",
+            "profile": "Responsable",
         }
-        
-        selected_ids = {profile.pk for profile in miembros_seleccionados}
+        widgets = {
+            "nombre": forms.TextInput(attrs={
+                "class": "form-control",
+                "placeholder": "Ingrese el nombre del territorial",
+            }),
+        }
 
-        to_delete_ids = [pk for pk in existing_memberships.keys() if pk not in selected_ids]
-        if to_delete_ids:
-            CuadrillaMembership.objects.filter(cuadrilla=cuadrilla, usuario_id_id__in=to_delete_ids).delete()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["profile"].queryset = self._available_profiles_queryset()
+        if getattr(self.instance, "profile_id", None):
+            self.fields["profile"].initial = self.instance.profile_id
 
-        for profile in miembros_seleccionados:
-            if profile.pk not in existing_memberships:
-                CuadrillaMembership.objects.create(
-                    cuadrilla=cuadrilla,
-                    usuario_id=profile,
-                )
+    def _available_profiles_queryset(self):
+        filters = Q(role_type__isnull=True)
+        if getattr(self.instance, "pk", None):
+            filters |= Q(
+                role_type="territorial",
+                role_object_id=self.instance.pk,
+            )
+        return _ordered_profiles_queryset().filter(filters).distinct()
+
+    def clean_profile(self):
+        profile = self.cleaned_data.get("profile")
+        if not profile:
+            return profile
+        if profile.role_type and not _holds_current_role(profile, "territorial", getattr(self.instance, "pk", None)):
+            raise forms.ValidationError(
+                "El usuario seleccionado ya está asignado a otro rol."
+            )
+        return profile
+
+    @transaction.atomic
+    def save(self, commit: bool = True):
+        territorial = super().save(commit=False)
+        previous_profile_id = None
+        if getattr(territorial, "pk", None):
+            previous_profile_id = Territorial.objects.filter(pk=territorial.pk).values_list("profile_id", flat=True).first()
+
+        territorial.save()
+
+        new_profile = self.cleaned_data.get("profile")
+        if previous_profile_id and (not new_profile or previous_profile_id != new_profile.pk):
+            previous_profile = Profile.objects.filter(pk=previous_profile_id).first()
+            if previous_profile and _holds_current_role(previous_profile, "territorial", territorial.pk):
+                _clear_role(previous_profile)
+
+        if new_profile:
+            _assign_role(new_profile, "territorial", territorial.pk)
+            territorial.profile = new_profile
+        else:
+            territorial.profile = None
+
+        if commit:
+            territorial.save(update_fields=["nombre", "profile"])
+        else:
+            territorial.save()
+
+        return territorial
