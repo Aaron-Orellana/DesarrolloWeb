@@ -19,4 +19,9 @@ urlpatterns = [
     path('mis-incidencias/', mis_incidencias_cuadrilla, name='mis_incidencias_cuadrilla'),
     path('marcar-en-proceso/<int:pk>/', marcar_en_proceso, name='marcar_en_proceso'),
 
+    path('cuadrillas/', views.cuadrilla_listar, name='cuadrilla_listar'),
+    path('cuadrillas/crear/', views.cuadrilla_crear, name='cuadrilla_crear'),
+    path('cuadrillas/editar/<int:cuadrilla_id>/', views.cuadrilla_editar, name='cuadrilla_editar'),
+    path('cuadrillas/ver/<int:cuadrilla_id>/', views.cuadrilla_ver, name='cuadrilla_ver'),
+    path('cuadrillas/bloquear/<int:cuadrilla_id>/', views.cuadrilla_bloquear, name='cuadrilla_bloquear'),
 ]

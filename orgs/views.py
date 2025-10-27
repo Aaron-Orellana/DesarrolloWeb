@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from registration.models import Profile
 from registration.utils import has_admin_role
 from .models import Direccion, Departamento
-from .forms import DireccionForm, DepartamentoForm  
+from .forms import DireccionForm, DepartamentoForm, CuadrillaForm
 from django.utils.timezone import now
 from tickets.models import SolicitudIncidencia
 from orgs.models import Cuadrilla
@@ -328,3 +328,104 @@ def marcar_en_proceso(request, pk):
 
     messages.success(request, "La incidencia fue marcada como 'En Proceso'.")
     return redirect('mis_incidencias_cuadrilla')    
+
+@login_required
+def cuadrilla_listar(request):
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'Hubo un error con tu perfil.')
+        return redirect('login')
+
+    q = request.GET.get('q', '').strip()
+    estado = request.GET.get('estado', '').strip().lower()
+    departamento_id = request.GET.get('departamento', '').strip()
+    cuadrillas = Cuadrilla.objects.select_related('departamento').prefetch_related('memberships__usuario_id__user').all().order_by('nombre')
+    departamentos = Departamento.objects.filter(estado=True).order_by('nombre')
+
+    filtros = Q()
+    if q:
+        filtros &= Q(nombre__icontains=q)
+    if estado:
+        filtros &= Q(estado=(estado == 'activo'))
+    if departamento_id:
+        filtros &= Q(departamento__departamento_id=departamento_id)
+
+    cuadrillas = cuadrillas.filter(filtros).distinct()
+    paginator = Paginator(cuadrillas, 10)
+    page_number = request.GET.get('page')
+    cuadrillas_page = paginator.get_page(page_number)
+    query_params = request.GET.copy()
+    if 'page' in query_params:
+        del query_params['page']
+    query_string = query_params.urlencode()
+
+    return render(request, 'orgs/cuadrilla_listar.html', {
+        'cuadrillas': cuadrillas_page,
+        'departamentos': departamentos,
+        'query_string': query_string,
+        'request': request,
+    })
+
+@login_required
+def cuadrilla_crear(request):
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'Permiso denegado.')
+        return redirect('login')
+
+    if request.method == 'POST':
+        form = CuadrillaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cuadrilla creada correctamente.')
+            return redirect('cuadrilla_listar')
+        else:
+            messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = CuadrillaForm()
+
+    return render(request, 'orgs/cuadrilla_crear.html', {'form': form})
+
+@login_required
+def cuadrilla_editar(request, cuadrilla_id):
+    try:
+        profile = Profile.objects.get(user_id=request.user.id)
+    except Profile.DoesNotExist:
+        messages.error(request, 'Permiso denegado.')
+        return redirect('login')
+
+    cuadrilla = get_object_or_404(Cuadrilla, pk=cuadrilla_id)
+
+    if request.method == 'POST':
+        form = CuadrillaForm(request.POST, instance=cuadrilla)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Cuadrilla actualizada correctamente.')
+            return redirect('cuadrilla_listar')
+        else:
+            messages.error(request, 'Corrige los errores del formulario.')
+    else:
+        form = CuadrillaForm(instance=cuadrilla)
+
+    return render(request, 'orgs/cuadrilla_editar.html', {
+        'form': form, 
+        'cuadrilla': cuadrilla
+    })
+
+@login_required
+def cuadrilla_ver(request, cuadrilla_id):
+    cuadrilla = get_object_or_404(Cuadrilla.objects.select_related('departamento').prefetch_related(
+            'memberships__usuario_id__user'),pk=cuadrilla_id)
+    return render(request, 'orgs/cuadrilla_ver.html', {'cuadrilla': cuadrilla})
+
+@login_required
+def cuadrilla_bloquear(request, cuadrilla_id):
+    cuadrilla = get_object_or_404(Cuadrilla, pk=cuadrilla_id)
+    cuadrilla.estado = not cuadrilla.estado
+
+    estado_str = "activada" if cuadrilla.estado else "desactivada"
+    cuadrilla.save(update_fields=['estado'])
+    messages.success(request, f'Cuadrilla "{cuadrilla.nombre}" {estado_str} correctamente.')
+    return redirect('cuadrilla_listar')

@@ -1,0 +1,116 @@
+{% extends 'core/base.html' %}
+
+{% block content %}
+<h4>Listado de Cuadrillas</h4>
+
+<form method="get" class="mb-3 d-flex">
+    
+    <input type="text" name="q" class="form-control me-2" placeholder="Buscar por nombre..." value="{{ request.GET.q|default:'' }}">
+    
+    <select name="estado" class="form-select me-2">
+        <option value="">Todos los estados</option>
+        <option value="activo" {% if request.GET.estado|lower == 'activo' %}selected{% endif %}>Activa</option>
+        <option value="inactivo" {% if request.GET.estado|lower == 'inactivo' %}selected{% endif %}>Inactiva</option>
+    </select>
+
+    <select name="departamento" class="form-select me-2">
+        <option value="">Todos los Departamentos</option>
+        {% for depto in departamentos %}
+            <option value="{{ depto.departamento_id }}" 
+                    {% if request.GET.departamento == depto.departamento_id|stringformat:"s" %}selected{% endif %}>
+                {{ depto.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+
+    <button type="submit" class="btn btn-primary ms-auto">Filtrar</button>
+    <a href="{% url 'cuadrilla_listar' %}" class="btn btn-secondary ms-2">Limpiar</a>
+</form>
+
+<p><a href="{% url 'cuadrilla_crear' %}" class="btn btn-success">Crear Nueva Cuadrilla</a></p>
+
+
+{% if sin_resultados %}
+    <div class="alert alert-warning">No se encontraron resultados con los filtros aplicados.</div>
+{% endif %}
+
+<div style="overflow-x:auto;">
+<table class="table table-bordered table-hover table-sm">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Departamento</th>
+            <th>Miembros</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cuadrilla in cuadrillas %}
+            <tr>
+                <td>{{ cuadrilla.cuadrilla_id }}</td>
+                <td>{{ cuadrilla.nombre }}</td>
+                <td>{{ cuadrilla.departamento.nombre }}</td>
+                <td class="w-25">
+                    {% with memberships=cuadrilla.memberships.all %}
+                        {% if memberships %}
+                            {% for membership in memberships %}
+                                <span class="badge bg-primary me-1 mb-1">
+                                    {{ membership.usuario_id.user.get_full_name|default:membership.usuario_id.user.username }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <em>Sin miembros</em>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    {% if cuadrilla.estado %}
+                        <span class="badge bg-success">Activa</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Inactiva</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'cuadrilla_editar' cuadrilla.cuadrilla_id %}" class="btn btn-sm btn-warning">Editar</a>
+                    <form method="post" action="{% url 'cuadrilla_bloquear' cuadrilla.cuadrilla_id %}" style="display:inline;">
+                        {% csrf_token %}
+                        {% if cuadrilla.estado %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Desactivar</button>
+                        {% else %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                        {% endif %}
+                    </form>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No hay cuadrillas registradas.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% if cuadrillas.has_other_pages %}
+<div class="pagination">
+    {% if cuadrillas.has_previous %}
+        <a href="?page={{ cuadrillas.previous_page_number }}&{{ query_string }}" class="btn btn-outline-primary">&laquo; Anterior</a>
+    {% endif %}
+
+    {% for num in cuadrillas.paginator.page_range %}
+        {% if cuadrillas.number == num %}
+            <span class="btn btn-primary disabled">{{ num }}</span>
+        {% else %}
+            <a href="?page={{ num }}&{{ query_string }}" class="btn btn-outline-primary">{{ num }}</a>
+        {% endif %}
+    {% endfor %}
+
+    {% if cuadrillas.has_next %}
+        <a href="?page={{ cuadrillas.next_page_number }}&{{ query_string }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

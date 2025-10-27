@@ -35,7 +35,7 @@
         {% if user.is_authenticated and user.profile.role_type in "cuadrilla secpla" %}
           <a href="{% url 'mis_incidencias_cuadrilla' %}">Mis Incidencias (Cuadrilla)</a>
         {% endif %}
-
+        <a href="{% url 'cuadrilla_listar' %}">Cuadrillas</a>
 
         <a href="{% url 'logout' %}">Cerrar sesión</a>
     </nav>

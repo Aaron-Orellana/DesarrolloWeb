@@ -10,6 +10,7 @@ from .models import (
     DireccionMembership,
     Secpla,
     Territorial,
+    Cuadrilla,
 )
 
 
@@ -35,28 +36,30 @@ def _blocked_profile_ids(
     blocked: set[int] = set()
 
     direcciones_qs = DireccionMembership.objects.all()
-    if exclude_direccion:
+    if exclude_direccion and getattr(exclude_direccion, "pk", None):
         direcciones_qs = direcciones_qs.exclude(direccion=exclude_direccion)
     blocked.update(direcciones_qs.values_list('usuario_id_id', flat=True))
 
     departamentos_qs = DepartamentoMembership.objects.all()
-    if exclude_departamento:
+    if exclude_departamento and getattr(exclude_departamento, "pk", None):
         departamentos_qs = departamentos_qs.exclude(departamento=exclude_departamento)
     blocked.update(departamentos_qs.values_list('usuario_id_id', flat=True))
 
     cuadrillas_qs = CuadrillaMembership.objects.all()
-    if exclude_cuadrilla:
+    if exclude_cuadrilla and getattr(exclude_cuadrilla, "pk", None):
         cuadrillas_qs = cuadrillas_qs.exclude(cuadrilla=exclude_cuadrilla)
     blocked.update(cuadrillas_qs.values_list('usuario_id_id', flat=True))
 
     secpla_qs = Secpla.objects.filter(profile__isnull=False)
-    if exclude_secpla:
-        secpla_qs = secpla_qs.exclude(pk=getattr(exclude_secpla, 'pk', exclude_secpla))
+    exclude_secpla_pk = getattr(exclude_secpla, "pk", exclude_secpla)
+    if exclude_secpla_pk:
+        secpla_qs = secpla_qs.exclude(pk=exclude_secpla_pk)
     blocked.update(secpla_qs.values_list('profile_id', flat=True))
 
     territorial_qs = Territorial.objects.filter(profile__isnull=False)
-    if exclude_territorial:
-        territorial_qs = territorial_qs.exclude(pk=getattr(exclude_territorial, 'pk', exclude_territorial))
+    exclude_territorial_pk = getattr(exclude_territorial, "pk", exclude_territorial)
+    if exclude_territorial_pk:
+        territorial_qs = territorial_qs.exclude(pk=exclude_territorial_pk)
     blocked.update(territorial_qs.values_list('profile_id', flat=True))
 
     return blocked
@@ -76,7 +79,6 @@ def _available_profiles_for_departamento(instance: Departamento | None):
     if blocked_ids:
         qs = qs.exclude(pk__in=blocked_ids)
     return qs
-
 
 class DireccionForm(forms.ModelForm):
     miembros = forms.ModelMultipleChoiceField(
@@ -380,3 +382,101 @@ class DepartamentoForm(forms.ModelForm):
             elif membership.es_encargado != es_encargado:
                 membership.es_encargado = es_encargado
                 membership.save(update_fields=['es_encargado'])
+
+class CuadrillaForm(forms.ModelForm):
+    miembros = forms.ModelMultipleChoiceField(
+        queryset= Profile.objects.none(),
+        required=False,
+        label='Miembros de la Cuadrilla',
+        widget= forms.SelectMultiple(attrs={'class': 'form-select', 'size': 10}),
+        help_text='Usuarios asociados a la cuadrilla.',
+    )
+    
+    class Meta:
+        model = Cuadrilla
+        fields = ['nombre', 'estado', 'departamento', 'miembros'] 
+        
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Nombre de la cuadrilla'
+            }),
+            'departamento': forms.Select(attrs={'class': 'form-select'}),
+            'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        labels = {
+            'nombre': 'Nombre',
+            'departamento': 'Departamento Asignado',
+            'estado': 'Activa',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        instance_to_exclude = self.instance if self.instance and self.instance.pk else None
+        blocked_ids = _blocked_profile_ids(exclude_cuadrilla=instance_to_exclude)
+        base_qs = _ordered_profiles_queryset()
+        if blocked_ids:
+            self.fields['miembros'].queryset = base_qs.exclude(pk__in=blocked_ids)
+        else:
+            self.fields['miembros'].queryset = base_qs
+            
+        if self.instance and self.instance.pk: 
+            miembros_ids = list(
+                self.instance.memberships.values_list('usuario_id_id', flat=True)
+            )
+            self.fields['miembros'].initial = miembros_ids
+
+        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
+        self.fields['departamento'].empty_label = "--- Seleccione Departamento ---"
+        self.fields['miembros'].empty_label = None
+
+        self.fields['departamento'].queryset = Departamento.objects.filter(estado=True)
+        self.fields['departamento'].empty_label = "--- Seleccione Departamento ---"
+        self.fields['miembros'].empty_label = None 
+
+    def clean(self):
+        cleaned_data = super().clean()
+        miembros = set(cleaned_data.get('miembros') or [])
+        
+        if miembros:
+            # Re-verificamos la unicidad de pertenencia a Cuadrilla (por si el queryset fue manipulado)
+            cuadrillas_conflict = CuadrillaMembership.objects.filter(usuario_id__in=miembros)
+            if self.instance.pk:
+                cuadrillas_conflict = cuadrillas_conflict.exclude(cuadrilla=self.instance)
+            
+            if cuadrillas_conflict.exists():
+                conflict_names = ", ".join(
+                    m.usuario_id.user.get_full_name() or m.usuario_id.user.username
+                    for m in cuadrillas_conflict.select_related('usuario_id__user')
+                )
+                self.add_error('miembros', f'Estos usuarios ya pertenecen a otra cuadrilla: {conflict_names}.')
+            
+        return cleaned_data
+        
+    @transaction.atomic
+    def save(self, commit=True):
+        cuadrilla = super().save(commit=commit)
+        if commit:
+            self._sync_memberships(cuadrilla)
+        return cuadrilla
+
+    def _sync_memberships(self, cuadrilla: Cuadrilla) -> None:
+        """Sincroniza la tabla CuadrillaMembership con los miembros seleccionados."""
+        miembros_seleccionados = list(self.cleaned_data.get('miembros') or [])
+        existing_memberships = {
+            m.usuario_id_id: m 
+            for m in CuadrillaMembership.objects.filter(cuadrilla=cuadrilla)
+        }
+        
+        selected_ids = {profile.pk for profile in miembros_seleccionados}
+
+        to_delete_ids = [pk for pk in existing_memberships.keys() if pk not in selected_ids]
+        if to_delete_ids:
+            CuadrillaMembership.objects.filter(cuadrilla=cuadrilla, usuario_id_id__in=to_delete_ids).delete()
+
+        for profile in miembros_seleccionados:
+            if profile.pk not in existing_memberships:
+                CuadrillaMembership.objects.create(
+                    cuadrilla=cuadrilla,
+                    usuario_id=profile,
+                )
