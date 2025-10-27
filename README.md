@@ -77,4 +77,12 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 **Como cargar datos de prueba**
 
-`python manage.py loaddata registration/fixtures/admin_user.json`
+```
+python manage.py loaddata orgs/fixtures/dev_seed.json
+
+este ya se queda obsoleto -> python manage.py loaddata registration/fixtures/admin_user.json
+```
+
+Usuario secpla
+user: `admin_secpla`
+pass: `pass1234`

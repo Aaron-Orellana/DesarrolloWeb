@@ -12,7 +12,7 @@
         <option value="bloqueada" {% if request.GET.estado == 'bloqueada' %}selected{% endif %}>Bloqueada</option>
     </select>
 
-    <input type="text" name="responsable" placeholder="Responsable" value="{{ request.GET.responsable }}">
+    <input type="text" name="responsable" placeholder="Encargado" value="{{ request.GET.responsable }}">
 
     <button type="submit" class="btn btn-primary">Filtrar</button>
     <a href="{% url 'direccion_listar' %}" class="btn btn-secondary">Limpiar</a>
@@ -30,7 +30,7 @@
         <tr>
             <th>ID</th>
             <th>Nombre</th>
-            <th>Usuario</th>
+            <th>Equipo</th>
             <th>Estado</th>
             <th>Acciones</th>
         </tr>
@@ -41,13 +41,18 @@
                 <td>{{ direccion.direccion_id }}</td>
                 <td>{{ direccion.nombre }}</td>
                 <td>
-                    {% if direccion.profile and direccion.profile.user %}
-                        {{ direccion.profile.user.get_full_name|default:direccion.profile.user.username }}
-                    {% elif direccion.profile_id %}
-                        ID Perfil {{ direccion.profile_id }}
-                    {% else %}
-                        Sin responsable
-                    {% endif %}
+                    {% with memberships=direccion.memberships.all %}
+                        {% if memberships %}
+                            {% for membership in memberships %}
+                                <span class="badge {% if membership.es_encargado %}bg-primary{% else %}bg-light text-dark{% endif %} me-1 mb-1">
+                                    {{ membership.usuario_id.user.get_full_name|default:membership.usuario_id.user.username }}
+                                    {% if membership.es_encargado %}<small>(Encargado)</small>{% endif %}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <em>Sin miembros</em>
+                        {% endif %}
+                    {% endwith %}
                 </td>
                 <td>
                     {% if direccion.estado %}

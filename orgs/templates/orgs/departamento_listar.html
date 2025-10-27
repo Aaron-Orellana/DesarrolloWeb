@@ -38,6 +38,7 @@
             <th>ID</th>
             <th>Nombre</th>
             <th>Dirección</th>
+            <th>Equipo</th>
             <th>Estado</th>
             <th>Acciones</th>
         </tr>
@@ -48,6 +49,20 @@
                 <td>{{ departamento.departamento_id }}</td>
                 <td>{{ departamento.nombre }}</td>
                 <td>{{ departamento.direccion.nombre }}</td>
+                <td class="w-25">
+                    {% with memberships=departamento.memberships.all %}
+                        {% if memberships %}
+                            {% for membership in memberships %}
+                                <span class="badge {% if membership.es_encargado %}bg-primary{% else %}bg-light text-dark{% endif %} me-1 mb-1">
+                                    {{ membership.usuario_id.user.get_full_name|default:membership.usuario_id.user.username }}
+                                    {% if membership.es_encargado %}<small>(Encargado)</small>{% endif %}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <em>Sin miembros</em>
+                        {% endif %}
+                    {% endwith %}
+                </td>
                 <td>
                     {% if departamento.estado %}
                         <span class="badge bg-success">Activo</span>

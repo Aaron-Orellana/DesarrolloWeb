@@ -38,3 +38,5 @@ def ensure_profile_exists(sender, instance, created, **kwargs):
         default_group, _ = Group.objects.get_or_create(name='Usuarios')
         profile.group = default_group
         profile.save(update_fields=['group'])
+    if profile.group_id and not instance.groups.filter(pk=profile.group_id).exists():
+        instance.groups.add(profile.group)

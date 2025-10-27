@@ -1,5 +1,6 @@
 from django.db import models
 from registration.models import Profile
+from django.utils import timezone
 
 class Secpla(models.Model):
     #pk
@@ -47,14 +48,6 @@ class Departamento(models.Model):
         db_column='Direccion_id',
         related_name='Departamento'
     )
-    profile = models.ForeignKey(
-        Profile,
-        on_delete=models.PROTECT,
-        db_column='Usuario_id',
-        related_name='departamentos',
-        null=True,
-        blank=True
-    )
 
     class Meta:
         constraints = [
@@ -75,14 +68,6 @@ class Cuadrilla(models.Model):
         db_column='Departamento_id',
         related_name='Cuadrilla'
     )
-    profile = models.ForeignKey(
-        Profile,
-        on_delete=models.PROTECT,
-        db_column='Usuario_id',
-        related_name='cuadrillas',
-        null=True,
-        blank=True
-    )
 
     def __str__(self):
         return self.nombre
@@ -96,16 +81,6 @@ class Direccion(models.Model):
     nombre = models.CharField(max_length=150, unique=True)
     estado = models.BooleanField(default=True, db_column='Estado')
 
-    # Relación con el perfil responsable
-    profile = models.ForeignKey(
-        Profile,
-        on_delete=models.PROTECT,
-        db_column='Usuario_id',
-        related_name='direcciones',
-        null=True,
-        blank=True
-    )
-
     class Meta:
         verbose_name = 'Dirección'
         verbose_name_plural = 'Direcciones'
@@ -117,15 +92,13 @@ class Direccion(models.Model):
 class Territorial(models.Model):
     #PK
     territorial_id = models.BigAutoField(
-	primary_key=True,
-	db_column='Territorial_ID'
+        primary_key=True,
+        db_column='Territorial_ID'
     )
     #Campos libres
     nombre = models.CharField(max_length=100, unique=True)
-    
-    #FK
     profile = models.ForeignKey(
-        Profile, 
+        Profile,
         on_delete=models.PROTECT,
         db_column='Usuario_id',
         related_name='territoriales',
@@ -142,3 +115,94 @@ class Territorial(models.Model):
         if self.profile:
             return f"{self.nombre} ({self.profile})"
         return self.nombre
+
+class DireccionMembership(models.Model):
+    #PK
+    direccion_membership_id = models.BigAutoField(
+        primary_key=True,
+        db_column='Direccion_Membership_ID'
+    )
+
+    #FK
+    direccion = models.ForeignKey(
+        Direccion,
+        on_delete=models.PROTECT,
+        db_column='Direccion_id',
+        related_name='memberships'
+    )
+    es_encargado = models.BooleanField(default=False, db_column='Es_Encargado')
+    desde = models.DateField(db_column='Desde', default=timezone.now)
+
+    usuario_id = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='direccion_memberships'
+    )
+
+    class Meta:
+        verbose_name = "Dirección Membership"
+        verbose_name_plural = "Dirección Memberships"
+
+    def __str__(self):
+        return f"Membership for {self.direccion}"
+    
+class DepartamentoMembership(models.Model):
+    #PK
+    departamento_membership_id = models.BigAutoField(
+        primary_key=True,
+        db_column='Departamento_Membership_ID'
+    )
+
+    #FK
+    departamento = models.ForeignKey(
+        Departamento,
+        on_delete=models.PROTECT,
+        db_column='Departamento_id',
+        related_name='memberships'
+    )
+    es_encargado = models.BooleanField(default=False, db_column='Es_Encargado')
+    desde = models.DateField(db_column='Desde', default=timezone.now)
+
+    usuario_id = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='departamento_memberships'
+    )
+
+    class Meta:
+        verbose_name = "Departamento Membership"
+        verbose_name_plural = "Departamento Memberships"
+
+    def __str__(self):
+        return f"Membership for {self.departamento}"
+    
+class CuadrillaMembership(models.Model):
+    #PK
+    cuadrilla_membership_id = models.BigAutoField(
+        primary_key=True,
+        db_column='Cuadrilla_Membership_ID'
+    )
+    #FK
+    cuadrilla = models.ForeignKey(
+        Cuadrilla,
+        on_delete=models.PROTECT,
+        db_column='Cuadrilla_id',
+        related_name='memberships'
+    )
+    desde = models.DateField(db_column='Desde', default=timezone.now)
+
+    usuario_id = models.ForeignKey(
+        Profile,
+        on_delete=models.PROTECT,
+        db_column='Usuario_id',
+        related_name='cuadrilla_memberships'
+    )
+
+    class Meta:
+        verbose_name = "Cuadrilla Membership"
+        verbose_name_plural = "Cuadrilla Memberships"
+
+    def __str__(self):
+        return f"Membership for {self.cuadrilla}"

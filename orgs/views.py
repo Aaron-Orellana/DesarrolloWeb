@@ -24,7 +24,9 @@ def direccion_listar(request):
     q = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
     responsable = request.GET.get('responsable', '').strip()
-    direcciones = Direccion.objects.select_related('profile__user').all().order_by('direccion_id')
+    direcciones = Direccion.objects.prefetch_related(
+        'memberships__usuario_id__user'
+    ).all().order_by('direccion_id')
 
     filtros = Q()
     if q:
@@ -35,9 +37,14 @@ def direccion_listar(request):
         elif estado == 'bloqueada':
             filtros &= Q(estado=False)
     if responsable:
-        filtros &= Q(profile__user__username__icontains=responsable) | Q(profile__user__first_name__icontains=responsable) | Q(profile__user__last_name__icontains=responsable)
+        responsable_filters = (
+            Q(memberships__usuario_id__user__username__icontains=responsable) |
+            Q(memberships__usuario_id__user__first_name__icontains=responsable) |
+            Q(memberships__usuario_id__user__last_name__icontains=responsable)
+        )
+        filtros &= Q(memberships__es_encargado=True) & responsable_filters
 
-    direcciones = direcciones.filter(filtros)
+    direcciones = direcciones.filter(filtros).distinct()
     paginator = Paginator(direcciones, 10)
     page_number = request.GET.get('page')
     direcciones_page = paginator.get_page(page_number)
@@ -86,7 +93,10 @@ def direccion_editar(request, direccion_id):
         return redirect('login')
     
 
-    direccion = get_object_or_404(Direccion, pk=direccion_id)
+    direccion = get_object_or_404(
+        Direccion.objects.prefetch_related('memberships__usuario_id__user'),
+        pk=direccion_id
+    )
 
     if request.method == 'POST':
         form = DireccionForm(request.POST, instance=direccion)
@@ -104,7 +114,10 @@ def direccion_editar(request, direccion_id):
 
 @login_required
 def direccion_ver(request, direccion_id):
-    direccion = get_object_or_404(Direccion, pk=direccion_id)
+    direccion = get_object_or_404(
+        Direccion.objects.prefetch_related('memberships__usuario_id__user'),
+        pk=direccion_id
+    )
     return render(request, 'orgs/direccion_ver.html', {'direccion': direccion})
 
 
@@ -139,7 +152,9 @@ def departamento_listar(request):
     q = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
     direccion_id = request.GET.get('direccion', '').strip()
-    departamentos = Departamento.objects.select_related('direccion').all().order_by('departamento_id')
+    departamentos = Departamento.objects.select_related('direccion').prefetch_related(
+        'memberships__usuario_id__user'
+    ).all().order_by('departamento_id')
     direcciones = Direccion.objects.all().order_by('nombre')  
 
     filtros = Q()
@@ -153,7 +168,7 @@ def departamento_listar(request):
     if direccion_id:
         filtros &= Q(direccion__direccion_id=direccion_id)
 
-    departamentos = departamentos.filter(filtros)
+    departamentos = departamentos.filter(filtros).distinct()
     paginator = Paginator(departamentos, 10)
     page_number = request.GET.get('page')
     departamentos_page = paginator.get_page(page_number)
@@ -205,7 +220,10 @@ def departamento_editar(request, departamento_id):
         return redirect('login')
     
 
-    departamento = get_object_or_404(Departamento, pk=departamento_id)
+    departamento = get_object_or_404(
+        Departamento.objects.prefetch_related('memberships__usuario_id__user'),
+        pk=departamento_id
+    )
 
     if request.method == 'POST':
         form = DepartamentoForm(request.POST, instance=departamento)
@@ -220,14 +238,17 @@ def departamento_editar(request, departamento_id):
 
     return render(request, 'orgs/departamento_editar.html', {
         'form': form,
-        'departamento_data': departamento
+        'departamento': departamento
     })
 
 
 @login_required
 def departamento_ver(request, departamento_id):
-    departamento = get_object_or_404(Departamento, pk=departamento_id)
-    return render(request, 'orgs/departamento_ver.html', {'departamento_data': departamento})
+    departamento = get_object_or_404(
+        Departamento.objects.select_related('direccion').prefetch_related('memberships__usuario_id__user'),
+        pk=departamento_id
+    )
+    return render(request, 'orgs/departamento_ver.html', {'departamento': departamento})
 
 @login_required
 def departamento_bloquear(request, departamento_id):

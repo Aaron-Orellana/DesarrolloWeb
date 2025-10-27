@@ -1,17 +1,45 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<h4>Ver Departamento</h4>
+<h4>Departamento: {{ departamento.nombre }}</h4>
 
-<p><a href="{% url 'departamento_listar' %}" class="btn btn-secondary">Volver</a></p>
+<table class="table table-bordered">
+    <tr>
+        <th>Dirección</th>
+        <td>{{ departamento.direccion.nombre }}</td>
+    </tr>
+    <tr>
+        <th>Estado</th>
+        <td>
+            {% if departamento.estado %}
+                <span class="badge bg-success">Activo</span>
+            {% else %}
+                <span class="badge bg-secondary">Bloqueado</span>
+            {% endif %}
+        </td>
+    </tr>
+</table>
 
-<div class="form-group">
-    <label>Nombre del departamento:</label>
-    <input type="text" value="{{ departamento_data.nombre }}" readonly class="form-control" />
-</div>
+<h5>Equipo</h5>
+{% with memberships=departamento.memberships.all %}
+    {% if memberships %}
+        <ul class="list-group mb-3">
+            {% for membership in memberships %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{{ membership.usuario_id.user.get_full_name|default:membership.usuario_id.user.username }}</span>
+                    {% if membership.es_encargado %}
+                        <span class="badge bg-primary">Encargado</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-muted">Sin miembros registrados.</p>
+    {% endif %}
+{% endwith %}
 
-<div class="form-group">
-    <label>Dirección asociada:</label>
-    <input type="text" value="{{ departamento_data.direccion.nombre }}" readonly class="form-control" />
+<div class="d-flex gap-2">
+    <a href="{% url 'departamento_editar' departamento.departamento_id %}" class="btn btn-warning">Editar</a>
+    <a href="{% url 'departamento_listar' %}" class="btn btn-secondary">Volver</a>
 </div>
 {% endblock %}
