@@ -86,3 +86,45 @@ este ya se queda obsoleto -> python manage.py loaddata registration/fixtures/adm
 Usuario secpla
 user: `admin_secpla`
 pass: `pass1234`
+
+
+
+# 🔐 Control de acceso por roles (core/decorators.py)
+
+Este módulo permite restringir el acceso a vistas según el grupo (rol) del usuario.
+
+---
+
+## 🧩 Decorador `@role_required` (vistas basadas en función)
+
+## 📘 Ejemplo básico
+```python
+from core.decorators import role_required
+from django.shortcuts import render
+
+@role_required("Administradores", "Supervisores")
+def panel_admin(request):
+    return render(request, "panel_admin.html")
+```
+
+# 🧱 Uso de `RoleRequiredMixin` en vistas genéricas basadas en clases
+
+Este mixin permite restringir el acceso a **vistas genéricas basadas en clases (CBV)** según los grupos del usuario.
+
+---
+
+## 📘 Ejemplo básico
+
+```python
+
+from django.views.generic import ListView, DetailView
+from core.decorators import RoleRequiredMixin
+from .models import Usuario
+
+class UsuarioListView(RoleRequiredMixin, ListView):
+    model = Usuario
+    template_name = "usuarios/lista.html"
+    allowed_roles = ["Administradores", "Supervisores"]
+```
+
+**ya no es necesario en las clases poner LoginRequiredMixin**
