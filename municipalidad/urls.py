@@ -21,7 +21,6 @@ from django.urls import path, include
 from core.urls import core_urlpatterns
 from orgs.urls import urlpatterns
 
-
 urlpatterns = [
     path('', include(core_urlpatterns)),
     path('admin/', admin.site.urls),
@@ -29,8 +28,9 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/', include('registration.urls')),
     path('orgs/', include(urlpatterns)),
-    path('catalogs/', include('catalogs.urls')),   
-    path('surveys/', include('surveys.urls')), 
+    path('catalogs/', include('catalogs.urls')),
+    path('surveys/', include('surveys.urls')),
+    path('dashboards/', include('dashboards.urls')),
     path('tickets/', include('tickets.urls')),
     path("dashboards/", include("dashboards.urls")),
 

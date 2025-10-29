@@ -1,7 +1,5 @@
 from django.urls import path
 from tickets import views
-print(f"Type of MultimediaListView: {type(views.MultimediaListView)}")
-print(f"Type of MultimediaCreateView: {type(views.MultimediaCreateView)}")
 
 urlpatterns = [
     path('solicitud/', views.solicitud_listar, name='solicitud_listar'),
