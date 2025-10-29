@@ -1,0 +1,170 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h1>Dashboard Territorial</h1>
+
+{% if territorial %}
+<p>Estás gestionando las solicitudes del territorio <strong>{{ territorial.nombre }}</strong>.</p>
+{% else %}
+<div class="alert alert-danger">
+    Tu perfil no tiene un territorio asignado, por lo que no hay datos para mostrar.
+</div>
+{% endif %}
+
+<section>
+    <h2>Resumen de Solicitudes</h2>
+    <p>Total de solicitudes registradas: <strong>{{ total_solicitudes }}</strong></p>
+    <table>
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th>Cantidad</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for estado, total in estado_totales.items %}
+            <tr>
+                <td>{{ estado }}</td>
+                <td>{{ total }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Incidencias Abiertas</h2>
+    <p>Solicitudes que permanecen en seguimiento por parte del territorial.</p>
+    {% if incidencias_abiertas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Solicitud</th>
+                <th>Incidencia</th>
+                <th>Encuesta</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incidencia in incidencias_abiertas %}
+            <tr>
+                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.encuesta.titulo }}</td>
+                <td>{{ incidencia.estado }}</td>
+                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay incidencias abiertas.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Incidencias Derivadas</h2>
+    <p>Solicitudes derivadas a una cuadrilla para su resolución.</p>
+    {% if incidencias_derivadas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Solicitud</th>
+                <th>Incidencia</th>
+                <th>Cuadrilla</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incidencia in incidencias_derivadas %}
+            <tr>
+                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
+                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay incidencias derivadas.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Incidencias Rechazadas</h2>
+    <p>Solicitudes que deben ser revisadas y reenviadas al departamento correspondiente.</p>
+    {% if incidencias_rechazadas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Solicitud</th>
+                <th>Incidencia</th>
+                <th>Motivo / Descripción</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incidencia in incidencias_rechazadas %}
+            <tr>
+                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.descripcion|default:"Sin comentarios" }}</td>
+                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay incidencias rechazadas.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Ver Solicitudes</h2>
+    <form method="get" style="margin-bottom: 15px;">
+        <label for="estado">Filtrar por estado:</label>
+        <select name="estado" id="estado">
+            <option value="todas" {% if estado_filtro == "todas" %}selected{% endif %}>Todas</option>
+            {% for estado in estados_para_filtrar %}
+            <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>{{ estado }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn">Aplicar filtro</button>
+    </form>
+
+    {% if incidencias_filtradas %}
+    <table>
+        <thead>
+            <tr>
+                <th>Solicitud</th>
+                <th>Incidencia</th>
+                <th>Estado</th>
+                <th>Encuesta</th>
+                <th>Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incidencia in incidencias_filtradas %}
+            <tr>
+                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.estado }}</td>
+                <td>{{ incidencia.encuesta.titulo }}</td>
+                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay solicitudes que coincidan con el filtro seleccionado.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Crear Nueva Solicitud</h2>
+    <p>Inicia el registro de una nueva incidencia seleccionando la encuesta correspondiente.</p>
+    <a class="btn" href="{% url 'solicitud_crear' %}">Crear solicitud</a>
+</section>
+{% endblock %}

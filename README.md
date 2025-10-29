@@ -87,7 +87,21 @@ Usuario secpla
 user: `admin_secpla`
 pass: `pass1234`
 
+Usuario departamento
+user: `dep_infra`
+pass: `pass1234`
 
+Usuario direccion
+user: `dir_obras`
+pass: `pass1234`
+
+Usuario Cuadrilla
+user: `` --- creo q no hay aun.
+pass: `pass1234`
+
+Usuario territorial
+user: `territorial_norte`
+pass: `pass1234`
 
 # 🔐 Control de acceso por roles (core/decorators.py)
 
