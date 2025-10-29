@@ -1,0 +1,35 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<h2 style="text-align:center; margin-top:20px;">Panel de Control - Secpla</h2>
+
+<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:40px;">
+
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
+        <h3>Usuarios Registrados</h3>
+        <p style="font-size:2em; color:#007bff;">{{ total_usuarios }}</p>
+    </div>
+
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
+        <h3>Incidencias Creadas</h3>
+        <p style="font-size:2em; color:#28a745;">{{ incidencias_creadas }}</p>
+    </div>
+
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
+        <h3>Derivadas</h3>
+        <p style="font-size:2em; color:#ffc107;">{{ incidencias_derivadas }}</p>
+    </div>
+
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
+        <h3>Rechazadas</h3>
+        <p style="font-size:2em; color:#dc3545;">{{ incidencias_rechazadas }}</p>
+    </div>
+
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
+        <h3>Finalizadas</h3>
+        <p style="font-size:2em; color:#17a2b8;">{{ incidencias_finalizadas }}</p>
+    </div>
+
+</div>
+
+{% endblock %}
