@@ -1,0 +1,63 @@
+{% extends "core/base.html" %}
+{% block content %}
+
+<h1 style="text-align: center; margin-bottom: 20px;">Dashboard Dirección</h1>
+
+{% if direccion %}
+<h2 style="margin-bottom: 15px;">Panel de {{ direccion.nombre }}</h2>
+
+<p>Total de solicitudes asociadas a las cuadrillas de esta dirección: {{ total }}</p>
+
+<div style="height: 20px;"></div>
+
+<form method="get" >
+    <label for="estado">Filtrar por estado:</label>
+    <select name="estado" id="estado" onchange="this.form.submit()" >
+        <option value="todo" {% if estado_filtro == 'todo' %}selected{% endif %}>Todas</option>
+        {% for estado, cantidad in estado_totales.items %}
+            <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>
+                {{ estado }} ({{ cantidad }})
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<h3>Listado de incidencias ({{ estado_filtro }})</h3>
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Incidencia</th>
+            <th>Estado</th>
+            <th>Cuadrilla</th>
+            <th>Departamento</th>
+            <th>Fecha creación</th>
+            <th>Descripción</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for inc in incidencias_filtradas %}
+        <tr>
+            <td>{{ inc.pk }}</td>
+            <td>{{ inc.incidencia.nombre }}</td>
+            <td>{{ inc.estado }}</td>
+            <td>{{ inc.cuadrilla.nombre }}</td>
+            <td>{{ inc.cuadrilla.departamento.nombre }}</td>
+            <td>{{ inc.fecha|date:"d/m/Y H:i" }}</td>
+            <td>{{ inc.descripcion|default:"Sin descripción" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="7" >No hay incidencias para mostrar.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+<div style="color: red">
+    Tu perfil no está asociado a ninguna dirección. No hay datos para mostrar.
+</div>
+{% endif %}
+
+{% endblock %}

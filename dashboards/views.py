@@ -2,7 +2,9 @@ from django.db.models import Count
 from django.shortcuts import render
 from core.decorators import role_required
 from django.contrib.auth.models import User
-from tickets.models import SolicitudIncidencia  
+from tickets.models import SolicitudIncidencia
+from orgs.models import Cuadrilla, Departamento, Direccion
+ 
 
 @role_required("Secpla")
 def dashboard_secpla(request):
@@ -85,3 +87,53 @@ def territorial_dashboard(request):
             "estados_para_filtrar": estados_para_filtrar,
         },
     )
+
+@role_required('Secpla','Direcciones')
+def dashboard_direccion(request):
+    profile = request.user.profile
+    direccion = None
+
+    membership = profile.direccion_memberships.first()
+    if membership:
+        direccion = membership.direccion
+
+    if not direccion:
+        return render(request, "dashboards/dashboard_direccion.html", {
+            "direccion": None
+        })
+
+
+    cuadrillas = Cuadrilla.objects.filter(departamento__direccion=direccion).values_list("pk", flat=True)
+
+    # Solicitudes asociadas a cuadrillas
+    incidencias = SolicitudIncidencia.objects.filter(cuadrilla_id__in=cuadrillas
+    ).select_related(
+        'incidencia',
+        'encuesta',
+        'cuadrilla',
+        'cuadrilla__departamento',
+    ).order_by("-fecha")
+
+    total = incidencias.count()
+
+    # Filtro por estado
+    estado_filtro = request.GET.get("estado", "todo")
+    incidencias_filtradas = incidencias
+    if estado_filtro != "todo":
+        incidencias_filtradas = incidencias.filter(estado__iexact=estado_filtro)
+    
+    raw_counts = incidencias.values("estado").annotate(total=Count("estado"))
+    estado_totales = {estado: 0 for estado, _ in SolicitudIncidencia.Estados if estado != "Pendiente"}
+    for raw in raw_counts:
+        estado_totales[raw["estado"]] = raw["total"]
+
+
+    context = {
+        "direccion": direccion,
+        "total": total,
+        "estado_totales": estado_totales,
+        "estado_filtro": estado_filtro,
+        "incidencias_filtradas": incidencias_filtradas,
+    }
+
+    return render(request, "dashboards/dashboard_direccion.html", context)
