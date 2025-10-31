@@ -13,7 +13,7 @@ from django.core.paginator import Paginator
 
 from core.decorators import role_required
 
-@login_required
+@role_required("Secpla")
 def direccion_listar(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -61,7 +61,7 @@ def direccion_listar(request):
         'request': request,
     })
 
-@role_required("Administradores", "Cuadrillas")
+@role_required("Secpla")
 def direccion_crear(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -83,7 +83,7 @@ def direccion_crear(request):
 
     return render(request, 'orgs/create_direccion.html', {'form': form})
 
-@login_required
+@role_required("Secpla")
 def direccion_editar(request, direccion_id):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -111,7 +111,7 @@ def direccion_editar(request, direccion_id):
     return render(request, 'orgs/direccion_editar.html', {'form': form, 'direccion': direccion})
 
 
-@login_required
+@role_required("Secpla")
 def direccion_ver(request, direccion_id):
     direccion = get_object_or_404(
         Direccion.objects.prefetch_related('memberships__usuario_id__user'),
@@ -120,7 +120,7 @@ def direccion_ver(request, direccion_id):
     return render(request, 'orgs/direccion_ver.html', {'direccion': direccion})
 
 
-@login_required
+@role_required("Secpla")
 def direccion_bloquear(request, direccion_id):
     direccion = get_object_or_404(Direccion, pk=direccion_id)
     direccion.estado = not direccion.estado
@@ -130,7 +130,7 @@ def direccion_bloquear(request, direccion_id):
     return redirect('direccion_listar')
 
 
-@login_required
+@role_required("Secpla")
 def direccion_eliminar(request, direccion_id):
     direccion = get_object_or_404(Direccion, pk=direccion_id)
     try:
@@ -141,7 +141,7 @@ def direccion_eliminar(request, direccion_id):
     return redirect('direccion_listar')
 
 
-@login_required
+@role_required("Secpla")
 def territorial_listar(request):
     territoriales = Territorial.objects.select_related("profile__user").order_by("nombre")
     q = request.GET.get("q", "").strip()
@@ -164,7 +164,7 @@ def territorial_listar(request):
     })
 
 
-@login_required
+@role_required("Secpla")
 def territorial_crear(request):
     if request.method == "POST":
         form = TerritorialForm(request.POST)
@@ -178,7 +178,7 @@ def territorial_crear(request):
     return render(request, "orgs/territorial_crear.html", {"form": form})
 
 
-@login_required
+@role_required("Secpla")
 def territorial_editar(request, territorial_id):
     territorial = get_object_or_404(Territorial, pk=territorial_id)
     if request.method == "POST":
@@ -193,7 +193,7 @@ def territorial_editar(request, territorial_id):
     return render(request, "orgs/territorial_editar.html", {"form": form, "territorial": territorial})
 
 
-@login_required
+@role_required("Secpla")
 def territorial_eliminar(request, territorial_id):
     territorial = get_object_or_404(Territorial, pk=territorial_id)
     profile = territorial.profile
@@ -203,7 +203,7 @@ def territorial_eliminar(request, territorial_id):
     messages.success(request, "Territorial eliminado correctamente.")
     return redirect("territorial_listar")
 
-@login_required
+@role_required("Secpla","Direcciones")
 def departamento_listar(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -250,7 +250,7 @@ def departamento_listar(request):
 
 
 
-@login_required
+@role_required("Secpla")
 def departamento_crear(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -273,7 +273,7 @@ def departamento_crear(request):
     return render(request, 'orgs/departamento_crear.html', {'form': form})
 
 
-@login_required
+@role_required("Secpla")
 def departamento_editar(request, departamento_id):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -304,7 +304,7 @@ def departamento_editar(request, departamento_id):
     })
 
 
-@login_required
+@role_required("Secpla","Direcciones")
 def departamento_ver(request, departamento_id):
     departamento = get_object_or_404(
         Departamento.objects.select_related('direccion').prefetch_related('memberships__usuario_id__user'),
@@ -312,7 +312,7 @@ def departamento_ver(request, departamento_id):
     )
     return render(request, 'orgs/departamento_ver.html', {'departamento': departamento})
 
-@login_required
+@role_required("Secpla","Direcciones")
 def departamento_bloquear(request, departamento_id):
     departamento = get_object_or_404(Departamento, pk=departamento_id)
     departamento.estado = not departamento.estado
@@ -323,7 +323,7 @@ def departamento_bloquear(request, departamento_id):
     return redirect('departamento_listar')
 
 
-@login_required
+@role_required("Secpla")
 def departamento_eliminar(request, departamento_id):
     departamento = get_object_or_404(Departamento, pk=departamento_id)
     try:
@@ -333,7 +333,7 @@ def departamento_eliminar(request, departamento_id):
         messages.error(request, 'No se puede eliminar: puede tener dependencias.')
     return redirect('departamento_listar')
 
-@login_required
+@role_required("Secpla","Cuadrillas")
 def mis_incidencias_cuadrilla(request):
     if request.user.profile.role_type not in ['cuadrilla', 'secpla']:
         messages.error(request, "No tienes permiso para acceder a este panel.")
@@ -362,7 +362,7 @@ def mis_incidencias_cuadrilla(request):
     }
     return render(request, 'orgs/mis_incidencias_cuadrilla.html', context)
 
-@login_required
+@role_required("Secpla","Cuadrillas")
 def marcar_en_proceso(request, pk):
     if request.user.profile.role_type not in ['cuadrilla', 'secpla']:
         messages.error(request, "No tienes permiso para realizar esta acción.")
@@ -391,7 +391,7 @@ def marcar_en_proceso(request, pk):
     messages.success(request, "La incidencia fue marcada como 'En Proceso'.")
     return redirect('mis_incidencias_cuadrilla')    
 
-@login_required
+@role_required("Secpla","Departamentos")
 def cuadrilla_listar(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -429,7 +429,7 @@ def cuadrilla_listar(request):
         'request': request,
     })
 
-@login_required
+@role_required("Secpla")
 def cuadrilla_crear(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -450,7 +450,7 @@ def cuadrilla_crear(request):
 
     return render(request, 'orgs/cuadrilla_crear.html', {'form': form})
 
-@login_required
+@role_required("Secpla")
 def cuadrilla_editar(request, cuadrilla_id):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -476,14 +476,14 @@ def cuadrilla_editar(request, cuadrilla_id):
         'cuadrilla': cuadrilla
     })
 
-@login_required
+@role_required("Secpla","Departamentos")
 def cuadrilla_ver(request, cuadrilla_id):
     cuadrilla = get_object_or_404(Cuadrilla.objects.select_related('departamento').prefetch_related(
             'memberships__usuario_id__user'),pk=cuadrilla_id)
     return render(request, 'orgs/cuadrilla_ver.html', {'cuadrilla': cuadrilla})
 
 
-@login_required
+@role_required("Secpla")
 def territorial_ver(request, territorial_id):
     territorial = get_object_or_404(
         Territorial.objects.select_related('profile__user'),
@@ -491,7 +491,7 @@ def territorial_ver(request, territorial_id):
     )
     return render(request, 'orgs/territorial_ver.html', {'territorial': territorial})
 
-@login_required
+@role_required("Secpla","Departamentos")
 def cuadrilla_bloquear(request, cuadrilla_id):
     cuadrilla = get_object_or_404(Cuadrilla, pk=cuadrilla_id)
     cuadrilla.estado = not cuadrilla.estado

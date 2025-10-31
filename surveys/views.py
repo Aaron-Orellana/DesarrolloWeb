@@ -8,8 +8,9 @@ from registration.models import Profile
 from registration.utils import has_admin_role
 from .models import Encuesta, Pregunta
 from .forms import EncuestaForm,PreguntaForm
+from core.decorators import role_required
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def encuesta_listar(request):
     encuestas = Encuesta.objects.all().order_by('-id')
 
@@ -56,7 +57,7 @@ def encuesta_listar(request):
 
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def encuesta_crear(request):
     if request.method == 'POST':
         form = EncuestaForm(request.POST)
@@ -70,13 +71,13 @@ def encuesta_crear(request):
     return render(request, 'surveys/encuesta_crear.html', {'form': form})
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def encuesta_ver(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     return render(request, 'surveys/encuesta_ver.html', {'encuesta': encuesta})
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def encuesta_editar(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
 
@@ -93,7 +94,7 @@ def encuesta_editar(request, encuesta_id):
     return render(request, 'surveys/encuesta_editar.html', {'form': form, 'encuesta': encuesta})
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def encuesta_bloquear(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     encuesta.estado = not encuesta.estado
@@ -103,7 +104,7 @@ def encuesta_bloquear(request, encuesta_id):
     return redirect('encuesta_listar')
 
 
-@login_required
+@role_required("Secpla","Direcciones")
 def encuesta_eliminar(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
 
@@ -118,7 +119,7 @@ def encuesta_eliminar(request, encuesta_id):
     return redirect('encuesta_listar')
 
 
-@login_required
+@role_required("Secpla","Cuadrillas")
 def pregunta_listar(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -158,7 +159,7 @@ def pregunta_listar(request):
     })
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def pregunta_crear(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -178,7 +179,7 @@ def pregunta_crear(request):
         form = PreguntaForm()
     return render(request, 'surveys/pregunta_crear.html', {'form': form, 'accion': 'Crear'})
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def pregunta_editar(request, pregunta_id):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
