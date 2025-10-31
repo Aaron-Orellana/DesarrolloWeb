@@ -5,13 +5,14 @@ from django.core.paginator import Paginator
 from registration.models import Profile
 from registration.utils import has_admin_role
 from orgs.models import Direccion, Departamento
+from core.decorators import role_required
 
 from surveys.models import Encuesta
 from .models import Incidencia
 from .forms import IncidenciaForm
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas")
 def incidencia_listar(request):
 
     incidencias_list = Incidencia.objects.all().order_by('-incidencia_id')
@@ -22,7 +23,7 @@ def incidencia_listar(request):
     return render(request, 'catalogs/incidencia_listar.html', {'incidencias': incidencias})
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def incidencia_crear(request):
     direcciones = Direccion.objects.filter(estado=True).order_by('nombre')
     departamentos = Departamento.objects.filter(estado=True).order_by('nombre')
@@ -52,13 +53,13 @@ def incidencia_crear(request):
     })
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas")
 def incidencia_ver(request, incidencia_id):
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
     return render(request, 'catalogs/incidencia_ver.html', {'incidencia': incidencia})
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def incidencia_editar(request, incidencia_id):
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
 
@@ -82,7 +83,7 @@ def incidencia_editar(request, incidencia_id):
 
 
 
-@login_required
+@role_required("Secpla")
 def incidencia_eliminar(request, incidencia_id):
 
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
@@ -91,7 +92,7 @@ def incidencia_eliminar(request, incidencia_id):
     return redirect('incidencia_listar')
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def incidencia_bloquear(request, incidencia_id):
 
     incidencia = get_object_or_404(Incidencia, pk=incidencia_id)
