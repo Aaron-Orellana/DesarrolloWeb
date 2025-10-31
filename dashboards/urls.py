@@ -5,6 +5,7 @@ urlpatterns = [
     path("secpla/", views.dashboard_secpla, name="dashboard_secpla"),
     path('territorial/', views.territorial_dashboard, name='dashboard_territorial'),
     path('direccion/', views.dashboard_direccion, name='dashboard_direccion'),
+    path('departamento/', views.dashboard_departamento, name='dashboard_departamento'),
 
 path('secpla/usuarios/', views.listar_usuarios, name='listar_usuarios'),
     path('secpla/incidencias/creadas/', views.listar_incidencias_creadas, name='listar_incidencias_creadas'),

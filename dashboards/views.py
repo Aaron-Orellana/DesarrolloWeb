@@ -191,3 +191,63 @@ def dashboard_direccion(request):
     }
 
     return render(request, "dashboards/dashboard_direccion.html", context)
+
+@role_required('Secpla','Departamentos')
+def dashboard_departamento(request):
+    profile = request.user.profile
+    departamento = None
+
+    membership = profile.departamento_memberships.first()
+    if membership:
+        departamento = membership.departamento
+
+    if not departamento:
+        return render(request, "dashboards/dashboard_departamento.html", {
+            "departamento": None
+        })
+
+
+    cuadrillas = Cuadrilla.objects.filter(departamento=departamento).values_list("pk", flat=True)
+
+    if not cuadrillas:
+        return render(request, "dashboards/dashboard_departamento.html", {
+            "departamento": departamento,
+            "cuadrillas": None
+        })
+
+
+
+    cuadrillas = Cuadrilla.objects.filter(departamento=departamento).values_list("pk", flat=True)
+
+    # Solicitudes asociadas a cuadrillas
+    incidencias = SolicitudIncidencia.objects.filter(cuadrilla_id__in=cuadrillas
+    ).select_related(
+        'incidencia',
+        'encuesta',
+        'cuadrilla',
+        'cuadrilla__departamento',
+    ).order_by("-fecha")
+
+    total = incidencias.count()
+
+    # Filtro por estado
+    estado_filtro = request.GET.get("estado", "todo")
+    incidencias_filtradas = incidencias
+    if estado_filtro != "todo":
+        incidencias_filtradas = incidencias.filter(estado__iexact=estado_filtro)
+    
+    raw_counts = incidencias.values("estado").annotate(total=Count("estado"))
+    estado_totales = {estado: 0 for estado, _ in SolicitudIncidencia.Estados if estado != "Pendiente"}
+    for raw in raw_counts:
+        estado_totales[raw["estado"]] = raw["total"]
+
+
+    context = {
+        "departamento": departamento,
+        "total": total,
+        "estado_totales": estado_totales,
+        "estado_filtro": estado_filtro,
+        "incidencias_filtradas": incidencias_filtradas,
+    }
+
+    return render(request, "dashboards/dashboard_departamento.html", context)

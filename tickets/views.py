@@ -13,7 +13,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.utils.timezone import now
-from core.decorators import role_required
+from core.decorators import role_required, RoleRequiredMixin
 
 @role_required("Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas")
 def solicitud_listar(request):
@@ -152,7 +152,8 @@ def solicitud_ver(request, solicitud_incidencia_id):
 
 
 
-class MultimediaListView(LoginRequiredMixin, ListView):
+class MultimediaListView(RoleRequiredMixin, ListView):
+    allowed_roles = ["Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas"]
     model = Multimedia
     template_name = 'tickets/multimedia_listar.html'
     context_object_name = 'multimedias'
@@ -169,7 +170,8 @@ class MultimediaListView(LoginRequiredMixin, ListView):
         return context
 
 
-class MultimediaCreateView(LoginRequiredMixin, CreateView):
+class MultimediaCreateView(RoleRequiredMixin, CreateView):
+    allowed_roles = ["Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas"]
     model = Multimedia
     fields = ['archivo', 'tipo']
     template_name = 'tickets/multimedia_crear.html'
@@ -181,8 +183,8 @@ class MultimediaCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         profile = self.request.user.profile
         solicitud = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
-        #if not Cuadrilla.objects.filter(profile=profile, estado=True, pk=solicitud.cuadrilla_id).exists():
-        #   raise PermissionDenied("No estás asignado a la cuadrilla de esta solicitud o la cuadrilla no está activa.")
+        if not Cuadrilla.objects.filter(profile=profile, estado=True, pk=solicitud.cuadrilla_id).exists():
+            raise PermissionDenied("No estás asignado a la cuadrilla de esta solicitud o la cuadrilla no está activa.")
 
         multimedia = form.save(commit=False)
         multimedia.solicitud_incidencia = solicitud
