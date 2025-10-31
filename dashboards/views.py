@@ -3,7 +3,8 @@ from django.shortcuts import render
 from core.decorators import role_required
 from django.contrib.auth.models import User
 from tickets.models import SolicitudIncidencia
-from orgs.models import Cuadrilla, Departamento, Direccion
+from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
+from registration.models import Profile
  
 
 @role_required("Secpla")
@@ -22,10 +23,6 @@ def dashboard_secpla(request):
         "incidencias_finalizadas": incidencias_finalizadas,
     }
     return render(request, "dashboards/dashboard_secpla.html", context)
-from tickets.models import SolicitudIncidencia
-from registration.models import Profile
-from orgs.models import Territorial
-from core.decorators import role_required
 
 @role_required("Secpla", "Territoriales")
 def territorial_dashboard(request):

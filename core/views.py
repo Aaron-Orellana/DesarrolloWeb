@@ -30,21 +30,18 @@ def check_profile(request):
     except:
         messages.add_message(request, messages.INFO, 'Hubo un error con su usuario, por favor contactese con los administradores')              
         return redirect('login')
-    if has_admin_role(profile):        
-        return redirect('main_admin')
-    else:
-        return redirect('logout')
 
-#funcion temporal
-@login_required
-def main_admin(request):  
-    try:
-        profile = Profile.objects.filter(user_id=request.user.id).get()    
-    except:
-        messages.add_message(request, messages.INFO, 'Hubo un error con su usuario, por favor contactese con los administradores')              
-        return redirect('login')
-    if has_admin_role(profile):        
-        template_name = 'core/main_admin.html'
-        return render(request,template_name)
+    print(profile.role_type)
+    if profile.role_type == "secpla":
+        return redirect('dashboard_secpla')
+    elif profile.role_type == "territorial":
+        return redirect('dashboard_territorial')
+    elif profile.role_type == "direccion":
+        return redirect('dashboard_direccion')
+    elif profile.role_type == "departamento":
+        return redirect('dashboard_departamento')
+    elif profile.role_type == "cuadrilla":
+        return redirect('dashboard_cuadrilla')
     else:
-        return redirect('logout')
+        messages.add_message(request, messages.INFO, 'Su perfil no está asociado a ningún rol, por favor contactese con los administradores')              
+        return redirect('login')
