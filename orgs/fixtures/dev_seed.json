@@ -242,6 +242,26 @@
     }
   },
   {
+    "model": "auth.user",
+    "pk": 11,
+    "fields": {
+      "password": "pbkdf2_sha256$1000000$k10fpKFPvbA0l7MxjSbaRg$P21vv5AaZv73zgvmKwuk6nZ+gN8GVuNK4d8XtQ1XNiU=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "cuadrilla_infra",
+      "first_name": "Luis",
+      "last_name": "Cuadrilla",
+      "email": "luis.cuadrilla@example.com",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2024-01-11T00:00:00Z",
+      "groups": [
+        5
+      ],
+      "user_permissions": []
+    }
+  },
+  {
     "model": "registration.profile",
     "pk": 1,
     "fields": {
@@ -382,6 +402,20 @@
     }
   },
   {
+    "model": "registration.profile",
+    "pk": 11,
+    "fields": {
+      "user": 11,
+      "group": 5,
+      "phone": "",
+      "mobile": "",
+      "token_app_session": "",
+      "first_session": "Si",
+      "role_type": "cuadrilla",
+      "role_object_id": 1
+    }
+  },
+  {
     "model": "orgs.secpla",
     "pk": 1,
     "fields": {
@@ -424,6 +458,15 @@
     }
   },
   {
+    "model": "orgs.cuadrilla",
+    "pk": 1,
+    "fields": {
+      "nombre": "Cuadrilla de Infraestructura",
+      "estado": true,
+      "departamento": 1
+    }
+  },
+  {
     "model": "orgs.territorial",
     "pk": 1,
     "fields": {
@@ -459,6 +502,15 @@
       "es_encargado": true,
       "desde": "2024-01-17",
       "usuario_id": 3
+    }
+  },
+  {
+    "model": "orgs.cuadrillamembership",
+    "pk": 1,
+    "fields": {
+      "cuadrilla": 1,
+      "desde": "2024-01-22",
+      "usuario_id": 11
     }
   },
   {
