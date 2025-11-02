@@ -1,11 +1,12 @@
+from pyexpat.errors import messages
 from django.db.models import Count
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from core.decorators import role_required
 from django.contrib.auth.models import User
 from tickets.models import SolicitudIncidencia
 from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
- 
+from django.contrib import messages
 
 @role_required("Secpla")
 def dashboard_secpla(request):
@@ -31,7 +32,7 @@ def dashboard_secpla(request):
     }
 
     return render(request, "dashboards/dashboard_secpla.html", context)
- 
+
 
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
@@ -192,40 +193,37 @@ def dashboard_direccion(request):
 
     return render(request, "dashboards/dashboard_direccion.html", context)
 
-@role_required('Secpla','Departamentos')
+@role_required('Secpla', 'Departamentos')
 def dashboard_departamento(request):
     profile = request.user.profile
     departamento = None
+    es_encargado = False
 
     membership = profile.departamento_memberships.first()
     if membership:
         departamento = membership.departamento
+        es_encargado = membership.es_encargado
 
     if not departamento:
         return render(request, "dashboards/dashboard_departamento.html", {
             "departamento": None
         })
 
-
+    # Obtener cuadrillas del departamento
     cuadrillas = Cuadrilla.objects.filter(departamento=departamento).values_list("pk", flat=True)
 
     if not cuadrillas:
         return render(request, "dashboards/dashboard_departamento.html", {
             "departamento": departamento,
-            "cuadrillas": None
+            "cuadrillas": None,
+            "es_encargado": es_encargado,
         })
 
-
-
-    cuadrillas = Cuadrilla.objects.filter(departamento=departamento).values_list("pk", flat=True)
-
-    # Solicitudes asociadas a cuadrillas
-    incidencias = SolicitudIncidencia.objects.filter(cuadrilla_id__in=cuadrillas
+    # Incidencias asociadas
+    incidencias = SolicitudIncidencia.objects.filter(
+        cuadrilla_id__in=cuadrillas
     ).select_related(
-        'incidencia',
-        'encuesta',
-        'cuadrilla',
-        'cuadrilla__departamento',
+        'incidencia', 'encuesta', 'cuadrilla', 'cuadrilla__departamento'
     ).order_by("-fecha")
 
     total = incidencias.count()
@@ -235,12 +233,11 @@ def dashboard_departamento(request):
     incidencias_filtradas = incidencias
     if estado_filtro != "todo":
         incidencias_filtradas = incidencias.filter(estado__iexact=estado_filtro)
-    
+
     raw_counts = incidencias.values("estado").annotate(total=Count("estado"))
     estado_totales = {estado: 0 for estado, _ in SolicitudIncidencia.Estados if estado != "Pendiente"}
     for raw in raw_counts:
         estado_totales[raw["estado"]] = raw["total"]
-
 
     context = {
         "departamento": departamento,
@@ -248,6 +245,40 @@ def dashboard_departamento(request):
         "estado_totales": estado_totales,
         "estado_filtro": estado_filtro,
         "incidencias_filtradas": incidencias_filtradas,
+        "es_encargado": es_encargado,
+        "cuadrillas_disponibles": Cuadrilla.objects.filter(departamento=departamento),
     }
 
     return render(request, "dashboards/dashboard_departamento.html", context)
+
+def asignar_cuadrilla(request, incidencia_id):
+    incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
+    profile = request.user.profile
+
+    membership = profile.departamento_memberships.first()
+    if not membership or not membership.es_encargado:
+        messages.error(request, "No tienes permiso para asignar cuadrillas.")
+        return redirect('dashboard_departamento')
+
+    if incidencia.cuadrilla and incidencia.cuadrilla.departamento != membership.departamento:
+        messages.error(request, "Esta incidencia no pertenece a tu departamento.")
+        return redirect('dashboard_departamento')
+
+    if request.method == "POST":
+        cuadrilla_id = request.POST.get("cuadrilla_id")
+        if not cuadrilla_id:
+            messages.error(request, "Debes seleccionar una cuadrilla.")
+            return redirect('dashboard_departamento')
+
+        try:
+            nueva_cuadrilla = Cuadrilla.objects.get(
+                pk=cuadrilla_id,
+                departamento=membership.departamento
+            )
+            incidencia.cuadrilla = nueva_cuadrilla
+            incidencia.save()
+            messages.success(request, f"Cuadrilla '{nueva_cuadrilla.nombre}' asignada.")
+        except Cuadrilla.DoesNotExist:
+            messages.error(request, "Cuadrilla no válida.")
+
+    return redirect('dashboard_departamento')
