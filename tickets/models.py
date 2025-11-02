@@ -34,14 +34,7 @@ class SolicitudIncidencia(models.Model):
         null=True, 
         blank=True
     )
-    vecino = models.ForeignKey(
-        'locations.Vecino',
-        on_delete=models.PROTECT,
-        db_column='Vecino_id',
-        related_name='solicitudes_incidencia',
-        null=True, 
-        blank=True
-    )
+    vecino = models.TextField()
     cuadrilla = models.ForeignKey(
         'orgs.Cuadrilla',
         on_delete=models.PROTECT,

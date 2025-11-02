@@ -33,7 +33,7 @@ class Pregunta(models.Model):
         db_column='Encuesta_id',
         related_name='preguntas'   # plural, minúscula
     )
-    tipo = models.CharField(max_length=50)
+   
 
     class Meta:
         verbose_name = 'Pregunta'
