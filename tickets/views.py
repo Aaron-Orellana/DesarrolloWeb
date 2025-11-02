@@ -13,8 +13,9 @@ from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import datetime
 from django.utils.timezone import now
+from core.decorators import role_required, RoleRequiredMixin
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas")
 def solicitud_listar(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -64,7 +65,7 @@ def solicitud_listar(request):
         'request': request,
     })
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def solicitud_crear(request):
     try:
         profile = Profile.objects.filter(user_id=request.user.id).get()
@@ -98,7 +99,7 @@ def solicitud_crear(request):
         form = SolicitudIncidenciaForm()
     return render(request, 'tickets/solicitud_crear.html', {'form': form})
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones")
 def solicitud_editar(request, solicitud_incidencia_id):
     try:
         profile = Profile.objects.filter(user_id=request.user.id).get()
@@ -141,7 +142,7 @@ def solicitud_editar(request, solicitud_incidencia_id):
     return render(request, 'tickets/solicitud_editar.html', {'form': form, 'solicitud': solicitud})
 
 
-@login_required
+@role_required("Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas")
 def solicitud_ver(request, solicitud_incidencia_id):
     solicitud = get_object_or_404(SolicitudIncidencia, pk=solicitud_incidencia_id)
     logs = solicitud.logs.all() 
@@ -151,7 +152,8 @@ def solicitud_ver(request, solicitud_incidencia_id):
 
 
 
-class MultimediaListView(LoginRequiredMixin, ListView):
+class MultimediaListView(RoleRequiredMixin, ListView):
+    allowed_roles = ["Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas"]
     model = Multimedia
     template_name = 'tickets/multimedia_listar.html'
     context_object_name = 'multimedias'
@@ -168,7 +170,8 @@ class MultimediaListView(LoginRequiredMixin, ListView):
         return context
 
 
-class MultimediaCreateView(LoginRequiredMixin, CreateView):
+class MultimediaCreateView(RoleRequiredMixin, CreateView):
+    allowed_roles = ["Secpla","Territoriales","Direcciones","Departamentos","Cuadrillas"]
     model = Multimedia
     fields = ['archivo', 'tipo']
     template_name = 'tickets/multimedia_crear.html'
@@ -180,8 +183,8 @@ class MultimediaCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         profile = self.request.user.profile
         solicitud = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
-        #if not Cuadrilla.objects.filter(profile=profile, estado=True, pk=solicitud.cuadrilla_id).exists():
-        #   raise PermissionDenied("No estás asignado a la cuadrilla de esta solicitud o la cuadrilla no está activa.")
+        if not Cuadrilla.objects.filter(profile=profile, estado=True, pk=solicitud.cuadrilla_id).exists():
+            raise PermissionDenied("No estás asignado a la cuadrilla de esta solicitud o la cuadrilla no está activa.")
 
         multimedia = form.save(commit=False)
         multimedia.solicitud_incidencia = solicitud
