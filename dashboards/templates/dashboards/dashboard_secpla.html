@@ -3,79 +3,46 @@
 
 <h2 style="text-align:center; margin-top:20px;">Panel de Control - Secpla</h2>
 
+<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:40px;">
 
-<div class="cards-container" style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:40px;">
-
-  <div class="card" style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-    <a href="{% url 'listar_usuarios' %}" style="text-decoration:none; color:inherit;">
+  <a href="{% url 'user_list' %}" style="text-decoration:none; color:inherit;">
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
       <h3>Usuarios Registrados</h3>
       <p style="font-size:2em; color:#007bff;">{{ total_usuarios }}</p>
-    </a>
-  </div>
+    </div>
+  </a>
 
-  <div class="card" style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-    <a href="{% url 'listar_incidencias_creadas' %}" style="text-decoration:none; color:inherit;">
+
+  <a href="{% url 'solicitud_listar' %}?estado=Creada" style="text-decoration:none; color:inherit;">
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
       <h3>Incidencias Creadas</h3>
       <p style="font-size:2em; color:#28a745;">{{ incidencias_creadas }}</p>
-    </a>
-  </div>
+    </div>
+  </a>
 
-  <div class="card" style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-    <a href="{% url 'listar_incidencias_derivadas' %}" style="text-decoration:none; color:inherit;">
+
+  <a href="{% url 'solicitud_listar' %}?estado=Derivada" style="text-decoration:none; color:inherit;">
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
       <h3>Incidencias Derivadas</h3>
       <p style="font-size:2em; color:#ffc107;">{{ incidencias_derivadas }}</p>
-    </a>
-  </div>
+    </div>
+  </a>
 
-  <div class="card" style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-    <a href="{% url 'listar_incidencias_rechazadas' %}" style="text-decoration:none; color:inherit;">
+
+  <a href="{% url 'solicitud_listar' %}?estado=Rechazada" style="text-decoration:none; color:inherit;">
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
       <h3>Incidencias Rechazadas</h3>
       <p style="font-size:2em; color:#dc3545;">{{ incidencias_rechazadas }}</p>
-    </a>
-  </div>
+    </div>
+  </a>
 
-  <div class="card" style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-    <a href="{% url 'listar_incidencias_finalizadas' %}" style="text-decoration:none; color:inherit;">
+
+  <a href="{% url 'solicitud_listar' %}?estado=Finalizada" style="text-decoration:none; color:inherit;">
+    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
       <h3>Incidencias Finalizadas</h3>
       <p style="font-size:2em; color:#17a2b8;">{{ incidencias_finalizadas }}</p>
-    </a>
-  </div>
+    </div>
+  </a>
+
 </div>
-
-
-<h3 style="text-align:center; margin-top:40px;"> Todas las Incidencias</h3>
-
-<table style="width:90%; margin:20px auto; border-collapse:collapse; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
-  <thead style="background-color:#f0f0f0;">
-    <tr>
-      <th style="padding:10px; border-bottom:1px solid #ddd;">ID</th>
-      <th style="padding:10px; border-bottom:1px solid #ddd;">Descripción</th>
-      <th style="padding:10px; border-bottom:1px solid #ddd;">Estado</th>
-      <th style="padding:10px; border-bottom:1px solid #ddd;">Fecha</th>
-      <th style="padding:10px; border-bottom:1px solid #ddd;">Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for i in incidencias %}
-    <tr>
-      <td style="padding:10px; text-align:center;">{{ i.solicitud_incidencia_id }}</td>
-      <td style="padding:10px;">{{ i.descripcion }}</td>
-      <td style="padding:10px; text-align:center;">{{ i.estado }}</td>
-      <td style="padding:10px; text-align:center;">{{ i.fecha|date:"d/m/Y H:i" }}</td>
-      <td style="padding:10px; text-align:center;">
-        <a href="{% url 'solicitud_ver' i.solicitud_incidencia_id %}" class="btn btn-info btn-sm"> Ver</a>
-        <a href="{% url 'solicitud_editar' i.solicitud_incidencia_id %}" class="btn btn-warning btn-sm"> Editar</a>
-        <button class="btn btn-secondary btn-sm" disabled style="opacity:0.5; cursor:not-allowed;">
-           Bloquear
-        </button>
-      </td>
-    </tr>
-    {% empty %}
-    <tr>
-      <td colspan="5" style="text-align:center; padding:20px;">No hay incidencias registradas.</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-
 {% endblock %}

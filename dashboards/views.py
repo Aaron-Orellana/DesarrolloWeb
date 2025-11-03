@@ -34,54 +34,6 @@ def dashboard_secpla(request):
     return render(request, "dashboards/dashboard_secpla.html", context)
 
 
-from django.contrib.auth.models import User
-from django.core.paginator import Paginator
-
-@role_required("Secpla")
-def listar_usuarios(request):
-    """Lista todos los usuarios registrados"""
-    usuarios = User.objects.all().order_by("username")
-    paginator = Paginator(usuarios, 10)  
-    page = request.GET.get("page")
-    usuarios_pag = paginator.get_page(page)
-    return render(request, "dashboards/listar_usuarios.html", {"usuarios": usuarios_pag})
-
-
-@role_required("Secpla")
-def listar_incidencias_creadas(request):
-    incidencias = SolicitudIncidencia.objects.filter(estado="Creada")
-    return render(request, "dashboards/listar_incidencias.html", {
-        "titulo": "Incidencias Creadas",
-        "incidencias": incidencias
-    })
-
-
-@role_required("Secpla")
-def listar_incidencias_derivadas(request):
-    incidencias = SolicitudIncidencia.objects.filter(estado="Derivada")
-    return render(request, "dashboards/listar_incidencias.html", {
-        "titulo": "Incidencias Derivadas",
-        "incidencias": incidencias
-    })
-
-
-@role_required("Secpla")
-def listar_incidencias_rechazadas(request):
-    incidencias = SolicitudIncidencia.objects.filter(estado="Rechazada")
-    return render(request, "dashboards/listar_incidencias.html", {
-        "titulo": "Incidencias Rechazadas",
-        "incidencias": incidencias
-    })
-
-
-@role_required("Secpla")
-def listar_incidencias_finalizadas(request):
-    incidencias = SolicitudIncidencia.objects.filter(estado="Finalizada")
-    return render(request, "dashboards/listar_incidencias.html", {
-        "titulo": "Incidencias Finalizadas",
-        "incidencias": incidencias
-    })
-
 @role_required("Secpla", "Territoriales")
 def territorial_dashboard(request):
     """
