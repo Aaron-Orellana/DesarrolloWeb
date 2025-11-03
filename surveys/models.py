@@ -71,3 +71,4 @@ class Respuesta(models.Model):
 
     def __str__(self):
         return f"{self.solicitud_incidencia} - {self.pregunta}"
+

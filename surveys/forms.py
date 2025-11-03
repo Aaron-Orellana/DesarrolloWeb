@@ -25,12 +25,12 @@ class EncuestaForm(forms.ModelForm):
 class PreguntaForm(forms.ModelForm):
     class Meta:
         model = Pregunta
-        fields = ['encuesta', 'nombre', 'tipo']
+        fields = ['encuesta', 'nombre']
         
         widgets = {
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
             'nombre': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Escriba el texto completo de la pregunta'}),
-            'tipo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: Texto, Opción Múltiple'}), 
+           
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
