@@ -27,7 +27,7 @@ class SolicitudIncidenciaForm(forms.ModelForm):
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
             'incidencia': forms.Select(attrs={'class': 'form-select'}),
             'territorial': forms.Select(attrs={'class': 'form-select'}),
-            'vecino': forms.Select(attrs={'class': 'form-select'}),
+            'vecino': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'informacion del vecino'}),
             'ubicacion': forms.Select(attrs={'class': 'form-select'}),
             'cuadrilla': forms.Select(attrs={'class': 'form-select'}), 
             'estado': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
