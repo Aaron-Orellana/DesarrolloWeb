@@ -98,9 +98,8 @@ def territorial_dashboard(request):
             "incidencia",
             "encuesta",
             "territorial",
-            "cuadrilla",
-            "vecino",
-        )
+            "cuadrilla"
+)
         .order_by("-fecha")
     )
 
