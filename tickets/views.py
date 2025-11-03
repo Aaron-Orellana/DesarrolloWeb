@@ -29,7 +29,7 @@ def solicitud_listar(request):
     fecha = request.GET.get('fecha', '').strip()
 
     solicitudes = SolicitudIncidencia.objects.select_related(
-        'incidencia', 'cuadrilla', 'ubicacion', 'territorial', 'vecino', 'encuesta'
+        'incidencia', 'cuadrilla', 'ubicacion', 'territorial', 'encuesta'
     ).all().order_by('-fecha')
 
     filtros = Q()
