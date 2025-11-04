@@ -3,10 +3,12 @@ from django.db.models import Count
 from django.shortcuts import render, get_object_or_404, redirect
 from core.decorators import role_required
 from django.contrib.auth.models import User
-from tickets.models import SolicitudIncidencia
+from tickets.models import SolicitudIncidencia, Multimedia
 from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
 from django.contrib import messages
+from django.utils import timezone
+
 
 @role_required("Secpla")
 def dashboard_secpla(request):
@@ -233,3 +235,63 @@ def asignar_cuadrilla(request, incidencia_id):
             messages.error(request, "Cuadrilla no válida.")
 
     return redirect('dashboard_departamento')
+
+
+@role_required('Secpla', 'Cuadrillas')
+def dashboard_cuadrilla(request):
+    """Dashboard para cuadrillas: ver incidencias asignadas y subir evidencia de solución."""
+    profile = request.user.profile
+    cuadrilla = None
+
+    # Obtener la cuadrilla asociada al usuario
+    membership = getattr(profile, "cuadrilla_memberships", None)
+    if membership:
+        cuadrilla = profile.cuadrilla_memberships.first().cuadrilla
+
+    if not cuadrilla:
+        messages.warning(request, "No tienes una cuadrilla asignada.")
+        return render(request, "dashboards/dashboard_cuadrilla.html", {"cuadrilla": None})
+
+    # Filtrar incidencias asignadas a esa cuadrilla
+    incidencias = (
+        SolicitudIncidencia.objects.filter(cuadrilla=cuadrilla)
+        .select_related("incidencia", "territorial", "cuadrilla")
+        .order_by("-fecha")
+    )
+
+    context = {
+        "cuadrilla": cuadrilla,
+        "incidencias": incidencias,
+    }
+
+    return render(request, "dashboards/dashboard_cuadrilla.html", context)
+
+
+@role_required('Cuadrillas')
+def responder_incidencia(request, incidencia_id):
+    """Permite a la cuadrilla responder una incidencia con imágenes y descripción."""
+    incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
+    cuadrilla = incidencia.cuadrilla
+
+    if request.method == "POST":
+        descripcion = request.POST.get("descripcion")
+        archivos = request.FILES.getlist("archivos")
+
+        # Guardar multimedia (imágenes o videos)
+        for archivo in archivos:
+            tipo = "imagen" if archivo.content_type.startswith("image") else "video"
+            Multimedia.objects.create(
+                solicitud_incidencia=incidencia,
+                archivo=archivo,
+                tipo=tipo,
+            )
+
+        # Actualizar estado y descripción
+        incidencia.descripcion = descripcion
+        incidencia.estado = "Finalizada"
+        incidencia.save()
+
+        messages.success(request, "Respuesta registrada correctamente. La incidencia ha sido finalizada.")
+        return redirect("dashboard_cuadrilla")
+
+    return render(request, "dashboards/respuesta_incidencia.html", {"incidencia": incidencia})

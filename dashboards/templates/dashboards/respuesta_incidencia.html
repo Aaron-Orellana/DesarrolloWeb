@@ -1,0 +1,26 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h4>Responder Incidencia</h4>
+
+<div class="card p-3">
+    <p><strong>ID Incidencia:</strong> {{ incidencia.solicitud_incidencia_id }}</p>
+    <p><strong>Incidencia:</strong> {{ incidencia.incidencia.nombre }}</p>
+    <p><strong>Estado actual:</strong> {{ incidencia.estado }}</p>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Descripción de la solución</label>
+            <textarea name="descripcion" class="form-control" rows="3" required></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Subir imágenes o videos</label>
+            <input type="file" name="archivos" class="form-control" multiple required>
+        </div>
+
+        <button type="submit" class="btn btn-success">Enviar Respuesta</button>
+        <a href="{% url 'dashboard_cuadrilla' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

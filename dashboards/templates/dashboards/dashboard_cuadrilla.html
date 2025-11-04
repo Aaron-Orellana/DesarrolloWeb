@@ -1,0 +1,59 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<h4>Dashboard - Cuadrilla</h4>
+
+{% if not cuadrilla %}
+<div class="alert alert-warning">
+    No tienes una cuadrilla asignada.
+</div>
+{% else %}
+<p><strong>Cuadrilla:</strong> {{ cuadrilla.nombre }}</p>
+<p><strong>Departamento:</strong> {{ cuadrilla.departamento.nombre }}</p>
+<p><strong>Dirección:</strong> {{ cuadrilla.departamento.direccion.nombre }}</p>
+
+{% if incidencias %}
+<table class="table table-bordered mt-3">
+    <thead class="table-primary">
+        <tr>
+            <th>ID</th>
+            <th>Incidencia</th>
+            <th>Estado</th>
+            <th>Fecha Asignación</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for i in incidencias %}
+        <tr>
+            <td>{{ i.solicitud_incidencia_id }}</td>
+            <td>{{ i.incidencia.nombre }}</td>
+            <td>
+                {% if i.estado == 'Finalizada' %}
+                    <span class="badge bg-success">Finalizada</span>
+                {% elif i.estado == 'En Proceso' %}
+                    <span class="badge bg-warning text-dark">En Proceso</span>
+                {% else %}
+                    <span class="badge bg-secondary">{{ i.estado }}</span>
+                {% endif %}
+            </td>
+            <td>{{ i.fecha|date:"d-m-Y H:i" }}</td>
+            <td>
+                {% if i.estado != "Finalizada" %}
+                    <a href="{% url 'responder_incidencia' i.solicitud_incidencia_id %}" class="btn btn-sm btn-primary">
+                        Responder
+                    </a>
+                {% else %}
+                    <span class="text-muted">Completada</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="alert alert-info mt-3">
+    No tienes incidencias asignadas actualmente.
+</div>
+{% endif %}
+{% endif %}
+{% endblock %}
