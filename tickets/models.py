@@ -24,7 +24,9 @@ class SolicitudIncidencia(models.Model):
         'catalogs.Incidencia',
         on_delete=models.PROTECT,
         db_column='Incidencia_id',
-        related_name='solicitudes'
+        related_name='solicitudes',
+        null=True,
+        blank=True,
     )
     territorial = models.ForeignKey(
         'orgs.Territorial',
