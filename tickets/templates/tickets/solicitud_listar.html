@@ -54,7 +54,7 @@
                     <td>{{ solicitud.encuesta.titulo }}</td>
                     <td>{{ solicitud.incidencia.nombre }}</td>
                     <td>{{ solicitud.territorial.nombre }}</td>
-                    <td>{{ solicitud.vecino.email|default:'[Sin Email]' }}</td>
+                    <td style="white-space: pre-wrap; max-width: 250px;">{{ solicitud.vecino }}</td>
                     <td>{{ solicitud.ubicacion.nombre }}</td>
                     <td>
                         {% if solicitud.cuadrilla %}
