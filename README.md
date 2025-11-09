@@ -1,7 +1,7 @@
 # DesarrolloWeb
 
 Este proyecto es parte del curso de Desarrollo Web.
-
+La rama que estas viendo ahora corresponde al sprint5
 
 ## Organización de los modelos dentro de las Apps
     Se ha removido la app Accounts para remplazarlo por las tablas nativas de DJANGO.
