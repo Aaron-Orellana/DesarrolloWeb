@@ -1,0 +1,59 @@
+{% if incidencias %}
+<table>
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Incidencia</th>
+            <th>Estado</th>
+            <th>Cuadrilla</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for inc in incidencias %}
+        <tr>
+            <td><strong>{{ inc.pk }}</strong></td>
+            <td>{{ inc.incidencia.nombre }}</td>
+            <td>
+                <span style="padding:4px 8px; border-radius:12px; font-size:0.8em; font-weight:bold;
+                    {% if inc.estado == 'Pendiente' %}background:#ffc107;color:#000;
+                    {% elif inc.estado == 'Derivada' %}background:#17a2b8;color:white;
+                    {% elif inc.estado == 'En Proceso' %}background:#007bff;color:white;
+                    {% elif inc.estado in 'Finalizada,Aprobada' %}background:#28a745;color:white;
+                    {% elif inc.estado == 'Rechazada' %}background:#dc3545;color:white;
+                    {% else %}background:#6c757d;color:white;{% endif %}">
+                    {{ inc.estado|default:"Sin estado" }}
+                </span>
+            </td>
+            <td>{{ inc.cuadrilla.nombre|default:"—" }}</td>
+            <td>{{ inc.fecha|date:"d/m/Y H:i" }}</td>
+            <td>
+                {% if tomar_departamento and es_encargado %}
+                    <button class="btn" onclick="abrirModalTomar({{ inc.pk }})">Tomar</button>
+                {% endif %}
+
+                {% if asignar_cuadrilla and es_encargado %}
+                    <button class="btn" onclick="abrirModalAsignar({{ inc.pk }}, '{{ inc.cuadrilla.nombre|default:''|escapejs }}')">
+                        {% if inc.cuadrilla %}Cambiar{% else %}Asignar{% endif %} cuadrilla
+                    </button>
+                {% endif %}
+
+                {% if asignar_cuadrilla and es_encargado and inc.estado != 'En Proceso' and inc.cuadrilla %}
+                    <form method="post" action="{% url 'poner_en_proceso' inc.pk %}" style="display:inline; margin-left:5px;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn" style="background:#007bff;">
+                            Iniciar
+                        </button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p style="color:#666; font-style:italic; text-align:center; padding:20px;">
+    No hay solicitudes en esta categoría.
+</p>
+{% endif %}

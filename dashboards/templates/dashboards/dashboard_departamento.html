@@ -1,148 +1,181 @@
 {% extends "core/base.html" %}
 {% block content %}
 
-<h1 style="text-align: center; margin-bottom: 20px;">Dashboard Departamento</h1>
+<h1 class="text-center mb-4">Dashboard Departamento</h1>
 
 {% if departamento %}
-<h2 style="margin-bottom: 15px;">Panel de {{ departamento.nombre }}</h2>
+    <h2 class="mb-3">Panel de {{ departamento.nombre }}</h2>
+    <p class="lead mb-4">Total de solicitudes asociadas: <strong>{{ total_general }}</strong></p>
 
-<p>Total de solicitudes asociadas a las cuadrillas de este departamento: {{ total }}</p>
+    <style>
+        .tab-buttons {
+            display: flex;
+            border-bottom: 3px solid #3f51b5;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            background: #e0e0e0;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 6px 6px 0 0;
+            transition: all 0.3s;
+        }
+        .tab-btn:hover {
+            background: #d0d0d0;
+        }
+        .tab-btn.active {
+            background: #3f51b5;
+            color: white;
+        }
+        .tab-content > div {
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+        .tab-content > div.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .badge-custom {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+        .badge-pendientes { background: #ffc107; color: #000; }
+        .badge-tomadas { background: #17a2b8; color: white; }
+        .badge-asignadas { background: #007bff; color: white; }
+        .badge-completadas { background: #28a745; color: white; }
+    </style>
 
-<div style="height: 20px;"></div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="openTab('pendientes')">
+            Pendientes <span class="badge-custom badge-pendientes">{{ counts.pendientes }}</span>
+        </button>
+        <button class="tab-btn" onclick="openTab('tomadas')">
+            Tomadas <span class="badge-custom badge-tomadas">{{ counts.tomadas }}</span>
+        </button>
+        <button class="tab-btn" onclick="openTab('asignadas')">
+            Asignadas <span class="badge-custom badge-asignadas">{{ counts.asignadas }}</span>
+        </button>
+        <button class="tab-btn" onclick="openTab('completadas')">
+            Completadas <span class="badge-custom badge-completadas">{{ counts.completadas }}</span>
+        </button>
+    </div>
 
-<form method="get">
-    <label for="estado">Filtrar por estado:</label>
-    <select name="estado" id="estado" onchange="this.form.submit()">
-        <option value="todo" {% if estado_filtro == 'todo' %}selected{% endif %}>Todas</option>
-        {% for estado, cantidad in estado_totales.items %}
-            <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>
-                {{ estado }} ({{ cantidad }})
-            </option>
-        {% endfor %}
-    </select>
-</form>
-
-<h3>Listado de incidencias ({{ estado_filtro }})</h3>
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>ID</th>
-            <th>Incidencia</th>
-            <th>Estado</th>
-            <th>Cuadrilla</th>
-            <th>Departamento</th>
-            <th>Fecha creación</th>
-            <th>Descripción</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for inc in incidencias_filtradas %}
-        <tr>
-            <td>{{ inc.pk }}</td>
-            <td>{{ inc.incidencia.nombre }}</td>
-            <td>
-                <span class="badge 
-                    {% if inc.estado == 'Pendiente' %}bg-warning
-                    {% elif inc.estado == 'En Proceso' %}bg-info
-                    {% elif inc.estado == 'Completada' %}bg-success
-                    {% else %}bg-secondary{% endif %}">
-                    {{ inc.estado }}
-                </span>
-            </td>
-            <td>
-                {% if inc.cuadrilla %}
-                    <strong>{{ inc.cuadrilla.nombre }}</strong>
-                {% else %}
-                    <em style="color: #999;">Sin asignar</em>
-                {% endif %}
-
-                {% if es_encargado %}
-                    <br>
-                    <button type="button"
-                            class="btn btn-success btn-sm mt-1"
-                            onclick="abrirModalAsignar({{ inc.pk }}, '{{ inc.cuadrilla.nombre|default:''|escapejs }}')">
-                        Cambiar
-                    </button>
-                {% endif %}
-            </td>
-            <td>{{ inc.cuadrilla.departamento.nombre|default:"—" }}</td>
-            <td>{{ inc.fecha|date:"d/m/Y H:i" }}</td>
-            <td>{{ inc.descripcion|default:"Sin descripción"|truncatewords:8 }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7" class="text-center text-muted">No hay incidencias para mostrar.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-{% else %}
-<div class="alert alert-danger">
-    Tu perfil no está asociado a ninguna dirección. No hay datos para mostrar.
-</div>
-{% endif %}
-
-{% if es_encargado %}
-<div id="modalAsignar" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; justify-content: center; align-items: center;">
-    <div style="background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px;">
-            <h4 style="margin: 0;">Asignar Cuadrilla</h4>
-            <span onclick="cerrarModal()" style="cursor: pointer; font-size: 1.5em; color: #999;">&times;</span>
+    <div class="tab-content">
+        <div id="pendientes" class="active">
+            <h4>Solicitudes disponibles para tomar</h4>
+            <p class="text-muted">Incidencias creadas pero aún no asignadas a ningún departamento.</p>
+            {% include "dashboards/_tabla_incidencias.html" with incidencias=pendientes tomar_departamento=True es_encargado=es_encargado %}
         </div>
 
-        <p><strong>ID Incidencia:</strong> <span id="modal-incidencia-id"></span></p>
-        <p><strong>Cuadrilla actual:</strong> <span id="modal-cuadrilla-actual"></span></p>
+        <div id="tomadas">
+            <h4>Tomadas por {{ departamento.nombre }}</h4>
+            <p class="text-muted">Ya están en tu departamento. Puedes asignar o cambiar la cuadrilla.</p>
+            {% include "dashboards/_tabla_incidencias.html" with incidencias=tomadas asignar_cuadrilla=True es_encargado=es_encargado %}
+        </div>
 
-        <form id="formAsignarCuadrilla" method="post">
-            {% csrf_token %}
-            <select name="cuadrilla_id" required style="width:100%; padding:8px; margin:8px 0; border:1px solid #ccc; border-radius:4px;">
-                <option value="">-- Seleccionar cuadrilla --</option>
-                {% for cuad in cuadrillas_disponibles %}
-                    <option value="{{ cuad.pk }}">{{ cuad.nombre }}</option>
-                {% endfor %}
-            </select>
-            <div style="margin-top:15px; text-align: right;">
-                <button type="submit" style="background:#007bff; color:white; padding:8px 16px; border:none; border-radius:4px; cursor:pointer;">
-                    Asignar
-                </button>
-                <button type="button" onclick="cerrarModal()" style="margin-left:8px; padding:8px 16px; background:#6c757d; color:white; border:none; border-radius:4px; cursor:pointer;">
-                    Cancelar
-                </button>
-            </div>
-        </form>
+        <div id="asignadas">
+            <h4>Asignadas a cuadrillas</h4>
+            <p class="text-muted">En proceso por las cuadrillas de tu departamento.</p>
+            {% include "dashboards/_tabla_incidencias.html" with incidencias=asignadas es_encargado=es_encargado %}
+        </div>
+
+        <div id="completadas">
+            <h4>Finalizadas y aprobadas</h4>
+            <p class="text-muted">Histórico de solicitudes completadas.</p>
+            {% include "dashboards/_tabla_incidencias.html" with incidencias=completadas es_encargado=es_encargado %}
+        </div>
     </div>
-</div>
-{% endif %}
 
-<script>
-function abrirModalAsignar(incidenciaId, cuadrillaActual) {
-    document.getElementById('modal-incidencia-id').textContent = incidenciaId;
-    document.getElementById('modal-cuadrilla-actual').textContent = cuadrillaActual || 'Ninguna';
+    {% if es_encargado %}
+        <div class="modal" id="modalTomar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:450px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+                <h4>Tomar Solicitud</h4>
+                <p>¿Deseas tomar la solicitud <strong>ID: <span id="tomar-id"></span></strong> para {{ departamento.nombre }}?</p>
+                <form id="formTomar" method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn">Sí, tomar</button>
+                    <button type="button" class="btn" style="background:#666;" onclick="cerrarModal('modalTomar')">Cancelar</button>
+                </form>
+            </div>
+        </div>
 
-    const form = document.getElementById('formAsignarCuadrilla');
-    form.action = "{% url 'asignar_cuadrilla' 0 %}".replace('0', incidenciaId);
+        <div class="modal" id="modalAsignar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+            <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:450px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+                <h4>Asignar / Cambiar Cuadrilla</h4>
+                <p><strong>ID:</strong> <span id="modal-incidencia-id"></span></p>
+                <p><strong>Cuadrilla actual:</strong> <span id="modal-cuadrilla-actual"></span></p>
+                <form id="formAsignarCuadrilla" method="post">
+                    {% csrf_token %}
+                    <select name="cuadrilla_id" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px;" required>
+                        <option value="">-- Seleccionar cuadrilla --</option>
+                        {% for cuad in cuadrillas_disponibles %}
+                            <option value="{{ cuad.pk }}">{{ cuad.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                    <div style="text-align:right; margin-top:15px;">
+                        <button type="submit" class="btn">Guardar</button>
+                        <button type="button" class="btn" style="background:#666;" onclick="cerrarModal('modalAsignar')">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 
-    const select = form.querySelector('select');
-    for (let opt of select.options) {
-        if (opt.text === cuadrillaActual) {
-            opt.selected = true;
-            break;
+    <script>
+        function openTab(tabName) {
+            document.querySelectorAll('.tab-content > div').forEach(div => {
+                div.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
         }
-    }
 
-    document.getElementById('modalAsignar').style.display = 'flex';
-}
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
 
-function cerrarModal() {
-    document.getElementById('modalAsignar').style.display = 'none';
-}
+        {% if es_encargado %}
+        function abrirModalTomar(id) {
+            document.getElementById('tomar-id').textContent = id;
+            document.getElementById('formTomar').action = "{% url 'tomar_solicitud' 0 %}".replace('0', id);
+            document.getElementById('modalTomar').style.display = 'flex';
+        }
 
-// Cerrar al hacer clic fuera
-window.addEventListener('click', function(e) {
-    const modal = document.getElementById('modalAsignar');
-    if (e.target === modal) cerrarModal();
-});
-</script>
+        function abrirModalAsignar(id, cuadrillaActual = '') {
+            document.getElementById('modal-incidencia-id').textContent = id;
+            document.getElementById('modal-cuadrilla-actual').textContent = cuadrillaActual || 'Ninguna';
+            const form = document.getElementById('formAsignarCuadrilla');
+            form.action = "{% url 'asignar_cuadrilla' 0 %}".replace('0', id);
+            form.querySelector('select').value = '';
+            document.getElementById('modalAsignar').style.display = 'flex';
+        }
+        {% endif %}
+
+        window.addEventListener('click', function(e) {
+            if (e.target.classList.contains('modal')) {
+                e.target.style.display = 'none';
+            }
+        });
+    </script>
+
+{% else %}
+    <div class="alert alert-danger">
+        Tu perfil no está asociado a ningún departamento.
+    </div>
+{% endif %}
 
 {% endblock %}
