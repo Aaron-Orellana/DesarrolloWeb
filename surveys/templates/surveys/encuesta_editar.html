@@ -1,13 +1,58 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<h4>Editar Encuesta</h4>
+<div class="card p-4">
+    <h4>Editar Encuesta: {{ encuesta.titulo }}</h4>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Actualizar</button>
-  <a href="{% url 'encuesta_listar'%}" class="btn btn-secondary">Cancelar</a>
-</form>
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        
+        {% if encuesta_form.non_field_errors or formset.non_form_errors %}
+            <div class="alert alert-danger">
+                Por favor, corrija los errores en los formularios de Encuesta y Preguntas.
+                {{ encuesta_form.non_field_errors }}
+                {{ formset.non_form_errors }}
+            </div>
+        {% endif %}
+
+        <h5>Detalles Principales</h5>
+        {{ encuesta_form.as_p }}
+        
+        <hr>
+        
+        <h5>Banco de Preguntas</h5>
+        
+        {{ formset.management_form }}
+        
+        <div id="pregunta-form-container">
+        {% for form_pregunta in formset %}
+            <div class="pregunta-form mb-3 p-3 border rounded">
+                {{ form_pregunta.id }} 
+                
+                <div class="row">
+                    <div class="col-md-9">
+                        <label for="{{ form_pregunta.nombre.id_for_label }}" class="form-label">{{ form_pregunta.nombre.label }}</label>
+                        {{ form_pregunta.nombre }}
+                        {% for error in form_pregunta.nombre.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                    <div class="col-md-3">
+                        <label for="{{ form_pregunta.tipo.id_for_label }}" class="form-label">{{ form_pregunta.tipo.label }}</label>
+                        {{ form_pregunta.tipo }}
+                        {% for error in form_pregunta.tipo.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-warning mt-3">Actualizar</button>
+        <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary mt-3">Cancelar</a>
+    </form>
+</div>
 {% endblock %}
-
