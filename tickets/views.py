@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import SolicitudIncidencia, Multimedia, RespuestaCuadrilla, MultimediaCuadrilla
-from orgs.models import Profile, Cuadrilla
+from orgs.models import Profile, Cuadrilla, Territorial
 from .forms import SolicitudIncidenciaForm 
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -67,37 +67,73 @@ def solicitud_listar(request):
 
 @role_required("Territoriales")
 def solicitud_crear(request):
+    from surveys.models import Pregunta, Respuesta  
+
     try:
-        profile = Profile.objects.filter(user_id=request.user.id).get()
+        profile = Profile.objects.get(user_id=request.user.id)
     except Profile.DoesNotExist:
         messages.error(request, 'Hubo un error con tu perfil.')
         return redirect('logout')
+
+    
+    encuesta_id = request.GET.get('encuesta_id')
+
     if request.method == 'POST':
-        form = SolicitudIncidenciaForm(request.POST)
+        
+        form = SolicitudIncidenciaForm(request.POST, encuesta_id=request.POST.get('encuesta'))
         comentario = request.POST.get('comentario', '').strip()
+
         if form.is_valid():
             solicitud = form.save(commit=False)
-            solicitud.territorial = request.user.profile.territorial
+
+            
+            try:
+                solicitud.territorial = Territorial.objects.get(profile=request.user.profile)
+            except Territorial.DoesNotExist:
+                solicitud.territorial = None
+
+            
             if solicitud.cuadrilla:
                 estado_anterior = solicitud.estado
                 solicitud.estado = 'Derivada'
 
             solicitud.save()
+
+            
+            for key, value in request.POST.items():
+                if key.startswith('pregunta_'):
+                    pregunta_id = key.split('_')[1]
+                    Respuesta.objects.create(
+                        pregunta_id=pregunta_id,
+                        solicitud_incidencia=solicitud,
+                        respuesta_texto=value
+                    )
+
+            
             if solicitud.cuadrilla:
                 solicitud.registrar_log(
-                    profile= request.user.profile,
-                    from_estado = estado_anterior, 
-                    to_estado = solicitud.estado,
-                    fecha = now(),
-                    comentario =comentario
-                    )
-            messages.success(request, 'Solicitud de incidencia creada correctamente.')
+                    profile=request.user.profile,
+                    from_estado=estado_anterior,
+                    to_estado=solicitud.estado,
+                    fecha=now(),
+                    comentario=comentario
+                )
+
+            messages.success(request, 'Solicitud de incidencia creada correctamente con respuestas.')
             return redirect('solicitud_listar')
         else:
             messages.error(request, 'Error al guardar. Revise los datos del formulario.')
     else:
-        form = SolicitudIncidenciaForm()
+        
+        form = SolicitudIncidenciaForm(encuesta_id=encuesta_id)
+        if encuesta_id:
+            form.fields['encuesta'].initial = encuesta_id
+
     return render(request, 'tickets/solicitud_crear.html', {'form': form})
+
+#
+
+
 
 @role_required("Secpla","Territoriales","Direcciones")
 def solicitud_editar(request, solicitud_incidencia_id):
