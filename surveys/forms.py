@@ -4,12 +4,13 @@ from .models import Encuesta, Pregunta
 class EncuestaForm(forms.ModelForm):
     class Meta:
         model = Encuesta
-        fields = ['titulo', 'descripcion', 'prioridad', 'estado']
+        fields = ['titulo', 'descripcion', 'prioridad', 'estado', 'tipo_incidencia']
         labels = {
             'titulo': 'Título de la Encuesta',
             'descripcion': 'Descripción',
             'prioridad': 'Prioridad',
             'estado': 'Activo',
+            'tipo_incidencia': 'Tipo de Incidencia'
         }
         
         widgets = {
@@ -17,6 +18,7 @@ class EncuestaForm(forms.ModelForm):
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Ingrese la descripción'}),
             'prioridad': forms.Select(attrs={'class': 'form-select'}),
             'estado': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+            'tipo_incidencia': forms.TextInput(attrs={'class': 'form-control','placeholder': 'Ejemplo: Alumbrado, Limpieza, Seguridad...'}),
         }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

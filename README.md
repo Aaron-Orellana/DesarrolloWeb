@@ -96,7 +96,7 @@ user: `dir_obras`
 pass: `pass1234`
 
 Usuario Cuadrilla
-user: `` --- creo q no hay aun.
+user: `cuadrilla_infra`
 pass: `pass1234`
 
 Usuario territorial

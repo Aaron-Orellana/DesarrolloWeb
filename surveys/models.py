@@ -13,6 +13,7 @@ class Encuesta(models.Model):
     prioridad = models.CharField(max_length=20, choices=PRIORIDAD_CHOICES, blank=True, null=True)
     estado = models.BooleanField(default=True)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
+    tipo_incidencia = models.CharField(max_length=100,null=True,blank=True,verbose_name='Tipo de Incidencia')
 
     class Meta:
         verbose_name = 'Encuesta'

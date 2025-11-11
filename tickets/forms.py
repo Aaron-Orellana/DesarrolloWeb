@@ -7,7 +7,6 @@ class SolicitudIncidenciaForm(forms.ModelForm):
         model = SolicitudIncidencia
         fields = [
             'encuesta', 
-            'territorial', 
             'vecino', 
             'ubicacion', 
             'cuadrilla', 
@@ -24,7 +23,6 @@ class SolicitudIncidenciaForm(forms.ModelForm):
         }
         widgets = {
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
-            'territorial': forms.Select(attrs={'class': 'form-select'}),
             'vecino': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'informacion del vecino'}),
             'ubicacion': forms.Select(attrs={'class': 'form-select'}),
             'cuadrilla': forms.Select(attrs={'class': 'form-select'}), 

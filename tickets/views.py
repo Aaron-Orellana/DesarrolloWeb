@@ -77,11 +77,11 @@ def solicitud_crear(request):
         comentario = request.POST.get('comentario', '').strip()
         if form.is_valid():
             solicitud = form.save(commit=False)
-
+            solicitud.territorial = request.user.profile.territorial
             if solicitud.cuadrilla:
                 estado_anterior = solicitud.estado
                 solicitud.estado = 'Derivada'
-                
+
             solicitud.save()
             if solicitud.cuadrilla:
                 solicitud.registrar_log(
