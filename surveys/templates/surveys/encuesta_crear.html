@@ -1,19 +1,135 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<h4>Crear Nueva Encuesta</h4>
+<div class="card p-4">
+    <h4>Crear Nueva Encuesta</h4>
+    
+    <form method="post">
+        {% csrf_token %}
+        <h5>Detalles Principales</h5>
 
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-  {% endfor %}
-{% endif %}
+        <!-- === FORMULARIO DE ENCUESTA === -->
+        <div class="mb-3">
+            {{ encuesta_form.titulo.label_tag }}
+            {{ encuesta_form.titulo }}
+            {% if encuesta_form.titulo.errors %}
+                <div class="text-danger small">{{ encuesta_form.titulo.errors }}</div>
+            {% endif %}
+        </div>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Guardar</button>
-  <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Volver</a>
-</form>
+        <div class="mb-3">
+            {{ encuesta_form.descripcion.label_tag }}
+            {{ encuesta_form.descripcion }}
+            {% if encuesta_form.descripcion.errors %}
+                <div class="text-danger small">{{ encuesta_form.descripcion.errors }}</div>
+            {% endif %}
+        </div>
+
+        <div class="row mb-3">
+            <div class="col-md-4">
+                {{ encuesta_form.prioridad.label_tag }}
+                {{ encuesta_form.prioridad }}
+            </div>
+            <div class="col-md-6">
+                {{ encuesta_form.tipo_incidencia.label_tag }}
+                {{ encuesta_form.tipo_incidencia }}
+            </div>
+            <div class="col-md-2 d-flex align-items-center mt-3 pt-1 form-check">
+                {{ encuesta_form.estado }}
+                <label class="form-check-label ms-2" for="{{ encuesta_form.estado.id_for_label }}">
+                    {{ encuesta_form.estado.label }}
+                </label>
+            </div>
+        </div>
+        
+        <hr>
+        <h5>Preguntas Asociadas</h5>
+
+        {{ formset.management_form }}
+
+        <div id="pregunta-form-container">
+            {% for form in formset %}
+                <div class="pregunta-form mb-3 p-3 border rounded bg-light position-relative">
+                    <div class="row">
+                        <div class="col-md-10">
+                            {{ form.nombre.label_tag }}
+                            {{ form.nombre }}
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-danger remove-form w-100">
+                                Eliminar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Plantilla vacía para clonar -->
+        <template id="empty-form-template">
+            <div class="pregunta-form mb-3 p-3 border rounded bg-light position-relative">
+                <div class="row">
+                    <div class="col-md-10">
+                        {{ formset.empty_form.nombre.label_tag }}
+                        {{ formset.empty_form.nombre }}
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <button type="button" class="btn btn-danger remove-form w-100">
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <!-- Botón para añadir preguntas -->
+        <button type="button" id="add-pregunta-form" class="btn btn-info mt-3">Añadir Pregunta</button>
+
+        <hr>
+
+        <!-- === BOTONES GUARDAR / CANCELAR === -->
+        <div class="d-flex justify-content-end gap-2 mt-4">
+            <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" class="btn btn-success">Guardar Encuesta</button>
+        </div>
+    </form>
+</div>
+
+<!-- === SCRIPT JS === -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addButton = document.getElementById('add-pregunta-form');
+    const formContainer = document.getElementById('pregunta-form-container');
+    const totalForms = document.getElementById('id_preguntas-TOTAL_FORMS');
+    const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML.trim();
+
+    // ➕ Añadir nueva pregunta
+    addButton.addEventListener('click', function() {
+        let formIndex = parseInt(totalForms.value);
+        let newFormHtml = emptyFormTemplate.replace(/__prefix__/g, formIndex);
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = newFormHtml;
+        const newForm = tempDiv.firstElementChild;
+        formContainer.appendChild(newForm);
+        totalForms.value = formIndex + 1;
+    });
+
+    // 🗑️ Eliminar formularios dinámicos (antes de enviar)
+    formContainer.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-form')) {
+            e.preventDefault();
+            e.target.closest('.pregunta-form').remove();
+
+            // Recalcular índices del formset
+            const forms = formContainer.querySelectorAll('.pregunta-form');
+            totalForms.value = forms.length;
+            forms.forEach((form, index) => {
+                form.innerHTML = form.innerHTML.replace(/preguntas-\d+-/g, `preguntas-${index}-`);
+                form.innerHTML = form.innerHTML.replace(/id_preguntas-\d+-/g, `id_preguntas-${index}-`);
+            });
+        }
+    });
+});
+</script>
 {% endblock %}
 

@@ -34,7 +34,7 @@ class Pregunta(models.Model):
         db_column='Encuesta_id',
         related_name='preguntas'   # plural, minúscula
     )
-   
+    fue_borrado = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Pregunta'

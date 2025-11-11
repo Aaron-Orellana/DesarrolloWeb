@@ -65,7 +65,7 @@ def solicitud_listar(request):
         'request': request,
     })
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Territoriales")
 def solicitud_crear(request):
     try:
         profile = Profile.objects.filter(user_id=request.user.id).get()
