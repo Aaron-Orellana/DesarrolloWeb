@@ -1,14 +1,12 @@
 from pyexpat.errors import messages
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import render, get_object_or_404, redirect
 from core.decorators import role_required
 from django.contrib.auth.models import User
-from tickets.models import SolicitudIncidencia, Multimedia
+from tickets.models import SolicitudIncidencia
 from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
 from django.contrib import messages
-from django.utils import timezone
-
 
 @role_required("Secpla")
 def dashboard_secpla(request):
@@ -36,6 +34,54 @@ def dashboard_secpla(request):
     return render(request, "dashboards/dashboard_secpla.html", context)
 
 
+from django.contrib.auth.models import User
+from django.core.paginator import Paginator
+
+@role_required("Secpla")
+def listar_usuarios(request):
+    """Lista todos los usuarios registrados"""
+    usuarios = User.objects.all().order_by("username")
+    paginator = Paginator(usuarios, 10)  
+    page = request.GET.get("page")
+    usuarios_pag = paginator.get_page(page)
+    return render(request, "dashboards/listar_usuarios.html", {"usuarios": usuarios_pag})
+
+
+@role_required("Secpla")
+def listar_incidencias_creadas(request):
+    incidencias = SolicitudIncidencia.objects.filter(estado="Creada")
+    return render(request, "dashboards/listar_incidencias.html", {
+        "titulo": "Incidencias Creadas",
+        "incidencias": incidencias
+    })
+
+
+@role_required("Secpla")
+def listar_incidencias_derivadas(request):
+    incidencias = SolicitudIncidencia.objects.filter(estado="Derivada")
+    return render(request, "dashboards/listar_incidencias.html", {
+        "titulo": "Incidencias Derivadas",
+        "incidencias": incidencias
+    })
+
+
+@role_required("Secpla")
+def listar_incidencias_rechazadas(request):
+    incidencias = SolicitudIncidencia.objects.filter(estado="Rechazada")
+    return render(request, "dashboards/listar_incidencias.html", {
+        "titulo": "Incidencias Rechazadas",
+        "incidencias": incidencias
+    })
+
+
+@role_required("Secpla")
+def listar_incidencias_finalizadas(request):
+    incidencias = SolicitudIncidencia.objects.filter(estado="Finalizada")
+    return render(request, "dashboards/listar_incidencias.html", {
+        "titulo": "Incidencias Finalizadas",
+        "incidencias": incidencias
+    })
+
 @role_required("Secpla", "Territoriales")
 def territorial_dashboard(request):
     """
@@ -52,8 +98,9 @@ def territorial_dashboard(request):
             "incidencia",
             "encuesta",
             "territorial",
-            "cuadrilla"
-)
+            "cuadrilla",
+            "vecino",
+        )
         .order_by("-fecha")
     )
 
@@ -146,60 +193,65 @@ def dashboard_direccion(request):
 
     return render(request, "dashboards/dashboard_direccion.html", context)
 
+ESTADOS_PENDIENTES = ['Pendiente', '', None]
+ESTADOS_TOMADAS = ['Derivada']
+ESTADOS_ASIGNADAS = ['En Proceso']
+ESTADOS_COMPLETADAS = ['Finalizada', 'Aprobada']
+ESTADOS_RECHAZADAS = ['Rechazada']
+ESTADOS_EN_PROCESO = ['En Proceso']
+
 @role_required('Secpla', 'Departamentos')
 def dashboard_departamento(request):
     profile = request.user.profile
-    departamento = None
-    es_encargado = False
+    membership = profile.departamento_memberships.select_related('departamento').first()
 
-    membership = profile.departamento_memberships.first()
-    if membership:
-        departamento = membership.departamento
-        es_encargado = membership.es_encargado
-
-    if not departamento:
+    if not membership:
         return render(request, "dashboards/dashboard_departamento.html", {
             "departamento": None
         })
 
-    # Obtener cuadrillas del departamento
-    cuadrillas = Cuadrilla.objects.filter(departamento=departamento).values_list("pk", flat=True)
+    departamento = membership.departamento
+    es_encargado = membership.es_encargado
 
-    if not cuadrillas:
-        return render(request, "dashboards/dashboard_departamento.html", {
-            "departamento": departamento,
-            "cuadrillas": None,
-            "es_encargado": es_encargado,
-        })
+    pendientes = SolicitudIncidencia.objects.filter(
+        cuadrilla__isnull=True
+    ).exclude(
+        estado__in=ESTADOS_RECHAZADAS
+    ).select_related('incidencia').order_by('-fecha')
 
-    # Incidencias asociadas
-    incidencias = SolicitudIncidencia.objects.filter(
-        cuadrilla_id__in=cuadrillas
-    ).select_related(
-        'incidencia', 'encuesta', 'cuadrilla', 'cuadrilla__departamento'
-    ).order_by("-fecha")
+    tomadas = SolicitudIncidencia.objects.filter(
+        cuadrilla__departamento=departamento
+    ).exclude(
+        estado__in=ESTADOS_EN_PROCESO + ESTADOS_COMPLETADAS
+    ).select_related('incidencia', 'cuadrilla').order_by('-fecha')
 
-    total = incidencias.count()
+    asignadas = SolicitudIncidencia.objects.filter(
+        cuadrilla__departamento=departamento,
+        estado__in=ESTADOS_EN_PROCESO
+    ).select_related('incidencia', 'cuadrilla').order_by('-fecha')
 
-    # Filtro por estado
-    estado_filtro = request.GET.get("estado", "todo")
-    incidencias_filtradas = incidencias
-    if estado_filtro != "todo":
-        incidencias_filtradas = incidencias.filter(estado__iexact=estado_filtro)
+    completadas = SolicitudIncidencia.objects.filter(
+        cuadrilla__departamento=departamento,
+        estado__in=ESTADOS_COMPLETADAS
+    ).select_related('incidencia', 'cuadrilla').order_by('-fecha')
 
-    raw_counts = incidencias.values("estado").annotate(total=Count("estado"))
-    estado_totales = {estado: 0 for estado, _ in SolicitudIncidencia.Estados if estado != "Pendiente"}
-    for raw in raw_counts:
-        estado_totales[raw["estado"]] = raw["total"]
+    counts = {
+        'pendientes': pendientes.count(),
+        'tomadas': tomadas.count(),
+        'asignadas': asignadas.count(),
+        'completadas': completadas.count(),
+    }
 
     context = {
-        "departamento": departamento,
-        "total": total,
-        "estado_totales": estado_totales,
-        "estado_filtro": estado_filtro,
-        "incidencias_filtradas": incidencias_filtradas,
-        "es_encargado": es_encargado,
-        "cuadrillas_disponibles": Cuadrilla.objects.filter(departamento=departamento),
+        'departamento': departamento,
+        'es_encargado': es_encargado,
+        'total_general': sum(counts.values()),
+        'counts': counts,
+        'pendientes': pendientes,
+        'tomadas': tomadas,
+        'asignadas': asignadas,
+        'completadas': completadas,
+        'cuadrillas_disponibles': departamento.Cuadrilla.filter(estado=True).order_by('nombre'),
     }
 
     return render(request, "dashboards/dashboard_departamento.html", context)
@@ -236,62 +288,51 @@ def asignar_cuadrilla(request, incidencia_id):
 
     return redirect('dashboard_departamento')
 
+def tomar_solicitud(request, incidencia_id):
+    membership = request.user.profile.departamento_memberships.select_related('departamento').first()
+    if not membership or not membership.es_encargado:
+        messages.error(request, "No tienes permiso para tomar solicitudes.")
+        return redirect('dashboard_departamento')
 
-@role_required('Secpla', 'Cuadrillas')
-def dashboard_cuadrilla(request):
-    """Dashboard para cuadrillas: ver incidencias asignadas y subir evidencia de solución."""
-    profile = request.user.profile
-    cuadrilla = None
-
-    # Obtener la cuadrilla asociada al usuario
-    membership = getattr(profile, "cuadrilla_memberships", None)
-    if membership:
-        cuadrilla = profile.cuadrilla_memberships.first().cuadrilla
-
-    if not cuadrilla:
-        messages.warning(request, "No tienes una cuadrilla asignada.")
-        return render(request, "dashboards/dashboard_cuadrilla.html", {"cuadrilla": None})
-
-    # Filtrar incidencias asignadas a esa cuadrilla
-    incidencias = (
-        SolicitudIncidencia.objects.filter(cuadrilla=cuadrilla)
-        .select_related("incidencia", "territorial", "cuadrilla")
-        .order_by("-fecha")
+    incidencia = get_object_or_404(
+        SolicitudIncidencia,
+        pk=incidencia_id,
+        cuadrilla__isnull=True,
     )
 
-    context = {
-        "cuadrilla": cuadrilla,
-        "incidencias": incidencias,
-    }
+    cuadrilla_default = membership.departamento.Cuadrilla.first()
 
-    return render(request, "dashboards/dashboard_cuadrilla.html", context)
+    if not cuadrilla_default:
+        messages.error(request, "Tu departamento no tiene cuadrillas configuradas.")
+        return redirect('dashboard_departamento')
 
+    incidencia.cuadrilla = cuadrilla_default
+    incidencia.estado = 'Derivada'
+    incidencia.save(update_fields=['cuadrilla', 'estado'])
 
-@role_required('Cuadrillas')
-def responder_incidencia(request, incidencia_id):
-    """Permite a la cuadrilla responder una incidencia con imágenes y descripción."""
-    incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
-    cuadrilla = incidencia.cuadrilla
+    messages.success(
+        request,
+        f"Solicitud #{incidencia_id} tomada y asignada a la cuadrilla '{cuadrilla_default.nombre}'."
+    )
+    return redirect('dashboard_departamento')
 
-    if request.method == "POST":
-        descripcion = request.POST.get("descripcion")
-        archivos = request.FILES.getlist("archivos")
+def poner_en_proceso(request, incidencia_id):
+    membership = request.user.profile.departamento_memberships.select_related('departamento').first()
+    if not membership or not membership.es_encargado:
+        messages.error(request, "No tienes permiso.")
+        return redirect('dashboard_departamento')
 
-        # Guardar multimedia (imágenes o videos)
-        for archivo in archivos:
-            tipo = "imagen" if archivo.content_type.startswith("image") else "video"
-            Multimedia.objects.create(
-                solicitud_incidencia=incidencia,
-                archivo=archivo,
-                tipo=tipo,
-            )
+    incidencia = get_object_or_404(
+        SolicitudIncidencia,
+        pk=incidencia_id,
+        cuadrilla__departamento=membership.departamento
+    )
 
-        # Actualizar estado y descripción
-        incidencia.descripcion = descripcion
-        incidencia.estado = "Finalizada"
-        incidencia.save()
+    if incidencia.estado in ['En Proceso', 'Finalizada', 'Aprobada']:
+        messages.warning(request, f"La solicitud #{incidencia_id} ya está en proceso o completada.")
+    else:
+        incidencia.estado = 'En Proceso'
+        incidencia.save(update_fields=['estado'])
+        messages.success(request, f"Solicitud #{incidencia_id} pasada a 'En Proceso'.")
 
-        messages.success(request, "Respuesta registrada correctamente. La incidencia ha sido finalizada.")
-        return redirect("dashboard_cuadrilla")
-
-    return render(request, "dashboards/respuesta_incidencia.html", {"incidencia": incidencia})
+    return redirect('dashboard_departamento')
