@@ -11,19 +11,74 @@
     </div>
 {% endif %}
 
+
+
 <form method="post">
     {% csrf_token %}
-    
-    {{ form.as_p }}
 
-    <div>
-    <label for="comentario">Comentario extra:</label>
-    <textarea name="comentario" id="comentario" style="white-space: pre-wrap; overflow-wrap: break-word;" rows='2' cols='50'  placeholder='Opcional para documentar el cambio de estado de la solicitud.'>{{ request.POST.comentario|default_if_none:'' }}</textarea>
-    
+    <div class="mb-3">
+        <label for="id_encuesta">Encuesta Asociada</label>
+        {{ form.encuesta }}
     </div>
-    <div>
+
+    <div class="mb-3">
+        <label for="id_vecino">Datos del Vecino</label>
+        {{ form.vecino }}
+    </div>
+
+    <div class="mb-3">
+        <label for="id_ubicacion">Ubicación de la Incidencia</label>
+        {{ form.ubicacion }}
+    </div>
+
+    <div class="mb-3">
+        <label for="id_incidencia">Tipo de Incidencia</label>
+        {{ form.incidencia }}
+    </div>
+
+    <div class="mb-3">
+        <label for="id_cuadrilla">Cuadrilla Asignada</label>
+        {{ form.cuadrilla }}
+    </div>
+
+    <div class="mb-3">
+        <label for="id_estado">Estado</label>
+        {{ form.estado }}
+    </div>
+
+    <div class="mb-3">
+        <label for="id_descripcion">Descripción Detallada</label>
+        {{ form.descripcion }}
+    </div>
+
     
+    {% for field in form %}
+        {% if field.name|slice:":9" == "pregunta_" %}
+        <div class="mb-3">
+            <label>{{ field.label }}</label>
+            {{ field }}
+        </div>
+        {% endif %}
+    {% endfor %}
+    
+
+    <div class="mb-3">
+        <label for="comentario">Comentario extra:</label>
+        <textarea name="comentario" id="comentario" class="form-control" rows="2" placeholder="Opcional para documentar el cambio de estado de la solicitud.">{{ request.POST.comentario|default_if_none:'' }}</textarea>
+    </div>
+
     <button type="submit" class="btn btn-primary">Guardar Solicitud</button>
     <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary">Cancelar</a>
 </form>
+
+
+<script>
+document.querySelector('#id_encuesta').addEventListener('change', function() {
+    const encuestaId = this.value;
+    if (encuestaId) {
+        window.location.href = '?encuesta_id=' + encuestaId;
+    }
+});
+</script>
+
 {% endblock %}
