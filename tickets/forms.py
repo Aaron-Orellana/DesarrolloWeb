@@ -10,15 +10,12 @@ class SolicitudIncidenciaForm(forms.ModelForm):
             'encuesta', 
             'vecino', 
             'ubicacion', 
-            'cuadrilla', 
             'estado', 
             'descripcion',
-            'incidencia',
         ]
         labels = {
             'encuesta': 'Encuesta Asociada',
             'ubicacion': 'Ubicación de la Incidencia',
-            'cuadrilla': 'Cuadrilla Asignada',
             'estado': 'Estado de la Solicitud',
             'descripcion': 'Descripción Detallada',
         }
@@ -26,8 +23,6 @@ class SolicitudIncidenciaForm(forms.ModelForm):
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
             'vecino': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Información del vecino'}),
             'ubicacion': forms.Select(attrs={'class': 'form-select'}),
-            'cuadrilla': forms.Select(attrs={'class': 'form-select'}), 
-            'incidencia': forms.Select(attrs={'class': 'form-select'}), 
             'estado': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalle la naturaleza de la incidencia'}),
         }
@@ -35,7 +30,6 @@ class SolicitudIncidenciaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         encuesta_id = kwargs.pop('encuesta_id', None)
         super().__init__(*args, **kwargs)
-        self.fields['cuadrilla'].queryset = Cuadrilla.objects.filter(estado=True)
 
         if not self.instance.pk:
             self.initial['estado'] = 'Pendiente'
