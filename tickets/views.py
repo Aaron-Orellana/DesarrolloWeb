@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import SolicitudIncidencia, Multimedia, RespuestaCuadrilla, MultimediaCuadrilla
-from orgs.models import Profile, Cuadrilla
+from orgs.models import Profile, Cuadrilla, Territorial
 from .forms import SolicitudIncidenciaForm 
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -77,7 +77,7 @@ def solicitud_crear(request):
         comentario = request.POST.get('comentario', '').strip()
         if form.is_valid():
             solicitud = form.save(commit=False)
-            solicitud.territorial = request.user.profile.territorial
+            solicitud.territorial = Territorial.objects.get(profile=request.user.profile)
             if solicitud.cuadrilla:
                 estado_anterior = solicitud.estado
                 solicitud.estado = 'Derivada'
