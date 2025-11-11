@@ -77,7 +77,10 @@ def solicitud_crear(request):
         comentario = request.POST.get('comentario', '').strip()
         if form.is_valid():
             solicitud = form.save(commit=False)
-            solicitud.territorial = Territorial.objects.get(profile=request.user.profile)
+            try:
+                solicitud.territorial = Territorial.objects.get(profile=request.user.profile)
+            except Territorial.DoesNotExist:
+                solicitud.territorial = None
             if solicitud.cuadrilla:
                 estado_anterior = solicitud.estado
                 solicitud.estado = 'Derivada'
