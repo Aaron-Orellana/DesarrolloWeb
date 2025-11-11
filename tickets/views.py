@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import SolicitudIncidencia, Multimedia
+from .models import SolicitudIncidencia, Multimedia, RespuestaCuadrilla, MultimediaCuadrilla
 from orgs.models import Profile, Cuadrilla
 from .forms import SolicitudIncidenciaForm 
 from django.views.generic.list import ListView

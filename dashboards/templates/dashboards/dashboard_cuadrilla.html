@@ -38,7 +38,7 @@
             </td>
             <td>{{ i.fecha|date:"d-m-Y H:i" }}</td>
             <td>
-                {% if i.estado != "Finalizada" %}
+                {% if i.estado != "Finalizada" and i.estado != "Aprobada" %}
                     <a href="{% url 'responder_incidencia' i.solicitud_incidencia_id %}" class="btn btn-sm btn-primary">
                         Responder
                     </a>

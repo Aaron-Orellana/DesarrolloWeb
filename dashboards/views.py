@@ -3,7 +3,7 @@ from django.db.models import Count, Q
 from django.shortcuts import render, get_object_or_404, redirect
 from core.decorators import role_required
 from django.contrib.auth.models import User
-from tickets.models import Multimedia, SolicitudIncidencia
+from tickets.models import Multimedia, SolicitudIncidencia, RespuestaCuadrilla, MultimediaCuadrilla
 from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
 from django.contrib import messages
@@ -286,25 +286,30 @@ def dashboard_cuadrilla(request):
 
 @role_required('Cuadrillas')
 def responder_incidencia(request, incidencia_id):
-    """Permite a la cuadrilla responder una incidencia con imágenes y descripción."""
+    """Permite a la cuadrilla responder una incidencia con imágenes y comentario."""
     incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
     cuadrilla = incidencia.cuadrilla
 
     if request.method == "POST":
-        descripcion = request.POST.get("descripcion")
+        respuesta_texto = request.POST.get("respuesta")
         archivos = request.FILES.getlist("archivos")
+
+        Respuesta = RespuestaCuadrilla.objects.create(
+            solicitud=incidencia,
+            cuadrilla=cuadrilla,
+            respuesta=respuesta_texto
+        )
 
         # Guardar multimedia (imágenes o videos)
         for archivo in archivos:
             tipo = "imagen" if archivo.content_type.startswith("image") else "video"
-            Multimedia.objects.create(
-                solicitud_incidencia=incidencia,
+            MultimediaCuadrilla.objects.create(
+                respuesta=Respuesta,
                 archivo=archivo,
                 tipo=tipo,
             )
 
         # Actualizar estado y descripción
-        incidencia.descripcion = descripcion
         incidencia.estado = "Finalizada"
         incidencia.save()
 

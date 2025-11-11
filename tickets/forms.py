@@ -1,5 +1,5 @@
 from django import forms
-from .models import SolicitudIncidencia 
+from .models import SolicitudIncidencia, RespuestaCuadrilla
 from orgs.models import Cuadrilla 
 
 class SolicitudIncidenciaForm(forms.ModelForm):
@@ -37,3 +37,10 @@ class SolicitudIncidenciaForm(forms.ModelForm):
         self.fields['cuadrilla'].queryset = Cuadrilla.objects.filter(estado=True)
         if not self.instance.pk:
             self.initial['estado'] = 'Pendiente'
+
+class RespuestaCuadrillaForm(forms.ModelForm):
+    class Meta:
+        model = RespuestaCuadrilla
+        fields = ['respuesta']
+        widgets = {'respuesta': forms.Textarea(attrs={'class': 'form-control','rows': 3,'placeholder': 'Describa la solución realizada.'}),
+        }

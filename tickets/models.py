@@ -150,3 +150,46 @@ class Multimedia(models.Model):
 
     def __str__(self):
         return f"Tipo: {self.tipo} - Solicitud: {self.solicitud_incidencia.pk}"
+    
+
+class RespuestaCuadrilla(models.Model):
+    #PK
+    respuesta_id = models.BigAutoField(primary_key=True)
+        
+    #FK
+    solicitud = models.ForeignKey(
+        'tickets.SolicitudIncidencia',
+        on_delete=models.CASCADE,
+        related_name='respuestas_cuadrilla'
+        )
+        
+    cuadrilla = models.ForeignKey(
+        'orgs.Cuadrilla',
+        on_delete=models.PROTECT,
+        related_name='respuestas_cuadrilla'
+        )
+        
+    #simples
+    respuesta = models.TextField()
+    fecha_respuesta = models.DateTimeField(default=timezone.now)
+        
+    def __str__(self):
+        return f"Respuesta Cuadrilla #{self.pk} - Solicitud {self.solicitud_id}"
+        
+
+class MultimediaCuadrilla(models.Model):
+
+    TIPOS = (
+    ('imagen', 'Imagen'),
+    ('video', 'Video'),)
+
+
+    archivo = models.FileField(upload_to="evidencias_cuadrilla/", validators=[validar_tipo_archivo])
+    tipo = models.CharField(max_length=10, choices=TIPOS)
+        
+    respuesta = models.ForeignKey(
+        'tickets.RespuestaCuadrilla',
+        on_delete=models.CASCADE,
+        related_name='multimedia'
+        )
+
