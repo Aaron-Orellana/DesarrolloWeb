@@ -10,20 +10,17 @@ class SolicitudIncidenciaForm(forms.ModelForm):
             'encuesta', 
             'vecino', 
             'ubicacion', 
-            'estado', 
             'descripcion',
         ]
         labels = {
             'encuesta': 'Encuesta Asociada',
             'ubicacion': 'Ubicación de la Incidencia',
-            'estado': 'Estado de la Solicitud',
             'descripcion': 'Descripción Detallada',
         }
         widgets = {
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
             'vecino': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Información del vecino'}),
             'ubicacion': forms.Select(attrs={'class': 'form-select'}),
-            'estado': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalle la naturaleza de la incidencia'}),
         }
         
