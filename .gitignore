@@ -53,3 +53,5 @@ settings.py
 # Llaves, configuraciones locales, etc.
 *.pem
 secrets.json
+
+evidencias_cuadrilla

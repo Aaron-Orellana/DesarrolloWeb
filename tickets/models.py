@@ -63,7 +63,7 @@ class SolicitudIncidencia(models.Model):
         ('Aprobada', 'Aprobada'),
         ('Rechazada', 'Rechazada'),
     ]
-    estado = models.CharField(max_length=50, db_column='Estado',choices=Estados)
+    estado = models.CharField(max_length=50, db_column='Estado',choices=Estados, default='Pendiente')
 
     descripcion = models.TextField(null=True, blank=True, db_column='Descripción')
     fecha = models.DateTimeField(default=timezone.now, db_column='Fecha')
