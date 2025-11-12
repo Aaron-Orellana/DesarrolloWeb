@@ -68,6 +68,18 @@ class SolicitudIncidencia(models.Model):
     descripcion = models.TextField(null=True, blank=True, db_column='Descripción')
     fecha = models.DateTimeField(default=timezone.now, db_column='Fecha')
     fecha_inicio = models.DateTimeField(null=True, blank=True, db_column='Fecha_inicio')
+    
+    
+    Motivos = [
+        ('Insuficiente', 'Insuficiente'),
+        ('Incompleto', 'Incompleto'),
+        ('Por mejorar', 'Por mejorar'),
+        ('Otro motivo', 'Otro motivo'),
+    ]
+    motivo = models.CharField(max_length=50, db_column='Motivo',choices=Motivos, default='')
+
+    otro = models.TextField()
+    
 
 
     class Meta:

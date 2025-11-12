@@ -8,6 +8,7 @@ from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
 from django.utils import timezone
 from django.contrib import messages
+from tickets.forms  import RechazaIncidenciaForm
 
 @role_required("Secpla")
 def dashboard_secpla(request):
@@ -435,3 +436,21 @@ def aprobar_incidencia(request, incidencia_id):
         "evidencias": evidencias
     }
     return render(request, "dashboards/aprobar_incidencia.html", context)
+
+@role_required('Territoriales')
+def rechazar_incidencia(request, incidencia_id):
+    obj = SolicitudIncidencia.objects.get(pk=incidencia_id)
+    form = RechazaIncidenciaForm(instance=obj)
+    if request.method == 'POST':
+        form = RechazaIncidenciaForm(request.POST,instance=obj)
+        if form.is_valid():
+            form.save(commit=False)
+            obj.estado = 'Rechazada'
+            form.save()
+            obj.save()
+            return redirect('/dashboards/territorial/')
+    context = {
+        'form':form
+    }
+    return render(request, 'dashboards/rechazar_incidencia.html', context)
+    

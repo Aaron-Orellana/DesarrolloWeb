@@ -58,3 +58,12 @@ class RespuestaCuadrillaForm(forms.ModelForm):
                 'placeholder': 'Describa la solución realizada.'
             }),
         }
+
+class RechazaIncidenciaForm(forms.ModelForm):
+    class Meta:
+        model = SolicitudIncidencia
+        fields = ['motivo', 'otro']
+        widgets = {
+            'motivo': forms.Select(attrs={'class': 'form-select'}),
+            'otro': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Información del vecino'}),
+        }

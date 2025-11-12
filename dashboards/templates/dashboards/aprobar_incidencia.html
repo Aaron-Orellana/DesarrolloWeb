@@ -58,7 +58,9 @@
         {% csrf_token %}
         <button type="submit" class="btn btn-success">Aprobar Incidencia</button>
     </form>
+    <a href="/dashboards/rechazar_incidencia/{{ incidencia.solicitud_incidencia_id }}/" class="btn btn-secondary" style="background: red;"> Rechazar Incidencia</a>
     <a href="{% url 'dashboard_territorial' %}" class="btn btn-secondary">⬅Volver al Dashboard</a>
+    
 </div>
 
 {% endblock %}
