@@ -122,6 +122,46 @@
 </section>
 
 <section>
+    <h2>Incidencias Finalizadas</h2>
+    <p>Revisa las incidencias marcadas como finalizadas por la cuadrilla y apruébalas si corresponden.</p>
+
+    {% if incidencias_filtradas %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Incidencia</th>
+                <th>Descripción</th>
+                <th>Cuadrilla</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for incidencia in incidencias_filtradas %}
+                {% if incidencia.estado == "Finalizada" %}
+                <tr>
+                    <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                    <td>{{ incidencia.incidencia.nombre }}</td>
+                    <td>{{ incidencia.descripcion|truncatewords:10 }}</td>
+                    <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
+                    <td>{{ incidencia.estado }}</td>
+                    <td>
+                        <a href="{% url 'aprobar_incidencia' incidencia.solicitud_incidencia_id %}" class="btn btn-success btn-sm">
+                            Revisar 
+                        </a>
+                    </td>
+                </tr>
+                {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No hay incidencias finalizadas para aprobar.</p>
+    {% endif %}
+</section>
+
+<section>
     <h2>Ver Solicitudes</h2>
     <form method="get" style="margin-bottom: 15px;">
         <label for="estado">Filtrar por estado:</label>

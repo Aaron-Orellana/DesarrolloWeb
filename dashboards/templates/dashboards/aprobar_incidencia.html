@@ -1,0 +1,64 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Revisión de Incidencia Finalizada</h2>
+
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+        <h4>Detalles de la Solicitud</h4>
+        <p><strong>ID Solicitud:</strong> #{{ incidencia.solicitud_incidencia_id }}</p>
+        <p><strong>Incidencia:</strong> {{ incidencia.incidencia.nombre }}</p>
+        <p><strong>Descripción Inicial:</strong> {{ incidencia.descripcion }}</p>
+        <p><strong>Cuadrilla Encargada:</strong> {{ incidencia.cuadrilla.nombre|default:"No asignada" }}</p>
+        <p><strong>Estado Actual:</strong> {{ incidencia.estado }}</p>
+        <p><strong>Fecha:</strong> {{ incidencia.fecha|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+{% if respuesta %}
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+        <h4>Respuesta de la Cuadrilla</h4>
+        <p>{{ respuesta.respuesta }}</p>
+        <p><strong>Fecha de Respuesta:</strong> {{ respuesta.fecha_respuesta|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+{% if evidencias %}
+<div class="card" style="margin-bottom: 20px;">
+    <div class="card-body">
+        <h4>📸 Evidencias Subidas por la Cuadrilla</h4>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for media in evidencias %}
+                {% if media.tipo == "imagen" %}
+                    <div style="width: 200px;">
+                        <img src="{{ media.archivo.url }}" alt="Evidencia" style="width: 100%; border-radius: 8px;">
+                    </div>
+                {% elif media.tipo == "video" %}
+                    <div style="width: 300px;">
+                        <video controls style="width: 100%; border-radius: 8px;">
+                            <source src="{{ media.archivo.url }}" type="video/mp4">
+                            Tu navegador no soporta video.
+                        </video>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% else %}
+<div class="alert alert-warning">
+    No hay respuesta registrada de la cuadrilla para esta incidencia.
+</div>
+{% endif %}
+
+<div style="display: flex; gap: 10px;">
+    <form method="post" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">Aprobar Incidencia</button>
+    </form>
+    <a href="{% url 'dashboard_territorial' %}" class="btn btn-secondary">⬅Volver al Dashboard</a>
+</div>
+
+{% endblock %}

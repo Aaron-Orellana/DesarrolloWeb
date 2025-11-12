@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from tickets.models import Multimedia, SolicitudIncidencia, RespuestaCuadrilla, MultimediaCuadrilla
 from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
+from django.utils import timezone
 from django.contrib import messages
 
 @role_required("Secpla")
@@ -403,3 +404,34 @@ def poner_en_proceso(request, incidencia_id):
         messages.success(request, f"Solicitud #{incidencia_id} pasada a 'En Proceso'.")
 
     return redirect('dashboard_departamento')
+
+@role_required("Territoriales")
+def aprobar_incidencia(request, incidencia_id):
+
+    incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
+    
+    respuesta = RespuestaCuadrilla.objects.filter(solicitud=incidencia).first()
+    evidencias = MultimediaCuadrilla.objects.filter(respuesta=respuesta) if respuesta else None
+
+    if request.method == "POST":
+        incidencia.estado = "Aprobada"
+        incidencia.save()
+
+
+        incidencia.registrar_log(
+            profile=request.user.profile,
+            from_estado="Finalizada",
+            to_estado="Aprobada",
+            fecha=timezone.now(),
+            comentario="Aprobada por el territorial."
+        )
+
+        messages.success(request, "La incidencia fue aprobada correctamente.")
+        return redirect("dashboard_territorial")
+
+    context = {
+        "incidencia": incidencia,
+        "respuesta": respuesta,
+        "evidencias": evidencias
+    }
+    return render(request, "dashboards/aprobar_incidencia.html", context)
