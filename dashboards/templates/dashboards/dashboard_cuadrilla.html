@@ -26,7 +26,7 @@
         {% for i in incidencias %}
         <tr>
             <td>{{ i.solicitud_incidencia_id }}</td>
-            <td>{{ i.incidencia.nombre }}</td>
+            <td>{{ i.encuesta.tipo_incidencia }}</td>
             <td>
                 {% if i.estado == 'Finalizada' %}
                     <span class="badge bg-success">Finalizada</span>

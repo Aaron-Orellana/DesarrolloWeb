@@ -14,7 +14,7 @@
         {% for inc in incidencias %}
         <tr>
             <td><strong>{{ inc.pk }}</strong></td>
-            <td>{{ inc.incidencia.nombre }}</td>
+            <td>{{ inc.encuesta.tipo_incidencia }}</td>
             <td>
                 <span style="padding:4px 8px; border-radius:12px; font-size:0.8em; font-weight:bold;
                     {% if inc.estado == 'Pendiente' %}background:#ffc107;color:#000;

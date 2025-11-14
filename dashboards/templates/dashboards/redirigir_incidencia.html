@@ -1,0 +1,108 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+<h2>Redirigir incidencia rechazada #{{ incidencia.solicitud_incidencia_id }}</h2>
+<p class="text-muted">Actualiza la información necesaria y vuelve a marcar la solicitud como <strong>Pendiente</strong> para que el circuito comience nuevamente.</p>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4 class="card-title">Detalles actuales</h4>
+        <p><strong>Encuesta:</strong> {{ incidencia.encuesta.titulo }} ({{ incidencia.encuesta.tipo_incidencia }})</p>
+        <p><strong>Estado:</strong> {{ incidencia.estado }}</p>
+        <p><strong>Territorial:</strong> {{ incidencia.territorial.nombre|default:"Sin territorial" }}</p>
+        <p><strong>Cuadrilla asociada:</strong> {{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</p>
+        <p><strong>Motivo de rechazo:</strong> {{ incidencia.get_motivo_display|default:"Sin motivo registrado" }}</p>
+        <p><strong>Detalle adicional:</strong> {{ incidencia.otro|default:"—" }}</p>
+        <p><strong>Datos del vecino:</strong> {{ incidencia.vecino|default:"No informado" }}</p>
+        <p><strong>Descripción enviada por el vecino:</strong> {{ incidencia.descripcion|default:"Sin descripción" }}</p>
+        <p><strong>Fecha de registro:</strong> {{ incidencia.fecha|date:"d/m/Y H:i" }}</p>
+    </div>
+</div>
+
+{% if evidencias_vecino %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>Evidencias del vecino</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:12px;">
+            {% for media in evidencias_vecino %}
+                <div style="max-width:220px;">
+                    {% if media.tipo == "imagen" %}
+                        <img src="{{ media.archivo.url }}" alt="evidencia vecino" style="width:100%; border-radius:6px;">
+                    {% elif media.tipo == "video" %}
+                        <video controls style="width:100%; border-radius:6px;">
+                            <source src="{{ media.archivo.url }}" type="video/mp4">
+                            Tu navegador no soporta video.
+                        </video>
+                    {% else %}
+                        <a href="{{ media.archivo.url }}" target="_blank">Descargar archivo</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% if respuesta_cuadrilla %}
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>Respuesta de la cuadrilla rechazada</h4>
+        <p>{{ respuesta_cuadrilla.respuesta }}</p>
+        <p class="text-muted">Enviada el {{ respuesta_cuadrilla.fecha_respuesta|date:"d/m/Y H:i" }}</p>
+
+        {% if evidencias_cuadrilla %}
+        <div style="display:flex; flex-wrap:wrap; gap:12px;">
+            {% for media in evidencias_cuadrilla %}
+                <div style="max-width:220px;">
+                    {% if media.tipo == "imagen" %}
+                        <img src="{{ media.archivo.url }}" alt="evidencia cuadrilla" style="width:100%; border-radius:6px;">
+                    {% elif media.tipo == "video" %}
+                        <video controls style="width:100%; border-radius:6px;">
+                            <source src="{{ media.archivo.url }}" type="video/mp4">
+                            Tu navegador no soporta video.
+                        </video>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h4>Editar información de la solicitud</h4>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <div class="mb-3">
+                <label for="comentario" class="form-label">Comentario interno (opcional)</label>
+                <textarea id="comentario" name="comentario" class="form-control" rows="3" placeholder="Explica los cambios realizados para dejar registro.">{{ comentario }}</textarea>
+                <small class="form-text text-muted">Se registrará en el historial de la incidencia al volver a estado Pendiente.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Guardar y marcar como Pendiente</button>
+            <a href="{% url 'dashboard_territorial' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
+{% if logs %}
+<div class="card">
+    <div class="card-body">
+        <h4>Historial de estados</h4>
+        <ul>
+            {% for log in logs %}
+                <li>
+                    <strong>{{ log.fecha|date:"d/m/Y H:i" }}</strong> — {{ log.from_estado }} → {{ log.to_estado }}
+                    {% if log.nota %}<br><small>{{ log.nota }}</small>{% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

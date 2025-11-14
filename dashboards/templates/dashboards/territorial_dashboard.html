@@ -22,7 +22,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for estado, total in estado_totales.items %}
+            {% for estado, total in estados_totales.items %}
             <tr>
                 <td>{{ estado }}</td>
                 <td>{{ total }}</td>
@@ -50,7 +50,7 @@
             {% for incidencia in incidencias_abiertas %}
             <tr>
                 <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
                 <td>{{ incidencia.encuesta.titulo }}</td>
                 <td>{{ incidencia.estado }}</td>
                 <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
@@ -80,7 +80,7 @@
             {% for incidencia in incidencias_derivadas %}
             <tr>
                 <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
                 <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
                 <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
             </tr>
@@ -103,15 +103,21 @@
                 <th>Incidencia</th>
                 <th>Motivo / Descripción</th>
                 <th>Fecha</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
             {% for incidencia in incidencias_rechazadas %}
             <tr>
                 <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
                 <td>{{ incidencia.descripcion|default:"Sin comentarios" }}</td>
                 <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+                <td>
+                    <a href="{% url 'redirigir_incidencia' incidencia.solicitud_incidencia_id %}" class="btn btn-primary btn-sm">
+                        Redirigir
+                    </a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
@@ -142,7 +148,7 @@
                 {% if incidencia.estado == "Finalizada" %}
                 <tr>
                     <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                    <td>{{ incidencia.incidencia.nombre }}</td>
+                    <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
                     <td>{{ incidencia.descripcion|truncatewords:10 }}</td>
                     <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
                     <td>{{ incidencia.estado }}</td>
@@ -189,7 +195,7 @@
             {% for incidencia in incidencias_filtradas %}
             <tr>
                 <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
+                <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
                 <td>{{ incidencia.estado }}</td>
                 <td>{{ incidencia.encuesta.titulo }}</td>
                 <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>

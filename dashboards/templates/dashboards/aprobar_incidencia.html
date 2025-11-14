@@ -7,7 +7,7 @@
     <div class="card-body">
         <h4>Detalles de la Solicitud</h4>
         <p><strong>ID Solicitud:</strong> #{{ incidencia.solicitud_incidencia_id }}</p>
-        <p><strong>Incidencia:</strong> {{ incidencia.incidencia.nombre }}</p>
+        <p><strong>Incidencia:</strong> {{ incidencia.encuesta.tipo_incidencia }}</p>
         <p><strong>Descripción Inicial:</strong> {{ incidencia.descripcion }}</p>
         <p><strong>Cuadrilla Encargada:</strong> {{ incidencia.cuadrilla.nombre|default:"No asignada" }}</p>
         <p><strong>Estado Actual:</strong> {{ incidencia.estado }}</p>

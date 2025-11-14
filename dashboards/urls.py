@@ -17,6 +17,7 @@ urlpatterns = [
     path('cuadrilla/responder/<int:incidencia_id>/', views.responder_incidencia, name='responder_incidencia'),
     path('aprobar-incidencia/<int:incidencia_id>/', views.aprobar_incidencia, name='aprobar_incidencia'),
     path('rechazar_incidencia/<int:incidencia_id>/', views.rechazar_incidencia, name='rechazar_incidencia'),
+    path('redirigir-incidencia/<int:incidencia_id>/', views.redirigir_incidencia, name='redirigir_incidencia'),
 
     
     

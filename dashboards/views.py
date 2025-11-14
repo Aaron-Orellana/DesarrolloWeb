@@ -8,7 +8,7 @@ from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
 from registration.models import Profile
 from django.utils import timezone
 from django.contrib import messages
-from tickets.forms  import RechazaIncidenciaForm
+from tickets.forms  import RechazaIncidenciaForm, SolicitudIncidenciaForm
 
 @role_required("Secpla")
 def dashboard_secpla(request):
@@ -89,11 +89,7 @@ def territorial_dashboard(request):
     """
     Dashboard para usuarios territoriales con métricas, listados y filtros básicos.
     """
-    profile = getattr(request.user, "profile", None)
-    territorial = None
-
-    if isinstance(profile, Profile) and profile.role_type == Profile.Role.TERRITORIAL and profile.role_object_id:
-        territorial = Territorial.objects.filter(pk=profile.role_object_id).first()
+    territorial = Territorial.objects.filter(pk=request.user.profile.role_object_id).first()
 
     incidencias_base = (
         SolicitudIncidencia.objects.select_related(
@@ -103,23 +99,30 @@ def territorial_dashboard(request):
             "cuadrilla"
         )
         .order_by("-fecha")
+        .filter(territorial=territorial)
     )
 
-    if territorial:
-        incidencias_base = incidencias_base.filter(territorial=territorial)
-    else:
-        incidencias_base = incidencias_base.none()
-
-    raw_counts = incidencias_base.values("estado").annotate(total=Count("estado"))
+    raw_counts = (
+    SolicitudIncidencia.objects
+        .filter(territorial=territorial)
+        .values("estado")
+        .annotate(total=Count("pk"))
+        .order_by("estado")
+    )
     estado_totales = {estado: 0 for estado, _ in SolicitudIncidencia.Estados}
     for registro in raw_counts:
         estado_totales[registro["estado"]] = registro["total"]
 
-    total_solicitudes = sum(estado_totales.values())
+    for e, i in estado_totales.items():
+        print(e, i)
+    total_solicitudes = incidencias_base.count()
 
     incidencias_abiertas = incidencias_base.filter(estado__in=["Pendiente", "En Proceso"])
     incidencias_derivadas = incidencias_base.filter(estado="Derivada")
     incidencias_rechazadas = incidencias_base.filter(estado="Rechazada")
+    incidencias_finalizadas = incidencias_base.filter(estado="Finalizada")
+    incidencias_aprobadas = incidencias_base.filter(estado="Aprobada")
+
 
     estado_filtro = request.GET.get("estado", "todas")
     incidencias_filtradas = incidencias_base
@@ -133,12 +136,14 @@ def territorial_dashboard(request):
         "dashboards/territorial_dashboard.html",
         {
             "territorial": territorial,
-            "estado_totales": estado_totales,
+            "estados_totales": estado_totales,
             "total_solicitudes": total_solicitudes,
             "incidencias_abiertas": incidencias_abiertas,
             "incidencias_derivadas": incidencias_derivadas,
             "incidencias_rechazadas": incidencias_rechazadas,
             "incidencias_filtradas": incidencias_filtradas,
+            "incidencias_finalizadas": incidencias_finalizadas,
+            "incidencias_aprobadas": incidencias_aprobadas,
             "estado_filtro": estado_filtro,
             "estados_para_filtrar": estados_para_filtrar,
         },
@@ -411,7 +416,7 @@ def aprobar_incidencia(request, incidencia_id):
 
     incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
     
-    respuesta = RespuestaCuadrilla.objects.filter(solicitud=incidencia).first()
+    respuesta = RespuestaCuadrilla.objects.filter(solicitud=incidencia).last()
     evidencias = MultimediaCuadrilla.objects.filter(respuesta=respuesta) if respuesta else None
 
     if request.method == "POST":
@@ -453,4 +458,55 @@ def rechazar_incidencia(request, incidencia_id):
         'form':form
     }
     return render(request, 'dashboards/rechazar_incidencia.html', context)
+
+@role_required("Territoriales")
+def redirigir_incidencia(request, incidencia_id):
+    incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
+
+    if incidencia.estado != "Rechazada":
+        messages.warning(request, "Solo puedes redirigir incidencias que estén en estado Rechazada.")
+        return redirect("dashboard_territorial")
+
+    form = SolicitudIncidenciaForm(request.POST or None, instance=incidencia)
+
+    if request.method == "POST":
+        comentario = request.POST.get("comentario", "").strip()
+        if form.is_valid():
+            solicitud_actualizada = form.save(commit=False)
+            estado_anterior = incidencia.estado
+            solicitud_actualizada.estado = "Pendiente"
+            solicitud_actualizada.cuadrilla = None
+            solicitud_actualizada.save()
+
+            solicitud_actualizada.registrar_log(
+                profile=request.user.profile,
+                from_estado=estado_anterior,
+                to_estado=solicitud_actualizada.estado,
+                fecha=timezone.now(),
+                comentario=comentario or "Incidencia redirigida por el territorial."
+            )
+
+            messages.success(request, f"La solicitud #{incidencia.solicitud_incidencia_id} se redirigió correctamente.")
+            return redirect("dashboard_territorial")
+        else:
+            messages.error(request, "Revisa los datos del formulario antes de redirigir la incidencia.")
+
+    respuesta_cuadrilla = RespuestaCuadrilla.objects.filter(solicitud=incidencia).first()
+    evidencias_cuadrilla = MultimediaCuadrilla.objects.filter(respuesta=respuesta_cuadrilla) if respuesta_cuadrilla else None
+    evidencias_vecino = incidencia.multimedia.all()
+    logs = incidencia.logs.all()
+
+    comentario = request.POST.get("comentario", "") if request.method == "POST" else ""
+
+    context = {
+        "incidencia": incidencia,
+        "form": form,
+        "respuesta_cuadrilla": respuesta_cuadrilla,
+        "evidencias_cuadrilla": evidencias_cuadrilla,
+        "evidencias_vecino": evidencias_vecino,
+        "logs": logs,
+        "comentario": comentario,
+    }
+
+    return render(request, "dashboards/redirigir_incidencia.html", context)
     
