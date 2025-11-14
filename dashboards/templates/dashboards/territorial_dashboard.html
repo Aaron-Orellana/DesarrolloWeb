@@ -101,7 +101,7 @@
             <tr>
                 <th>Solicitud</th>
                 <th>Incidencia</th>
-                <th>Motivo / Descripción</th>
+                <th>Motivo de Rechazo</th>
                 <th>Fecha</th>
                 <th>Acciones</th>
             </tr>
@@ -111,10 +111,18 @@
             <tr>
                 <td>#{{ incidencia.solicitud_incidencia_id }}</td>
                 <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
-                <td>{{ incidencia.motivo }} / {{incidencia.otro}}</td>
+                <td>
+                    {% if incidencia.motivo != 'Otro motivo' %}
+                    {{ incidencia.motivo }}
+                    {% else %}
+                    {{ incidencia.otro }}
+                    {% endif %}
+                </td>
+
                 <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
                 <td>
-                    <a href="{% url 'redirigir_incidencia' incidencia.solicitud_incidencia_id %}" class="btn btn-primary btn-sm">
+                    <a href="{% url 'redirigir_incidencia' incidencia.solicitud_incidencia_id %}"
+                        class="btn btn-primary btn-sm">
                         Redirigir
                     </a>
                 </td>
@@ -145,20 +153,21 @@
         </thead>
         <tbody>
             {% for incidencia in incidencias_filtradas %}
-                {% if incidencia.estado == "Finalizada" %}
-                <tr>
-                    <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                    <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
-                    <td>{{ incidencia.descripcion|truncatewords:10 }}</td>
-                    <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
-                    <td>{{ incidencia.estado }}</td>
-                    <td>
-                        <a href="{% url 'aprobar_incidencia' incidencia.solicitud_incidencia_id %}" class="btn btn-success btn-sm">
-                            Revisar 
-                        </a>
-                    </td>
-                </tr>
-                {% endif %}
+            {% if incidencia.estado == "Finalizada" %}
+            <tr>
+                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
+                <td>{{ incidencia.descripcion|truncatewords:10 }}</td>
+                <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
+                <td>{{ incidencia.estado }}</td>
+                <td>
+                    <a href="{% url 'aprobar_incidencia' incidencia.solicitud_incidencia_id %}"
+                        class="btn btn-success btn-sm">
+                        Revisar
+                    </a>
+                </td>
+            </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>
