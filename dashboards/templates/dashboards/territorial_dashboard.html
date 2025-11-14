@@ -111,7 +111,7 @@
             <tr>
                 <td>#{{ incidencia.solicitud_incidencia_id }}</td>
                 <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
-                <td>{{ incidencia.descripcion|default:"Sin comentarios" }}</td>
+                <td>{{ incidencia.motivo }} / {{incidencia.otro}}</td>
                 <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
                 <td>
                     <a href="{% url 'redirigir_incidencia' incidencia.solicitud_incidencia_id %}" class="btn btn-primary btn-sm">

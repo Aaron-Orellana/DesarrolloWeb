@@ -65,5 +65,5 @@ class RechazaIncidenciaForm(forms.ModelForm):
         fields = ['motivo', 'otro']
         widgets = {
             'motivo': forms.Select(attrs={'class': 'form-select'}),
-            'otro': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Información del vecino'}),
+            'otro': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'motivo'}),
         }
