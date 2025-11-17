@@ -1,12 +1,20 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<h4>Crear Territorial</h4>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{% url 'territorial_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+<div class="custom-theme">
+    <h4 class="mb-3">Crear Territorial</h4>
+
+    <div class="card p-4 shadow form-card">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'territorial_listar' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
+

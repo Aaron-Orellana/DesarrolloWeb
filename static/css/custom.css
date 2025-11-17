@@ -1,0 +1,81 @@
+
+.custom-theme {
+    --color-fondo: #EBD0B0;
+    --color-boton: #3D4D55;
+    --color-aux: #A79E9C;
+    --color-encabezado: #10232A;
+    --color-card: #1b2e35;
+
+    display: block; 
+}
+
+.custom-theme {
+    background-color: var(--color-fondo) !important;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.custom-theme h1,
+.custom-theme h2,
+.custom-theme h3,
+.custom-theme h4,
+.custom-theme h5 {
+    color: var(--color-encabezado) !important;
+}
+
+.custom-theme .form-card {
+    background-color: var(--color-card) !important;
+    color: white !important;
+    border-radius: 10px;
+    padding: 20px;
+    border: none !important;
+}
+
+.custom-theme .btn-primary {
+    background-color: var(--color-boton) !important;
+    border-color: var(--color-boton) !important;
+    color: white !important;
+}
+
+.custom-theme .btn-secondary {
+    background-color: var(--color-aux) !important;
+    border-color: var(--color-aux) !important;
+    color: black !important;
+}
+
+.custom-theme .btn-primary:hover {
+    filter: brightness(1.1);
+}
+
+.custom-theme .btn-secondary:hover {
+    filter: brightness(1.1);
+}
+
+.custom-theme .form-control,
+.custom-theme .form-select {
+    background-color: var(--color-card) !important;
+    color: white !important;
+    border: 1px solid var(--color-aux) !important;
+}
+
+.custom-theme .form-control:focus,
+.custom-theme .form-select:focus {
+    border-color: var(--color-encabezado) !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.custom-theme label {
+    color: white !important;
+}
+
+
+.custom-theme .errorlist,
+.custom-theme .errorlist li {
+    color: #ff7777 !important;
+}
+
+.custom-theme .helptext {
+    color: var(--color-aux) !important;
+}
+

@@ -6,6 +6,7 @@ from django import forms
 from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
+from core.forms import BaseBootstrapForm
 
 from registration.models import Profile
 from registration.utils import DEFAULT_GROUP_NAME, ROLE_GROUP_NAMES
@@ -412,3 +413,22 @@ class TerritorialForm(forms.ModelForm):
             territorial.save()
 
         return territorial
+
+class TerritorialForm(BaseBootstrapForm):
+    profile = forms.ModelChoiceField(
+        queryset=Profile.objects.none(),
+        required=False,
+        label="Responsable",
+        widget=forms.Select(),
+    )
+
+    class Meta:
+        model = Territorial
+        fields = ["nombre", "profile"]
+        labels = {
+            "nombre": "Nombre",
+            "profile": "Responsable",
+        }
+        widgets = {
+            "nombre": forms.TextInput(),
+        }
