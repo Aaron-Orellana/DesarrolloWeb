@@ -1,59 +1,379 @@
 {% extends 'core/base.html' %}
 {% block content %}
-<h4>Dashboard - Cuadrilla</h4>
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
 
-{% if not cuadrilla %}
-<div class="alert alert-warning">
-    No tienes una cuadrilla asignada.
-</div>
-{% else %}
-<p><strong>Cuadrilla:</strong> {{ cuadrilla.nombre }}</p>
-<p><strong>Departamento:</strong> {{ cuadrilla.departamento.nombre }}</p>
-<p><strong>Dirección:</strong> {{ cuadrilla.departamento.direccion.nombre }}</p>
+    :root {
+        --dashboard-primary: #F9B17A;
+        --dashboard-primary-hover: #d89361;
+        --dashboard-bg: #2D3250;
+        --dashboard-surface: #424769;
+        --dashboard-muted: #676F9D;
+        --dashboard-text: #FFFFFF;
+    }
 
-{% if incidencias %}
-<table class="table table-bordered mt-3">
-    <thead class="table-primary">
-        <tr>
-            <th>ID</th>
-            <th>Incidencia</th>
-            <th>Estado</th>
-            <th>Fecha Asignación</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for i in incidencias %}
-        <tr>
-            <td>{{ i.solicitud_incidencia_id }}</td>
-            <td>{{ i.encuesta.tipo_incidencia }}</td>
-            <td>
-                {% if i.estado == 'Finalizada' %}
-                    <span class="badge bg-success">Finalizada</span>
-                {% elif i.estado == 'En Proceso' %}
-                    <span class="badge bg-warning text-dark">En Proceso</span>
-                {% else %}
-                    <span class="badge bg-secondary">{{ i.estado }}</span>
-                {% endif %}
-            </td>
-            <td>{{ i.fecha|date:"d-m-Y H:i" }}</td>
-            <td>
-                {% if i.estado != "Finalizada" and i.estado != "Aprobada" %}
-                    <a href="{% url 'responder_incidencia' i.solicitud_incidencia_id %}" class="btn btn-sm btn-primary">
-                        Responder
-                    </a>
-                {% else %}
-                    <span class="text-muted">Completada</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<div class="alert alert-info mt-3">
-    No tienes incidencias asignadas actualmente.
+    body {
+        background-color: var(--dashboard-bg);
+        color: var(--dashboard-text);
+    }
+
+    body > header {
+        background-color: var(--dashboard-surface);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    body > header nav a {
+        color: var(--dashboard-text);
+    }
+
+    body > .container {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 30px !important;
+    }
+
+    .dashboard-cuadrilla-page {
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--dashboard-text);
+    }
+
+    .dashboard-cuadrilla-page .text-secondary {
+        color: var(--dashboard-muted) !important;
+    }
+
+    .dashboard-hero {
+        background: var(--dashboard-surface);
+        border-radius: 28px;
+        padding: 32px;
+        box-shadow: 0 25px 45px rgba(7, 10, 26, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .dashboard-hero h1 {
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+
+    .dashboard-hero .hero-stat {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 18px;
+        padding: 18px 28px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-card {
+        background: var(--dashboard-surface);
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 12px 25px rgba(6, 8, 20, 0.35);
+        height: 100%;
+    }
+
+    .info-card .info-label {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--dashboard-muted);
+        margin-bottom: 6px;
+    }
+
+    .info-card .info-value {
+        font-size: 1.35rem;
+        font-weight: 600;
+    }
+
+    .info-card .icon-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background-color: var(--dashboard-primary);
+        display: inline-flex;
+        margin-right: 8px;
+    }
+
+    .incidencias-card {
+        background: var(--dashboard-surface);
+        border-radius: 26px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 25px 40px rgba(5, 7, 20, 0.45);
+    }
+
+    .incidencias-card table {
+        color: var(--dashboard-text);
+    }
+
+    .incidencias-card table > :not(caption) > * > * {
+        background-color: transparent !important;
+        color: var(--dashboard-text) !important;
+        border-color: rgba(255, 255, 255, 0.05) !important;
+    }
+
+    .incidencias-card table th {
+        font-size: 0.85rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--dashboard-muted);
+        border: none;
+        padding-top: 1.25rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .incidencias-card table td {
+        color: var(--dashboard-text);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        vertical-align: middle;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .incidencias-card table tbody tr:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.35rem 0.95rem;
+        font-size: 0.85rem;
+    }
+
+    .status-finalizada {
+        background-color: rgba(76, 175, 80, 0.18);
+        color: #58d98d;
+    }
+
+    .status-proceso {
+        background-color: rgba(249, 177, 122, 0.18);
+        color: var(--dashboard-primary);
+    }
+
+    .status-pendiente {
+        background-color: rgba(255, 255, 255, 0.12);
+        color: var(--dashboard-text);
+    }
+
+    .btn-primary {
+        background-color: var(--dashboard-primary);
+        border-color: var(--dashboard-primary);
+        color: #2D3250;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--dashboard-primary-hover);
+        border-color: var(--dashboard-primary-hover);
+    }
+
+    .btn-secondary {
+        background-color: var(--dashboard-surface);
+        color: var(--dashboard-text);
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    .alert-dashboard {
+        background-color: var(--dashboard-surface);
+        border-radius: 20px;
+        color: var(--dashboard-text);
+        border: 1px solid rgba(249, 177, 122, 0.35);
+        box-shadow: 0 14px 32px rgba(9, 15, 35, 0.45);
+    }
+
+    .legend-pill {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--dashboard-muted);
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .legend-pill::before {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background-color: currentColor;
+        opacity: 0.8;
+    }
+
+    .legend-pill.finalizada::before {
+        background-color: #58d98d;
+    }
+
+    .legend-pill.proceso::before {
+        background-color: var(--dashboard-primary);
+    }
+
+    .legend-pill.pendiente::before {
+        background-color: rgba(255, 255, 255, 0.65);
+    }
+
+    .empty-state {
+        background: var(--dashboard-surface);
+        border-radius: 26px;
+        padding: 48px;
+        text-align: center;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        box-shadow: 0 20px 40px rgba(5, 7, 20, 0.45);
+    }
+
+    .empty-state p {
+        color: var(--dashboard-muted);
+    }
+
+    .action-muted {
+        color: var(--dashboard-muted);
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-hero {
+            padding: 24px;
+        }
+
+        .info-card {
+            padding: 20px;
+        }
+
+        .incidencias-card {
+            border-radius: 20px;
+        }
+
+        .incidencias-card table td, .incidencias-card table th {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<div class="dashboard-cuadrilla-page">
+    <div class="dashboard-hero mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-4 align-items-md-center">
+            <div>
+                <p class="text-secondary mb-2 text-uppercase fw-semibold" style="letter-spacing: 0.18em;">Coordinación de cuadrillas</p>
+                <h1 class="mb-2">Dashboard de cuadrilla</h1>
+                <p class="text-secondary mb-0">Monitorea en tiempo real las incidencias asignadas y planifica las próximas intervenciones.</p>
+            </div>
+            {% if incidencias %}
+            <div class="hero-stat text-center text-md-end">
+                <span class="text-secondary text-uppercase" style="letter-spacing: 0.15em;">Incidencias activas</span>
+                <h2 class="mt-2 mb-0 display-6">{{ incidencias|length }}</h2>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if not cuadrilla %}
+        <div class="alert alert-warning alert-dashboard">
+            <strong>No tienes una cuadrilla asignada.</strong>
+            <p class="mb-0 text-secondary">Solicita al administrador que te incorpore a una cuadrilla para comenzar a registrar tu trabajo.</p>
+        </div>
+    {% else %}
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="info-card">
+                    <span class="info-label">Cuadrilla</span>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="icon-dot"></span>
+                        <span class="info-value">{{ cuadrilla.nombre }}</span>
+                    </div>
+                    <p class="text-secondary mb-0">Equipo operativo asignado</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card">
+                    <span class="info-label">Departamento</span>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="icon-dot"></span>
+                        <span class="info-value">{{ cuadrilla.departamento.nombre }}</span>
+                    </div>
+                    <p class="text-secondary mb-0">Área responsable de la cuadrilla</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card">
+                    <span class="info-label">Dirección</span>
+                    <div class="d-flex align-items-center mb-1">
+                        <span class="icon-dot"></span>
+                        <span class="info-value">{{ cuadrilla.departamento.direccion.nombre }}</span>
+                    </div>
+                    <p class="text-secondary mb-0">Coordinación territorial</p>
+                </div>
+            </div>
+        </div>
+
+        {% if incidencias %}
+            <div class="incidencias-card p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+                    <div>
+                        <h3 class="mb-1">Incidencias asignadas</h3>
+                        <p class="text-secondary mb-0">Controla el avance de cada caso y responde cuando estés en terreno.</p>
+                    </div>
+                    <div class="d-flex gap-4 flex-wrap">
+                        <span class="legend-pill finalizada">Finalizada</span>
+                        <span class="legend-pill proceso">En proceso</span>
+                        <span class="legend-pill pendiente">Pendiente</span>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Incidencia</th>
+                                <th scope="col">Estado</th>
+                                <th scope="col">Fecha asignación</th>
+                                <th scope="col" class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in incidencias %}
+                                <tr>
+                                    <td class="fw-semibold">#{{ i.solicitud_incidencia_id }}</td>
+                                    <td>
+                                        <div class="fw-semibold">{{ i.encuesta.tipo_incidencia }}</div>
+                                        <small class="text-secondary">Solicitud {{ i.solicitud_incidencia_id }}</small>
+                                    </td>
+                                    <td>
+                                        {% if i.estado == 'Finalizada' %}
+                                            <span class="status-pill status-finalizada">Finalizada</span>
+                                        {% elif i.estado == 'En Proceso' %}
+                                            <span class="status-pill status-proceso">En Proceso</span>
+                                        {% else %}
+                                            <span class="status-pill status-pendiente">{{ i.estado }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="fw-semibold">{{ i.fecha|date:"d-m-Y H:i" }}</div>
+                                        <small class="text-secondary">Última actualización</small>
+                                    </td>
+                                    <td class="text-end">
+                                        {% if i.estado != "Finalizada" and i.estado != "Aprobada" %}
+                                            <a href="{% url 'responder_incidencia' i.solicitud_incidencia_id %}" class="btn btn-primary btn-sm">
+                                                Responder
+                                            </a>
+                                        {% else %}
+                                            <span class="action-muted">Completada</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-state mt-4">
+                <h4 class="mb-2">Sin incidencias asignadas</h4>
+                <p class="mb-0">Apenas se asigne una nueva incidencia a tu cuadrilla la verás reflejada en este panel.</p>
+            </div>
+        {% endif %}
+    {% endif %}
 </div>
-{% endif %}
-{% endif %}
 {% endblock %}
