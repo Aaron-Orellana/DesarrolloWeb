@@ -1,18 +1,68 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Subir Multimedia para Solicitud #{{ solicitud.solicitud_incidencia_id }}</h4>
+<div class="container py-4">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-{% endif %}
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <h2 class="mb-3">Subir Multimedia</h2>
+                <p class="text-secondary mb-0">
+                    Solicitud de Incidencia: <strong>#{{ solicitud.solicitud_incidencia_id }}</strong>
+                    <span class="text-muted">• {{ solicitud.encuesta.titulo }} • {{ solicitud.territorial.nombre }}</span>
+                </p>
+            </div>
+            <a href="{% url 'multimedia_listar' solicitud.solicitud_incidencia_id %}" 
+               class="btn btn-secondary px-4">
+                Ver Archivos
+            </a>
+        </div>
+    </div>
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-success">Subir</button>
-    <a href="{% url 'multimedia_listar' solicitud.solicitud_incidencia_id %}" class="btn btn-secondary">Cancelar</a>
-</form>
+    <!-- Mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario de subida -->
+    <div class="info-card p-4 p-md-5">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                <div class="col-12">
+                    <h4 class="text-primary mb-4">Selecciona el archivo</h4>
+                </div>
+
+                {{ form.as_p }}
+            </div>
+
+            <!-- Vista previa -->
+            {% if form.archivo.value %}
+                <div class="mt-4 p-4 bg-dark rounded border border-secondary text-center">
+                    <small class="text-success">Archivo seleccionado:</small><br>
+                    <strong>{{ form.archivo.value }}</strong>
+                </div>
+            {% endif %}
+
+            <!-- Botones -->
+            <div class="mt-5 d-flex gap-3 flex-wrap justify-content-end">
+                <button type="submit" class="btn btn-success px-5 py-3">
+                    Subir Archivo
+                </button>
+                <a href="{% url 'multimedia_listar' solicitud.solicitud_incidencia_id %}" 
+                   class="btn btn-secondary px-5 py-3">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

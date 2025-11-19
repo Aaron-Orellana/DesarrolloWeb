@@ -3,7 +3,14 @@
 <head>
     {% load static %}
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sistema de Administración</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
@@ -22,7 +29,7 @@
         .alert-danger { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
 <header>
     <h1>Panel Principal</h1>
@@ -43,6 +50,7 @@
         <a href="{% url 'logout' %}">Cerrar sesión</a>
     </nav>
 </header>
+
 <!-- Bloque mensajes de Django -->
 {% if messages %}
   <div class="container">

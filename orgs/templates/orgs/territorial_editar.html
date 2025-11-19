@@ -1,12 +1,48 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Editar Territorial: {{ territorial.nombre }}</h4>
+<div class="container py-4">
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Actualizar</button>
-    <a href="{% url 'territorial_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Editar Territorial</h2>
+        <p class="text-secondary mb-0">
+            Modificando: <strong>{{ territorial.nombre }}</strong>
+            {% if territorial.profile %}
+                <span class="text-muted">• Responsable: {{ territorial.profile.user.get_full_name|default:territorial.profile.user.username }}</span>
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- Mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                {{ form.as_p }}
+            </div>
+
+            <div class="mt-5 d-flex gap-3 flex-wrap">
+                <button type="submit" class="btn btn-primary px-4">
+                    Actualizar Territorial
+                </button>
+                <a href="{% url 'territorial_listar' %}" class="btn btn-secondary px-4">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

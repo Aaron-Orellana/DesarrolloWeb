@@ -1,85 +1,146 @@
-{% extends 'core/base.html' %}
+{% extends "core/list_base.html" %}
 
-{% block content %}
-<h4>Listar Incidencias</h4>
+{# TEMA OSCURO #}
+{% block theme_class %}custom-theme{% endblock %}
 
-<p>
-    <a href="{% url 'incidencia_crear' %}" class="btn btn-success">+ Crear Nueva Incidencia</a>
-</p>
+{# TÍTULO #}
+{% block title %}Listado de Incidencias{% endblock %}
 
-
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>Nombre</th>
-            <th>Descripción</th>
-            <th>Dirección</th>
-            <th>Departamento</th>
-            <th>Encuesta</th>
-            <th>Estado</th>   
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for incidencia in incidencias %}
-        <tr>
-            <td>{{ forloop.counter }}</td>
-            <td>{{ incidencia.nombre }}</td>
-            <td>{{ incidencia.descripcion|default:"Sin descripción" }}</td>
-            <td>{{ incidencia.direccion.nombre }}</td>
-            <td>{{ incidencia.departamento.nombre }}</td>
-            <td>{{ incidencia.encuesta.titulo|default:"—" }}</td>
-            <td>
-                {% if incidencia.estado %}
-                    <span class="badge bg-success">Activa</span>
-                {% else %}
-                    <span class="badge bg-secondary">Bloqueada</span>
-                {% endif %}
-            </td>
-
-            <td>
-                <a href="{% url 'incidencia_ver' incidencia.incidencia_id %}" class="btn btn-outline-info btn-sm">Ver</a>
-                <a href="{% url 'incidencia_editar' incidencia.incidencia_id %}" class="btn btn-outline-warning btn-sm">Editar</a>
-                <form method="post" action="{% url 'incidencia_bloquear' incidencia.incidencia_id %}" style="display:inline;">
-                    {% csrf_token %}
-                    {% if incidencia.estado %}
-                    <button type="submit" class="btn btn-sm btn-outline-danger">Bloquear</button>
-                    {% else %}
-                    <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
-                    {% endif %}
-                </form>
-                <a href="{% url 'incidencia_eliminar' incidencia.incidencia_id %}" class="btn btn-outline-danger btn-sm"
-                   onclick="return confirm('¿Eliminar esta incidencia?');">Eliminar</a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7">No hay incidencias registradas.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-
-{% if incidencias.has_other_pages %}
-<div class="pagination">
-    {% if incidencias.has_previous %}
-        <a href="?page={{ incidencias.previous_page_number }}" class="btn btn-outline-primary">&laquo; Anterior</a>
-    {% endif %}
-
-    {% for num in incidencias.paginator.page_range %}
-        {% if incidencias.number == num %}
-            <span class="btn btn-primary disabled">{{ num }}</span>
-        {% else %}
-            <a href="?page={{ num }}" class="btn btn-outline-primary">{{ num }}</a>
-        {% endif %}
-    {% endfor %}
-
-    {% if incidencias.has_next %}
-        <a href="?page={{ incidencias.next_page_number }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
-    {% endif %}
-</div>
-{% endif %}
+{# BOTÓN CREAR #}
+{% block create_button %}
+    <a href="{% url 'incidencia_crear' %}" class="btn btn-primary">
+        Crear Nueva Incidencia
+    </a>
 {% endblock %}
 
+{# FILTROS #}
+{% block filters %}
+<form method="get" class="mb-4 row g-3 align-items-end">
+    <div class="col-md-4">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..."
+               value="{{ request.GET.q|default:'' }}">
+    </div>
+
+    <div class="col-md-3">
+        <select name="direccion" class="form-select">
+            <option value="">Todas las direcciones</option>
+            {% for d in direcciones %}
+                <option value="{{ d.pk }}" {% if request.GET.direccion == d.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ d.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <select name="departamento" class="form-select">
+            <option value="">Todos los departamentos</option>
+            {% for d in departamentos %}
+                <option value="{{ d.pk }}" {% if request.GET.departamento == d.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ d.nombre }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
+</form>
+
+<div class="mb-4">
+    <a href="{% url 'incidencia_listar' %}" class="btn btn-secondary btn-sm">
+        Limpiar filtros
+    </a>
+</div>
+{% endblock %}
+
+{# ENCABEZADOS #}
+{% block headers %}
+    <th>#</th>
+    <th>Nombre</th>
+    <th>Descripción</th>
+    <th>Dirección</th>
+    <th>Departamento</th>
+    <th>Encuesta</th>
+    <th>Estado</th>
+    <th style="width: 280px;">Acciones</th>
+{% endblock %}
+
+{# FILAS #}
+{% block rows %}
+    {% for incidencia in incidencias %}
+        <tr>
+            <td><strong>#{{ incidencia.incidencia_id }}</strong></td>
+            <td class="fw-semibold">{{ incidencia.nombre }}</td>
+            <td>
+                <small class="text-muted">
+                    {{ incidencia.descripcion|default:"Sin descripción"|truncatechars:100 }}
+                </small>
+            </td>
+            <td>{{ incidencia.direccion.nombre }}</td>
+            <td>{{ incidencia.departamento.nombre }}</td>
+            <td>
+                {% if incidencia.encuesta %}
+                    <span class="badge badge-main">{{ incidencia.encuesta.titulo }}</span>
+                {% else %}
+                    <em class="text-muted">—</em>
+                {% endif %}
+            </td>
+            <td>
+                {% if incidencia.estado %}
+                    <span class="badge badge-success-custom">Activa</span>
+                {% else %}
+                    <span class="badge badge-secondary-custom">Bloqueada</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'incidencia_ver' incidencia.incidencia_id %}"
+                   class="btn btn-sm btn-alt">Ver</a>
+
+                <a href="{% url 'incidencia_editar' incidencia.incidencia_id %}"
+                   class="btn btn-sm btn-warn">Editar</a>
+
+                <form method="post" action="{% url 'incidencia_bloquear' incidencia.incidencia_id %}"
+                      class="d-inline">
+                    {% csrf_token %}
+                    {% if incidencia.estado %}
+                        <button type="submit" class="btn btn-sm btn-danger-custom"
+                                onclick="return confirm('¿Bloquear esta incidencia?')">
+                            Bloquear
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-sm btn-success-custom"
+                                onclick="return confirm('¿Activar esta incidencia?')">
+                            Activar
+                        </button>
+                    {% endif %}
+                </form>
+
+                <a href="{% url 'incidencia_eliminar' incidencia.incidencia_id %}"
+                   class="btn btn-sm btn-danger-custom"
+                   onclick="return confirm('¿Eliminar permanentemente esta incidencia?')">
+                    Eliminar
+                </a>
+            </td>
+        </tr>
+
+    {% empty %}
+        <tr>
+            <td colspan="8" class="text-center py-5">
+                <div class="my-4">
+                    <h5 class="text-muted">
+                        {% if request.GET %}
+                            No se encontraron incidencias con los filtros aplicados.
+                        {% else %}
+                            No hay incidencias registradas aún.
+                        {% endif %}
+                    </h5>
+                    <a href="{% url 'incidencia_crear' %}" class="btn btn-primary mt-3">
+                        Crear la primera incidencia
+                    </a>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+{% endblock %}

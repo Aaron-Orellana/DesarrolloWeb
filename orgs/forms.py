@@ -414,21 +414,3 @@ class TerritorialForm(forms.ModelForm):
 
         return territorial
 
-class TerritorialForm(BaseBootstrapForm):
-    profile = forms.ModelChoiceField(
-        queryset=Profile.objects.none(),
-        required=False,
-        label="Responsable",
-        widget=forms.Select(),
-    )
-
-    class Meta:
-        model = Territorial
-        fields = ["nombre", "profile"]
-        labels = {
-            "nombre": "Nombre",
-            "profile": "Responsable",
-        }
-        widgets = {
-            "nombre": forms.TextInput(),
-        }

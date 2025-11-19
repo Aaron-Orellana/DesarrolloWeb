@@ -1,20 +1,46 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Editar Cuadrilla: {{ cuadrilla.nombre }}</h4>
+<div class="container py-4">
 
-{% if messages %}
-  <div class="alert alert-info">
-    {% for message in messages %}
-      <p>{{ message }}</p>
-    {% endfor %}
-  </div>
-{% endif %}
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Editar Cuadrilla</h2>
+        <p class="text-secondary mb-0">
+            Modificando: <strong>{{ cuadrilla.nombre }}</strong> 
+            <span class="text-muted">(ID #{{ cuadrilla.cuadrilla_id }})</span>
+        </p>
+    </div>
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Actualizar</button>
-    <a href="{% url 'cuadrilla_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+    <!-- Mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Formulario -->
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                {{ form.as_p }}
+            </div>
+
+            <div class="mt-5 d-flex gap-3 flex-wrap">
+                <button type="submit" class="btn btn-primary px-4">
+                    Actualizar Cuadrilla
+                </button>
+                <a href="{% url 'cuadrilla_listar' %}" class="btn btn-secondary px-4">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

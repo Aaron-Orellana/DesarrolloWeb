@@ -1,110 +1,139 @@
-{% extends 'core/base.html' %}
+{% extends "core/list_base.html" %}
 
-{% block content %}
-<h4>Listado de Direcciones</h4>
+{# === TEMA OSCURO ACTIVADO === #}
+{% block theme_class %}custom-theme{% endblock %}
 
-<form method="get" class="mb-3">
-    <input type="text" name="q" placeholder="Buscar por nombre" value="{{ request.GET.q }}">
+{# === TÍTULO === #}
+{% block title %}Listado de Direcciones{% endblock %}
 
-    <select name="estado">
-        <option value="">Todos los estados</option>
-        <option value="activa" {% if request.GET.estado == 'activa' %}selected{% endif %}>Activa</option>
-        <option value="bloqueada" {% if request.GET.estado == 'bloqueada' %}selected{% endif %}>Bloqueada</option>
-    </select>
+{# === BOTÓN CREAR NUEVO === #}
+{% block create_button %}
+    <a href="{% url 'direccion_crear' %}" class="btn btn-primary">
+        Crear Nueva Dirección
+    </a>
+{% endblock %}
 
-    <input type="text" name="responsable" placeholder="Encargado" value="{{ request.GET.responsable }}">
+{# === FILTROS MODERNOS === #}
+{% block filters %}
+<form method="get" class="mb-4 row g-3 align-items-end">
+    <div class="col-md-4">
+        <input type="text" name="q" class="form-control" placeholder="Buscar por nombre..."
+               value="{{ request.GET.q|default:'' }}">
+    </div>
 
-    <button type="submit" class="btn btn-primary">Filtrar</button>
-    <a href="{% url 'direccion_listar' %}" class="btn btn-secondary">Limpiar</a>
+    <div class="col-md-3">
+        <select name="estado" class="form-select">
+            <option value="">Todos los estados</option>
+            <option value="activa" {% if request.GET.estado == "activa" %}selected{% endif %}>Activa</option>
+            <option value="bloqueada" {% if request.GET.estado == "bloqueada" %}selected{% endif %}>Bloqueada</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <input type="text" name="responsable" class="form-control" placeholder="Nombre del encargado..."
+               value="{{ request.GET.responsable|default:'' }}">
+    </div>
+
+    <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
 </form>
 
-<p><a href="{% url 'direccion_crear' %}" class="btn btn-success">Crear Nueva Dirección</a></p>
+<div class="mb-4">
+    <a href="{% url 'direccion_listar' %}" class="btn btn-secondary btn-sm">
+        Limpiar filtros
+    </a>
+</div>
+{% endblock %}
 
-{% if sin_resultados %}
-    <div class="alert alert-warning">No se encontraron resultados con los filtros aplicados.</div>
-{% endif %}
+{# === ENCABEZADOS DE TABLA === #}
+{% block headers %}
+    <th>ID</th>
+    <th>Nombre</th>
+    <th>Equipo</th>
+    <th>Estado</th>
+    <th style="width: 300px;">Acciones</th>
+{% endblock %}
 
-<div style="overflow-x:auto;">
-<table class="table table-bordered table-hover table-sm">
-    <thead>
+{# === FILAS DE LA TABLA === #}
+{% block rows %}
+    {% for direccion in direcciones %}
         <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Equipo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for direccion in direcciones %}
-            <tr>
-                <td>{{ direccion.direccion_id }}</td>
-                <td>{{ direccion.nombre }}</td>
-                <td>
-                    {% with memberships=direccion.memberships.all %}
-                        {% if memberships %}
-                            {% for membership in memberships %}
-                                <span class="badge {% if membership.es_encargado %}bg-primary{% else %}bg-light text-dark{% endif %} me-1 mb-1">
-                                    {{ membership.usuario_id.user.get_full_name|default:membership.usuario_id.user.username }}
-                                    {% if membership.es_encargado %}<small>(Encargado)</small>{% endif %}
-                                </span>
-                            {% endfor %}
-                        {% else %}
-                            <em>Sin miembros</em>
-                        {% endif %}
-                    {% endwith %}
-                </td>
-                <td>
-                    {% if direccion.estado %}
-                        <span class="badge bg-success">Activa</span>
+            <td><strong>#{{ direccion.direccion_id }}</strong></td>
+            <td>{{ direccion.nombre }}</td>
+
+            <td>
+                {% with memberships=direccion.memberships.all %}
+                    {% if memberships %}
+                        {% for membership in memberships %}
+                            <span class="badge {% if membership.es_encargado %}badge-main{% else %}badge-secondary-custom{% endif %} me-1 mb-1">
+                                {{ membership.usuario_id.user.get_full_name|default:membership.usuario_id.user.username }}
+                                {% if membership.es_encargado %} (Encargado){% endif %}
+                            </span>
+                        {% endfor %}
                     {% else %}
-                        <span class="badge bg-secondary">Bloqueada</span>
+                        <em class="text-muted">Sin miembros</em>
                     {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'direccion_ver' direccion.direccion_id %}" class="btn btn-sm btn-outline-primary">Ver</a>
-                    <a href="{% url 'direccion_editar' direccion.direccion_id %}" class="btn btn-sm btn-outline-warning">Editar</a>
-                    <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" style="display:inline;">
-                        {% csrf_token %}
-                        {% if direccion.estado %}
-                        <button type="submit" class="btn btn-sm btn-outline-primary">Bloquear</button>
+                {% endwith %}
+            </td>
+
+            <td>
+                {% if direccion.estado %}
+                    <span class="badge badge-success-custom">Activa</span>
+                {% else %}
+                    <span class="badge badge-secondary-custom">Bloqueada</span>
+                {% endif %}
+            </td>
+
+            <td class="text-nowrap">
+                <a href="{% url 'direccion_ver' direccion.direccion_id %}"
+                   class="btn btn-sm btn-alt">Ver</a>
+
+                <a href="{% url 'direccion_editar' direccion.direccion_id %}"
+                   class="btn btn-sm btn-warn">Editar</a>
+
+                <form method="post" action="{% url 'direccion_bloquea' direccion.direccion_id %}" class="d-inline">
+                    {% csrf_token %}
+                    {% if direccion.estado %}
+                        <button type="submit" class="btn btn-sm btn-danger-custom"
+                                onclick="return confirm('¿Bloquear esta dirección?')">
+                            Bloquear
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-sm btn-success-custom"
+                                onclick="return confirm('¿Activar esta dirección?')">
+                            Activar
+                        </button>
+                    {% endif %}
+                </form>
+
+                <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" 
+                      class="d-inline" 
+                      onsubmit="return confirm('¿Eliminar permanentemente esta dirección y todos sus departamentos?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger-custom">
+                        Eliminar
+                    </button>
+                </form>
+            </td>
+        </tr>
+
+    {% empty %}
+        <tr>
+            <td colspan="5" class="text-center py-5">
+                <div class="my-4">
+                    <h5 class="text-muted">
+                        {% if request.GET %}
+                            No se encontraron direcciones con los filtros aplicados.
                         {% else %}
-                        <button type="submit" class="btn btn-sm btn-outline-success">Activar</button>
+                            No hay direcciones registradas aún.
                         {% endif %}
-                    </form>
-                    <form method="post" action="{% url 'direccion_elimina' direccion.direccion_id %}" style="display:inline;" onsubmit="return confirm('¿Deseas eliminar esta dirección?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="5" class="text-center">No hay direcciones registradas.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
-
-{% if direcciones.has_other_pages %}
-<div class="pagination">
-    {% if direcciones.has_previous %}
-        <a href="?page={{ direcciones.previous_page_number }}&{{ query_string }}" class="btn btn-outline-primary">&laquo; Anterior</a>
-    {% endif %}
-
-    {% for num in direcciones.paginator.page_range %}
-        {% if direcciones.number == num %}
-            <span class="btn btn-primary disabled">{{ num }}</span>
-        {% else %}
-            <a href="?page={{ num }}&{{ query_string }}" class="btn btn-outline-primary">{{ num }}</a>
-        {% endif %}
+                    </h5>
+                    <a href="{% url 'direccion_crear' %}" class="btn btn-primary mt-3">
+                        Crear la primera dirección
+                    </a>
+                </div>
+            </td>
+        </tr>
     {% endfor %}
-
-    {% if direcciones.has_next %}
-        <a href="?page={{ direcciones.next_page_number }}&{{ query_string }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
-    {% endif %}
-</div>
-{% endif %}
-
 {% endblock %}

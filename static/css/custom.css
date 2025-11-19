@@ -1,81 +1,319 @@
-
+/* ====================== TEMA OSCURO MODERNO - ESTILO CUADRILLA ====================== */
 .custom-theme {
-    --color-fondo: #EBD0B0;
-    --color-boton: #3D4D55;
-    --color-aux: #A79E9C;
-    --color-encabezado: #10232A;
-    --color-card: #1b2e35;
-
-    display: block; 
+    /* Paleta principal inspirada en el dashboard */
+    --dashboard-primary: #F9B17A;        /* Naranja cálido - botón principal */
+    --dashboard-primary-hover: #d89361;
+    --dashboard-bg: #2D3250;             /* Fondo principal oscuro */
+    --dashboard-surface: #424769;        /* Tarjetas y superficies */
+    --dashboard-muted: #676F9D;           /* Texto secundario */
+    --dashboard-text: #FFFFFF;           /* Texto principal */
+    --dashboard-border: rgba(255, 255, 255, 0.06);
+    --dashboard-shadow: rgba(6, 8, 20, 0.45);
 }
 
-.custom-theme {
-    background-color: var(--color-fondo) !important;
-    padding: 20px;
-    border-radius: 10px;
+/* Fondo general */
+.custom-theme,
+.custom-theme body {
+    background-color: var(--dashboard-bg) !important;
+    color: var(--dashboard-text) !important;
+    font-family: 'Segoe UI', 'Poppins', system-ui, sans-serif;
 }
 
-.custom-theme h1,
-.custom-theme h2,
-.custom-theme h3,
-.custom-theme h4,
-.custom-theme h5 {
-    color: var(--color-encabezado) !important;
+/* Header principal */
+.custom-theme header {
+    background-color: var(--dashboard-surface) !important;
+    color: var(--dashboard-text) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    border-bottom: 1px solid var(--dashboard-border);
 }
 
-.custom-theme .form-card {
-    background-color: var(--color-card) !important;
-    color: white !important;
-    border-radius: 10px;
-    padding: 20px;
-    border: none !important;
+.custom-theme header h1,
+.custom-theme header nav a,
+.custom-theme header .navbar-brand {
+    color: var(--dashboard-text) !important;
+    font-weight: 600;
 }
 
-.custom-theme .btn-primary {
-    background-color: var(--color-boton) !important;
-    border-color: var(--color-boton) !important;
-    color: white !important;
+.custom-theme header nav a:hover {
+    color: var(--dashboard-primary) !important;
+    text-decoration: none !important;
 }
 
-.custom-theme .btn-secondary {
-    background-color: var(--color-aux) !important;
-    border-color: var(--color-aux) !important;
-    color: black !important;
+/* Contenedor principal y tarjetas */
+.custom-theme .container,
+.custom-theme .container-fluid {
+    background-color: transparent !important;
+    padding: 2rem 1rem !important;
 }
 
-.custom-theme .btn-primary:hover {
-    filter: brightness(1.1);
+.custom-theme .card,
+.custom-theme .form-card,
+.custom-theme .info-card,
+.custom-theme .dashboard-hero,
+.custom-theme .incidencias-card,
+.custom-theme .empty-state,
+.custom-theme .alert-dashboard {
+    background-color: var(--dashboard-surface) !important;
+    color: var(--dashboard-text) !important;
+    border: 1px solid var(--dashboard-border) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 12px 30px var(--dashboard-shadow) !important;
 }
 
-.custom-theme .btn-secondary:hover {
-    filter: brightness(1.1);
-}
-
+/* Formularios */
 .custom-theme .form-control,
-.custom-theme .form-select {
-    background-color: var(--color-card) !important;
-    color: white !important;
-    border: 1px solid var(--color-aux) !important;
+.custom-theme .form-select,
+.custom-theme .form-check-input {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid var(--dashboard-border) !important;
+    color: var(--dashboard-text) !important;
+    border-radius: 12px !important;
 }
 
 .custom-theme .form-control:focus,
 .custom-theme .form-select:focus {
-    border-color: var(--color-encabezado) !important;
-    outline: none !important;
-    box-shadow: none !important;
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: var(--dashboard-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(249, 177, 122, 0.25) !important;
+    color: var(--dashboard-text) !important;
 }
 
-.custom-theme label {
+.custom-theme label,
+.custom-theme .form-label {
+    color: var(--dashboard-muted) !important;
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+}
+
+/* Títulos */
+.custom-theme h1, .custom-theme h2, .custom-theme h3,
+.custom-theme h4, .custom-theme h5, .custom-theme h6 {
+    color: var(--dashboard-text) !important;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+/* Botones principales */
+.custom-theme .btn-primary {
+    background-color: var(--dashboard-primary) !important;
+    border-color: var(--dashboard-primary) !important;
+    color: #2D3250 !important;
+    font-weight: 600;
+    border-radius: 999px !important;
+    padding: 0.55rem 1.6rem !important;
+    transition: all 0.2s ease;
+}
+
+.custom-theme .btn-primary:hover {
+    background-color: var(--dashboard-primary-hover) !important;
+    border-color: var(--dashboard-primary-hover) !important;
+    transform: translateY(-1px);
+}
+
+.custom-theme .btn-secondary {
+    background-color: var(--dashboard-surface) !important;
+    color: var(--dashboard-text) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 999px !important;
+}
+
+.custom-theme .btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Botones alternativos (Ver, Editar, etc.) */
+.custom-theme .btn-alt { /* Ver */
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: var(--dashboard-text) !important;
+    border: 1px solid var(--dashboard-border) !important;
+    border-radius: 12px !important;
+}
+.custom-theme .btn-alt:hover {
+    background-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+.custom-theme .btn-warn { /* Editar */
+    background-color: #b08a59 !important;
+    color: white !important;
+    border-radius: 12px !important;
+}
+.custom-theme .btn-warn:hover {
+    background-color: #c59d6a !important;
+}
+
+.custom-theme .btn-danger-custom {
+    background-color: #d9534f !important;
+    color: white !important;
+    border-radius: 12px !important;
+}
+.custom-theme .btn-success-custom {
+    background-color: #4caf50 !important;
+    color: white !important;
+    border-radius: 12px !important;
+}
+
+/* Tablas */
+.custom-theme .table {
+    --bs-table-bg: transparent;
+    --bs-table-striped-bg: rgba(255,255,255,0.02);
+    --bs-table-hover-bg: rgba(255,255,255,0.04);
+    color: var(--dashboard-text);
+    margin-bottom: 0;
+}
+
+.custom-theme .table th {
+    background-color: rgba(255, 255, 255, 0.03) !important;
+    color: var(--dashboard-muted) !important;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    border: none !important;
+}
+
+.custom-theme .table td {
+    border-color: var(--dashboard-border) !important;
+    vertical-align: middle;
+}
+
+.custom-theme .table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Pills / Badges de estado (como en el dashboard) */
+.custom-theme .status-pill,
+.custom-theme .badge {
+    display: inline-flex;
+    align-items: center;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
+}
+
+.custom-theme .status-finalizada,
+.custom-theme .badge-success-custom {
+    background-color: rgba(76, 175, 80, 0.18);
+    color: #58d98d;
+}
+
+.custom-theme .status-proceso,
+.custom-theme .badge-main {
+    background-color: rgba(249, 177, 122, 0.18);
+    color: var(--dashboard-primary);
+}
+
+.custom-theme .status-pendiente,
+.custom-theme .badge-secondary-custom {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: var(--dashboard-text);
+}
+
+/* Paginación */
+.custom-theme .pagination .page-link {
+    background-color: rgba(255, 255, 255, 0.06) !important;
+    border-color: var(--dashboard-border) !important;
+    color: var(--dashboard-text) !important;
+    border-radius: 12px !important;
+}
+
+.custom-theme .pagination .page-item.active .page-link {
+    background-color: var(--dashboard-primary) !important;
+    border-color: var(--dashboard-primary) !important;
+    color: #2D3250 !important;
+}
+
+/* Alertas */
+.custom-theme .alert {
+    border-radius: 20px !important;
+    border: 1px solid var(--dashboard-border) !important;
+    background-color: var(--dashboard-surface) !important;
+    color: var(--dashboard-text) !important;
+}
+
+.custom-theme .alert-warning,
+.custom-theme .alert-dashboard {
+    border-color: rgba(249, 177, 122, 0.35) !important;
+}
+
+/* Estados vacíos */
+.custom-theme .empty-state {
+    text-align: center;
+    padding: 48px !important;
+    border-radius: 26px !important;
+}
+.custom-theme .empty-state p {
+    color: var(--dashboard-muted) !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .custom-theme .container {
+        padding: 1rem !important;
+    }
+    .custom-theme .card,
+    .custom-theme .form-card {
+        border-radius: 16px !important;
+    }
+}
+/* ====================== SELECTS LEGIBLES EN TEMA OSCURO (SIN FLECHA PERSONALIZADA) ====================== */
+.custom-theme select,
+.custom-theme .form-select {
+    background-color: #424769 !important;           /* Fondo igual que las tarjetas */
+    color: #FFFFFF !important;                      /* Texto blanco */
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    border-radius: 16px !important;
+    padding: 0.65rem 1rem !important;             /* Más espacio interno */
+    padding-right: 2.5rem !important;               /* Deja espacio para la flecha nativa */
+    font-size: 0.95rem !important;
+}
+
+/* Hover y focus bonitos */
+.custom-theme select:hover,
+.custom-theme .form-select:hover {
+    border-color: var(--dashboard-primary) !important;
+    background-color: #4a5073 !important;
+}
+
+.custom-theme select:focus,
+.custom-theme .form-select:focus {
+    border-color: var(--dashboard-primary) !important;
+    box-shadow: 0 0 0 0.25rem rgba(249, 177, 122, 0.25) !important;
+    background-color: #4a5073 !important;
+    color: #FFFFFF !important;
+}
+
+/* Opciones dentro del dropdown también legibles */
+.custom-theme select option {
+    background-color: #2D3250 !important;
+    color: #FFFFFF !important;
+}
+.custom-theme select option:checked {
+    background-color: var(--dashboard-primary) !important;
+    color: #2D3250 !important;
+}
+
+/* ====================== FIJAR TEXTO BLANCO EN TABLAS Y BOTONES (TEMA OSCURO) ====================== */
+.custom-theme .table,
+.custom-theme .table th,
+.custom-theme .table td,
+.custom-theme .table tbody,
+.custom-theme .table thead,
+.custom-theme .btn,
+.custom-theme .btn * {
+    color: #FFFFFF !important;
+}
+
+/* Asegura que los enlaces dentro de botones también sean blancos */
+.custom-theme .btn a,
+.custom-theme .btn a:hover {
+    color: #FFFFFF !important;
+    text-decoration: none;
+}
+
+/* Si usas badges o pills dentro de tablas */
+.custom-theme .table .badge,
+.custom-theme .table .status-pill {
     color: white !important;
 }
-
-
-.custom-theme .errorlist,
-.custom-theme .errorlist li {
-    color: #ff7777 !important;
-}
-
-.custom-theme .helptext {
-    color: var(--color-aux) !important;
-}
-

@@ -1,0 +1,60 @@
+{% extends "core/base.html" %}
+
+{% block content %}
+
+<div class="{% block theme_class %}custom-theme{% endblock %}">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">{% block title %}{% endblock %}</h3>
+        {% block create_button %}{% endblock %}
+    </div>
+
+    {% block filters %}{% endblock %}
+
+    <!-- MENSAJE VACÍO – CORREGIDO -->
+    {% block empty_message %}{% endblock %}
+
+    <div class="table-responsive rounded shadow-sm overflow-hidden">
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    {% block headers %}{% endblock %}
+                </tr>
+            </thead>
+            <tbody>
+                {% block rows %}
+                {% endblock %}
+            </tbody>
+        </table>
+    </div>
+
+    {% block pagination %}
+        {% if is_paginated or page_obj %}
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center flex-wrap gap-1">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{{ query_params }}">&laquo;</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item"><a class="page-link" href="?page={{ num }}{{ query_params }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{{ query_params }}">&raquo;</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% endblock %}
+
+</div>
+{% endblock content %}

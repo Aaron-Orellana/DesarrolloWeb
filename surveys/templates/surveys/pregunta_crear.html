@@ -1,20 +1,46 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Crear Nueva Pregunta</h4>
+<div class="container py-4">
 
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-    {% endfor %}
-{% endif %}
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Crear Nueva Pregunta</h2>
+        <p class="text-secondary mb-0">
+            Agrega una nueva pregunta para usar en encuestas de incidencias ciudadanas.
+        </p>
+    </div>
 
-<form method="post">
-    {% csrf_token %}
+    <!-- Mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-    {{ form.as_p }}
+    <!-- Formulario principal -->
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
 
-    <button type="submit" class="btn btn-primary">Guardar Pregunta</button>
-    <a href="{% url 'pregunta_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+            <div class="row g-4">
+                {{ form.as_p }}
+            </div>
+
+            <!-- Botones -->
+            <div class="mt-5 d-flex gap-3 flex-wrap justify-content-end">
+                <button type="submit" class="btn btn-success px-5 py-3">
+                    Guardar Pregunta
+                </button>
+                <a href="{% url 'pregunta_listar' %}" class="btn btn-secondary px-5 py-3">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

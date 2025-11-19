@@ -65,7 +65,7 @@ def solicitud_listar(request):
         'request': request,
     })
 
-@role_required("Territoriales")
+@role_required("Territoriales","Secpla")
 def solicitud_crear(request):
     from surveys.models import Pregunta, Respuesta  
 
@@ -125,9 +125,11 @@ def solicitud_crear(request):
             messages.error(request, 'Error al guardar. Revise los datos del formulario.')
     else:
         
-        form = SolicitudIncidenciaForm(encuesta_id=encuesta_id)
+        initial = {}
         if encuesta_id:
-            form.fields['encuesta'].initial = encuesta_id
+            initial['encuesta'] = encuesta_id
+
+        form = SolicitudIncidenciaForm(encuesta_id=encuesta_id, initial=initial)
 
     return render(request, 'tickets/solicitud_crear.html', {'form': form})
 
