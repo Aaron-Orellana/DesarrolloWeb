@@ -38,7 +38,6 @@ class BaseMembershipSerializer(serializers.ModelSerializer):
     usuario = ProfileSummarySerializer(source="usuario_id", read_only=True)
     usuario_id = serializers.PrimaryKeyRelatedField(
         queryset=Profile.objects.select_related("user"),
-        source="usuario_id",
         write_only=True,
     )
 

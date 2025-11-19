@@ -1,0 +1,18 @@
+@use 'bulma/bulma';
+
+html,
+body {
+  min-height: 100vh;
+  background-color: #f5f7fb;
+}
+
+body {
+  color: #1c1c1c;
+  font-family:
+    'Inter',
+    'Roboto',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+}

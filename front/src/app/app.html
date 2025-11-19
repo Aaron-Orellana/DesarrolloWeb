@@ -1,0 +1,815 @@
+<section class="section">
+  <div class="container">
+    <div
+      *ngIf="feedback()"
+      class="notification"
+      [ngClass]="feedback()?.type === 'success' ? 'is-success is-light' : 'is-danger is-light'"
+    >
+      <button class="delete" type="button" (click)="closeFeedback()"></button>
+      {{ feedback()?.text }}
+    </div>
+
+    <div class="columns is-multiline stats-row">
+      <div class="column is-6-tablet is-3-desktop">
+        <div class="stat-card is-link-light">
+          <p class="stat-label">Direcciones</p>
+          <p class="stat-value">{{ summary().direcciones }}</p>
+        </div>
+      </div>
+      <div class="column is-6-tablet is-3-desktop">
+        <div class="stat-card is-primary-light">
+          <p class="stat-label">Departamentos</p>
+          <p class="stat-value">{{ summary().departamentos }}</p>
+        </div>
+      </div>
+      <div class="column is-6-tablet is-3-desktop">
+        <div class="stat-card is-info-light">
+          <p class="stat-label">Cuadrillas</p>
+          <p class="stat-value">{{ summary().cuadrillas }}</p>
+        </div>
+      </div>
+      <div class="column is-6-tablet is-3-desktop">
+        <div class="stat-card is-warning-light">
+          <p class="stat-label">Territoriales</p>
+          <p class="stat-value">{{ summary().territoriales }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Direcciones -->
+    <div class="box data-section" id="direcciones">
+      <div class="level section-header">
+        <div class="level-left">
+          <div>
+            <p class="title is-4">Direcciones</p>
+            <p class="subtitle is-6">Gestiona equipos y responsables</p>
+          </div>
+        </div>
+        <div class="level-right">
+          <button class="button is-link is-light" type="button" (click)="loadDirecciones()">Refrescar</button>
+        </div>
+      </div>
+
+      <div class="columns is-variable is-6">
+        <div class="column is-8">
+          <form class="filters" [formGroup]="direccionFilters" (ngSubmit)="onDireccionesFilter()">
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Nombre</label>
+                <input class="input" type="text" formControlName="q" placeholder="Buscar..." />
+              </div>
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Estado</label>
+                <div class="select is-fullwidth">
+                  <select formControlName="estado">
+                    <option value="">Todos</option>
+                    <option value="activa">Activa</option>
+                    <option value="bloqueada">Bloqueada</option>
+                  </select>
+                </div>
+              </div>
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Responsable</label>
+                <input
+                  class="input"
+                  type="text"
+                  formControlName="responsable"
+                  placeholder="Nombre o usuario"
+                />
+              </div>
+            </div>
+            <div class="buttons is-right">
+              <button class="button is-light" type="button" (click)="resetDireccionFilters()">Limpiar</button>
+              <button class="button is-link" type="submit">Aplicar filtros</button>
+            </div>
+          </form>
+
+          <div *ngIf="direccionesState().error" class="notification is-danger is-light">
+            {{ direccionesState().error }}
+          </div>
+
+          <progress
+            *ngIf="direccionesState().loading"
+            class="progress is-small is-link"
+            max="100"
+          >
+            Cargando
+          </progress>
+
+          <div class="table-container">
+            <table class="table is-fullwidth is-hoverable is-striped">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Estado</th>
+                  <th>Equipo</th>
+                  <th class="has-text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let direccion of direccionesState().items; trackBy: trackByDireccion">
+                  <td>
+                    <p class="has-text-weight-semibold">{{ direccion.nombre }}</p>
+                    <p class="is-size-7 has-text-dark">ID {{ direccion.direccion_id }}</p>
+                  </td>
+                  <td>
+                    <span class="tag" [ngClass]="badgeClass(direccion.estado)">
+                      {{ direccion.estado ? 'Activa' : 'Bloqueada' }}
+                    </span>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="direccion.memberships.length; else noDireccionMembers">
+                      <div class="tags are-medium">
+                        <span
+                          class="tag"
+                          [ngClass]="membership.es_encargado ? 'is-link' : 'is-light'"
+                          *ngFor="let membership of direccion.memberships"
+                        >
+                          {{ membershipLabel(membership.usuario?.full_name, membership.usuario?.username) }}
+                          <span *ngIf="membership.es_encargado" class="tag-addon">Enc.</span>
+                        </span>
+                      </div>
+                    </ng-container>
+                    <ng-template #noDireccionMembers>
+                            <span class="has-text-dark">Sin miembros</span>
+                    </ng-template>
+                  </td>
+                  <td class="has-text-right">
+                    <div class="buttons are-small is-justify-content-flex-end">
+                      <button
+                        class="button is-warning is-light"
+                        type="button"
+                        (click)="toggleDireccionEstado(direccion)"
+                      >
+                        {{ direccion.estado ? 'Bloquear' : 'Activar' }}
+                      </button>
+                      <button
+                        class="button is-danger is-light"
+                        type="button"
+                        (click)="deleteDireccion(direccion)"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="!direccionesState().items.length && !direccionesState().loading">
+                  <td colspan="4" class="has-text-centered has-text-dark">
+                    Aún no hay direcciones registradas.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-controls" *ngIf="direccionesTotalPages() > 1">
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="direccionesState().page === 1"
+              (click)="changeDireccionesPage(direccionesState().page - 1)"
+            >
+              Anterior
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              *ngFor="let page of pageRange(direccionesTotalPages())"
+              [ngClass]="{ 'is-link': page === direccionesState().page }"
+              (click)="changeDireccionesPage(page)"
+            >
+              {{ page }}
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="direccionesState().page === direccionesTotalPages()"
+              (click)="changeDireccionesPage(direccionesState().page + 1)"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+
+        <div class="column is-4">
+          <div class="card form-card">
+            <header class="card-header">
+              <p class="card-header-title">Registrar dirección</p>
+            </header>
+            <div class="card-content">
+              <form [formGroup]="direccionForm" (ngSubmit)="submitDireccion()" class="form-stack">
+                <div class="field">
+                  <label class="label">Nombre</label>
+                  <div class="control">
+                    <input class="input" type="text" formControlName="nombre" placeholder="Dirección de Obras" />
+                  </div>
+                  <p class="help is-danger" *ngIf="direccionForm.controls.nombre.touched && direccionForm.controls.nombre.invalid">
+                    El nombre es obligatorio.
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="checkbox">
+                    <input type="checkbox" formControlName="estado" />
+                    Activa
+                  </label>
+                </div>
+                <div class="field">
+                  <button class="button is-link is-fullwidth" type="submit">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Departamentos -->
+    <div class="box data-section" id="departamentos">
+      <div class="level section-header">
+        <div class="level-left">
+          <div>
+            <p class="title is-4">Departamentos</p>
+            <p class="subtitle is-6">Relacionados a direcciones activas</p>
+          </div>
+        </div>
+        <div class="level-right">
+          <button class="button is-primary is-light" type="button" (click)="loadDepartamentos()">Refrescar</button>
+        </div>
+      </div>
+      <div class="columns is-variable is-6">
+        <div class="column is-8">
+          <form class="filters" [formGroup]="departamentoFilters" (ngSubmit)="onDepartamentosFilter()">
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Nombre</label>
+                <input class="input" type="text" formControlName="q" placeholder="Buscar..." />
+              </div>
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Estado</label>
+                <div class="select is-fullwidth">
+                  <select formControlName="estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="bloqueado">Bloqueado</option>
+                  </select>
+                </div>
+              </div>
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Dirección</label>
+                <div class="select is-fullwidth">
+                  <select formControlName="direccion">
+                    <option value="">Todas</option>
+                    <option *ngFor="let direccion of direccionOptions()" [value]="direccion.direccion_id">
+                      {{ direccion.nombre }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="buttons is-right">
+              <button class="button is-light" type="button" (click)="resetDepartamentoFilters()">Limpiar</button>
+              <button class="button is-primary" type="submit">Aplicar filtros</button>
+            </div>
+          </form>
+
+          <div *ngIf="departamentosState().error" class="notification is-danger is-light">
+            {{ departamentosState().error }}
+          </div>
+
+          <progress
+            *ngIf="departamentosState().loading"
+            class="progress is-small is-primary"
+            max="100"
+          >
+            Cargando
+          </progress>
+
+          <div class="table-container">
+            <table class="table is-fullwidth is-hoverable is-striped">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Dirección</th>
+                  <th>Estado</th>
+                  <th>Encargados</th>
+                  <th class="has-text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let departamento of departamentosState().items; trackBy: trackByDepartamento">
+                  <td>
+                    <p class="has-text-weight-semibold">{{ departamento.nombre }}</p>
+                    <p class="is-size-7 has-text-dark">ID {{ departamento.departamento_id }}</p>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="departamento.direccion_detalle as direccion; else noDireccionDetalle">
+                      <span class="tag is-light">{{ direccion.nombre }}</span>
+                    </ng-container>
+                    <ng-template #noDireccionDetalle>
+                      <span class="has-text-dark">Sin dirección</span>
+                    </ng-template>
+                  </td>
+                  <td>
+                    <span class="tag" [ngClass]="badgeClass(departamento.estado)">
+                      {{ departamento.estado ? 'Activo' : 'Bloqueado' }}
+                    </span>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="departamento.memberships.length; else noDeptMembers">
+                      <div class="tags">
+                        <span
+                          class="tag is-light"
+                          [class.is-link]="miembro.es_encargado"
+                          *ngFor="let miembro of departamento.memberships"
+                        >
+                          {{ membershipLabel(miembro.usuario?.full_name, miembro.usuario?.username) }}
+                          <span *ngIf="miembro.es_encargado" class="tag-addon">Enc.</span>
+                        </span>
+                      </div>
+                    </ng-container>
+                    <ng-template #noDeptMembers>
+                      <span class="has-text-dark">Sin miembros</span>
+                    </ng-template>
+                  </td>
+                  <td class="has-text-right">
+                    <div class="buttons are-small is-justify-content-flex-end">
+                      <button
+                        class="button is-warning is-light"
+                        type="button"
+                        (click)="toggleDepartamentoEstado(departamento)"
+                      >
+                        {{ departamento.estado ? 'Bloquear' : 'Activar' }}
+                      </button>
+                      <button
+                        class="button is-danger is-light"
+                        type="button"
+                        (click)="deleteDepartamento(departamento)"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="!departamentosState().items.length && !departamentosState().loading">
+                  <td colspan="5" class="has-text-centered has-text-dark">
+                    No hay departamentos con los filtros actuales.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-controls" *ngIf="departamentosTotalPages() > 1">
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="departamentosState().page === 1"
+              (click)="changeDepartamentosPage(departamentosState().page - 1)"
+            >
+              Anterior
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              *ngFor="let page of pageRange(departamentosTotalPages())"
+              [ngClass]="{ 'is-primary': page === departamentosState().page }"
+              (click)="changeDepartamentosPage(page)"
+            >
+              {{ page }}
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="departamentosState().page === departamentosTotalPages()"
+              (click)="changeDepartamentosPage(departamentosState().page + 1)"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="card form-card">
+            <header class="card-header">
+              <p class="card-header-title">Registrar departamento</p>
+            </header>
+            <div class="card-content">
+              <form [formGroup]="departamentoForm" (ngSubmit)="submitDepartamento()" class="form-stack">
+                <div class="field">
+                  <label class="label">Nombre</label>
+                  <div class="control">
+                    <input class="input" type="text" formControlName="nombre" placeholder="Gestión Territorial" />
+                  </div>
+                  <p class="help is-danger" *ngIf="departamentoForm.controls.nombre.touched && departamentoForm.controls.nombre.invalid">
+                    Este campo es obligatorio.
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="label">Dirección</label>
+                  <div class="control">
+                    <div class="select is-fullwidth">
+                      <select formControlName="direccion">
+                        <option [ngValue]="null">Selecciona una dirección</option>
+                        <option *ngFor="let direccion of direccionOptions()" [ngValue]="direccion.direccion_id">
+                          {{ direccion.nombre }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="help is-danger" *ngIf="departamentoForm.controls.direccion.touched && departamentoForm.controls.direccion.invalid">
+                    Debes seleccionar una dirección.
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="checkbox">
+                    <input type="checkbox" formControlName="estado" />
+                    Activo
+                  </label>
+                </div>
+                <div class="field">
+                  <button class="button is-primary is-fullwidth" type="submit">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuadrillas -->
+    <div class="box data-section" id="cuadrillas">
+      <div class="level section-header">
+        <div class="level-left">
+          <div>
+            <p class="title is-4">Cuadrillas</p>
+            <p class="subtitle is-6">Panel rápido para equipos operativos</p>
+          </div>
+        </div>
+        <div class="level-right">
+          <button class="button is-info is-light" type="button" (click)="loadCuadrillas()">Refrescar</button>
+        </div>
+      </div>
+      <div class="columns is-variable is-6">
+        <div class="column is-8">
+          <form class="filters" [formGroup]="cuadrillaFilters" (ngSubmit)="onCuadrillasFilter()">
+            <div class="columns is-multiline">
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Nombre</label>
+                <input class="input" type="text" formControlName="q" placeholder="Buscar..." />
+              </div>
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Estado</label>
+                <div class="select is-fullwidth">
+                  <select formControlName="estado">
+                    <option value="">Todos</option>
+                    <option value="activo">Activo</option>
+                    <option value="bloqueado">Bloqueado</option>
+                  </select>
+                </div>
+              </div>
+              <div class="column is-4">
+                <label class="label is-size-7 has-text-weight-semibold">Departamento</label>
+                <div class="select is-fullwidth">
+                  <select formControlName="departamento">
+                    <option value="">Todos</option>
+                    <option *ngFor="let departamento of departamentoOptions()" [value]="departamento.departamento_id">
+                      {{ departamento.nombre }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="buttons is-right">
+              <button class="button is-light" type="button" (click)="resetCuadrillaFilters()">Limpiar</button>
+              <button class="button is-info" type="submit">Aplicar filtros</button>
+            </div>
+          </form>
+
+          <div *ngIf="cuadrillasState().error" class="notification is-danger is-light">
+            {{ cuadrillasState().error }}
+          </div>
+
+          <progress
+            *ngIf="cuadrillasState().loading"
+            class="progress is-small is-info"
+            max="100"
+          >
+            Cargando
+          </progress>
+
+          <div class="table-container">
+            <table class="table is-fullwidth is-hoverable is-striped">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Departamento</th>
+                  <th>Estado</th>
+                  <th>Integrantes</th>
+                  <th class="has-text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let cuadrilla of cuadrillasState().items; trackBy: trackByCuadrilla">
+                  <td>
+                    <p class="has-text-weight-semibold">{{ cuadrilla.nombre }}</p>
+                    <p class="is-size-7 has-text-dark">ID {{ cuadrilla.cuadrilla_id }}</p>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="cuadrilla.departamento_detalle as departamento; else sinDepartamento">
+                      <p>{{ departamento.nombre }}</p>
+                      <ng-container *ngIf="departamento.direccion as direccion; else sinDireccionAsociada">
+                        <span class="is-size-7 has-text-dark">
+                          {{ direccion.nombre }}
+                        </span>
+                      </ng-container>
+                      <ng-template #sinDireccionAsociada>
+                        <span class="is-size-7 has-text-dark">Sin dirección asociada</span>
+                      </ng-template>
+                    </ng-container>
+                    <ng-template #sinDepartamento>
+                      <span class="has-text-dark">Sin departamento</span>
+                    </ng-template>
+                  </td>
+                  <td>
+                    <span class="tag" [ngClass]="badgeClass(cuadrilla.estado)">
+                      {{ cuadrilla.estado ? 'Activa' : 'Bloqueada' }}
+                    </span>
+                  </td>
+                  <td>
+                    <ng-container *ngIf="cuadrilla.memberships.length; else noCuadrillaMembers">
+                      <div class="tags">
+                        <span class="tag is-light" *ngFor="let miembro of cuadrilla.memberships">
+                          {{ membershipLabel(miembro.usuario?.full_name, miembro.usuario?.username) }}
+                        </span>
+                      </div>
+                    </ng-container>
+                    <ng-template #noCuadrillaMembers>
+                      <span class="has-text-dark">Sin integrantes</span>
+                    </ng-template>
+                  </td>
+                  <td class="has-text-right">
+                    <div class="buttons are-small is-justify-content-flex-end">
+                      <button
+                        class="button is-warning is-light"
+                        type="button"
+                        (click)="toggleCuadrillaEstado(cuadrilla)"
+                      >
+                        {{ cuadrilla.estado ? 'Bloquear' : 'Activar' }}
+                      </button>
+                      <button
+                        class="button is-danger is-light"
+                        type="button"
+                        (click)="deleteCuadrilla(cuadrilla)"
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="!cuadrillasState().items.length && !cuadrillasState().loading">
+                  <td colspan="5" class="has-text-centered has-text-dark">
+                    No se encontraron cuadrillas.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-controls" *ngIf="cuadrillasTotalPages() > 1">
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="cuadrillasState().page === 1"
+              (click)="changeCuadrillasPage(cuadrillasState().page - 1)"
+            >
+              Anterior
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              *ngFor="let page of pageRange(cuadrillasTotalPages())"
+              [ngClass]="{ 'is-info': page === cuadrillasState().page }"
+              (click)="changeCuadrillasPage(page)"
+            >
+              {{ page }}
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="cuadrillasState().page === cuadrillasTotalPages()"
+              (click)="changeCuadrillasPage(cuadrillasState().page + 1)"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="card form-card">
+            <header class="card-header">
+              <p class="card-header-title">Registrar cuadrilla</p>
+            </header>
+            <div class="card-content">
+              <form [formGroup]="cuadrillaForm" (ngSubmit)="submitCuadrilla()" class="form-stack">
+                <div class="field">
+                  <label class="label">Nombre</label>
+                  <div class="control">
+                    <input class="input" type="text" formControlName="nombre" placeholder="Cuadrilla Norte" />
+                  </div>
+                  <p class="help is-danger" *ngIf="cuadrillaForm.controls.nombre.touched && cuadrillaForm.controls.nombre.invalid">
+                    El nombre es obligatorio.
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="label">Departamento</label>
+                  <div class="control">
+                    <div class="select is-fullwidth">
+                      <select formControlName="departamento">
+                        <option [ngValue]="null">Selecciona un departamento</option>
+                        <option *ngFor="let departamento of departamentoOptions()" [ngValue]="departamento.departamento_id">
+                          {{ departamento.nombre }}
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                  <p class="help is-danger" *ngIf="cuadrillaForm.controls.departamento.touched && cuadrillaForm.controls.departamento.invalid">
+                    Debes seleccionar un departamento.
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="checkbox">
+                    <input type="checkbox" formControlName="estado" />
+                    Activa
+                  </label>
+                </div>
+                <div class="field">
+                  <button class="button is-info is-fullwidth" type="submit">Guardar</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Territoriales -->
+    <div class="box data-section" id="territoriales">
+      <div class="level section-header">
+        <div class="level-left">
+          <div>
+            <p class="title is-4">Territoriales</p>
+            <p class="subtitle is-6">Administración de responsables asignados</p>
+          </div>
+        </div>
+        <div class="level-right">
+          <button class="button is-warning is-light" type="button" (click)="loadTerritoriales()">Refrescar</button>
+        </div>
+      </div>
+      <div class="columns is-variable is-6">
+        <div class="column is-8">
+          <form class="filters" [formGroup]="territorialFilters" (ngSubmit)="onTerritorialesFilter()">
+            <div class="columns is-multiline">
+              <div class="column is-6">
+                <label class="label is-size-7 has-text-weight-semibold">Nombre o usuario</label>
+                <input class="input" type="text" formControlName="q" placeholder="Buscar..." />
+              </div>
+            </div>
+            <div class="buttons is-right">
+              <button class="button is-light" type="button" (click)="resetTerritorialFilters()">Limpiar</button>
+              <button class="button is-warning" type="submit">Aplicar filtros</button>
+            </div>
+          </form>
+
+          <div *ngIf="territorialesState().error" class="notification is-danger is-light">
+            {{ territorialesState().error }}
+          </div>
+
+          <progress
+            *ngIf="territorialesState().loading"
+            class="progress is-small is-warning"
+            max="100"
+          >
+            Cargando
+          </progress>
+
+          <div class="table-container">
+            <table class="table is-fullwidth is-hoverable is-striped">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Responsable</th>
+                  <th class="has-text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let territorial of territorialesState().items; trackBy: trackByTerritorial">
+                  <td>
+                    <p class="has-text-weight-semibold">{{ territorial.nombre }}</p>
+                    <p class="is-size-7 has-text-dark">ID {{ territorial.territorial_id }}</p>
+                  </td>
+                  <td>
+                    <div *ngIf="territorial.profile_detalle; else noProfile">
+                      <p>{{ territorial.profile_detalle.full_name || territorial.profile_detalle.username }}</p>
+                      <p class="is-size-7 has-text-dark">
+                        Usuario: {{ territorial.profile_detalle.username }} —
+                        Rol: {{ territorial.profile_detalle.role_type || 'Sin rol' }}
+                      </p>
+                    </div>
+                    <ng-template #noProfile>
+                      <span class="has-text-dark">Sin responsable asignado</span>
+                    </ng-template>
+                  </td>
+                  <td class="has-text-right">
+                    <div class="buttons are-small is-justify-content-flex-end">
+                      <button class="button is-warning is-light" type="button" (click)="editTerritorial(territorial)">
+                        Editar
+                      </button>
+                      <button class="button is-danger is-light" type="button" (click)="deleteTerritorial(territorial)">
+                        Eliminar
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr *ngIf="!territorialesState().items.length && !territorialesState().loading">
+                  <td colspan="3" class="has-text-centered has-text-dark">
+                    No hay territoriales registrados.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-controls" *ngIf="territorialesTotalPages() > 1">
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="territorialesState().page === 1"
+              (click)="changeTerritorialesPage(territorialesState().page - 1)"
+            >
+              Anterior
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              *ngFor="let page of pageRange(territorialesTotalPages())"
+              [ngClass]="{ 'is-warning': page === territorialesState().page }"
+              (click)="changeTerritorialesPage(page)"
+            >
+              {{ page }}
+            </button>
+            <button
+              class="button is-small"
+              type="button"
+              [disabled]="territorialesState().page === territorialesTotalPages()"
+              (click)="changeTerritorialesPage(territorialesState().page + 1)"
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="card form-card">
+            <header class="card-header">
+              <p class="card-header-title">
+                {{ editingTerritorial() ? 'Editar territorial' : 'Registrar territorial' }}
+              </p>
+            </header>
+            <div class="card-content">
+              <form [formGroup]="territorialForm" (ngSubmit)="submitTerritorial()" class="form-stack">
+                <div class="field">
+                  <label class="label">Nombre</label>
+                  <div class="control">
+                    <input class="input" type="text" formControlName="nombre" placeholder="Macrozona Sur" />
+                  </div>
+                  <p class="help is-danger" *ngIf="territorialForm.controls.nombre.touched && territorialForm.controls.nombre.invalid">
+                    El nombre es obligatorio.
+                  </p>
+                </div>
+                <div class="field">
+                  <label class="label">Responsable (ID de perfil)</label>
+                  <div class="control">
+                    <input class="input" type="number" min="1" formControlName="profile" placeholder="ID de profile" />
+                  </div>
+                  <p class="help">Puedes dejarlo vacío para un territorial sin asignación.</p>
+                </div>
+                <div class="field">
+                  <div class="buttons">
+                    <button class="button is-warning is-fullwidth" type="submit">
+                      {{ editingTerritorial() ? 'Actualizar' : 'Guardar' }}
+                    </button>
+                    <button
+                      *ngIf="editingTerritorial()"
+                      class="button is-light is-fullwidth"
+                      type="button"
+                      (click)="cancelTerritorialEdit()"
+                    >
+                      Cancelar edición
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
