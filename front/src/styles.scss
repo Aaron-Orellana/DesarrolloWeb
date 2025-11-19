@@ -1,18 +1,145 @@
 @use 'bulma/bulma';
 
-html,
-body {
+/* ------------------------
+   FONDO GENERAL
+------------------------- */
+html, body {
   min-height: 100vh;
   background-color: #f5f7fb;
+  overflow-x: hidden;
 }
 
 body {
   color: #1c1c1c;
   font-family:
-    'Inter',
-    'Roboto',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
+    'Inter', 'Roboto', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+}
+
+/* ------------------------
+   SIDEBAR (Diseño óptimo)
+------------------------- */
+.sidebar {
+  width: 230px;           /* <<< ANCHO IDEAL */
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 2rem 1.4rem;
+  border-right: 1px solid #e6e6e6;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.04);
+
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.sidebar-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #1e2a38;
+}
+
+.sidebar-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sidebar-item {
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #1e2a38;
+  transition: 0.25s;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-item:hover {
+  background: #eef2ff;
+  transform: translateX(4px);
+}
+
+.sidebar-item.active {
+  background: #e8eaff;
+  border-left: 4px solid #4C6EF5;
+  padding-left: 8px;
+  font-weight: 600;
+}
+
+/* Colores individuales */
+.sidebar-item.dir { border-left: 4px solid #4C6EF5; }
+.sidebar-item.dep { border-left: 4px solid #2BBB9A; }
+.sidebar-item.cua { border-left: 4px solid #3C8DFF; }
+.sidebar-item.ter { border-left: 4px solid #F4B208; }
+
+/* ------------------------
+   CONTENIDO PRINCIPAL
+------------------------- */
+.page-content {
+  margin-left: 230px;       /* <<< SE ACOMODA AL SIDEBAR */
+  padding: 1.2rem 1.2rem;   /* <<< SEPARACIÓN IDEAL */
+  width: calc(100% - 230px);
+  max-width: 100%;
+}
+
+/* ------------------------
+   CARDS / BOXES
+------------------------- */
+.box,
+.data-section,
+.card.form-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.6rem;
+  box-shadow: 0 4px 18px rgba(0,0,0,0.04);
+  margin-bottom: 2rem;
+}
+
+/* ------------------------
+   TABLAS
+------------------------- */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+th {
+  font-weight: 700;
+  color: #5a5a5a;
+}
+
+/* ------------------------
+   FILTROS Y BOTONES
+------------------------- */
+.filters .input,
+.filters select {
+  height: 2.6rem;
+}
+
+.button {
+  border-radius: 8px;
+}
+
+/* ------------------------
+   FORMULARIOS
+------------------------- */
+.card.form-card {
+  border-radius: 14px;
+}
+
+.card-header {
+  background: #f5f7fb;
+  border-radius: 14px 14px 0 0 !important;
+}
+
+.card-header-title {
+  font-weight: 600;
 }

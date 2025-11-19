@@ -9,7 +9,7 @@ import {
   DepartamentoFilters,
   Direccion,
   DireccionFilters,
-  PaginatedResponse,
+  
   Territorial,
   TerritorialFilters
 } from '../models/orgs';
@@ -22,8 +22,11 @@ const API_BASE_URL = 'http://localhost:8000/api/orgs';
 export class OrgsApiService {
   private readonly http = inject(HttpClient);
 
-  getDirecciones(params: DireccionFilters = {}): Observable<PaginatedResponse<Direccion>> {
-    return this.requestPaginated<Direccion>('direcciones', params);
+  // -------------------------- DIRECCIONES --------------------------
+  getDirecciones(params: DireccionFilters = {}): Observable<Direccion[]> {
+    return this.http.get<Direccion[]>(`${API_BASE_URL}/direcciones/`, {
+      params: this.buildParams(params)
+    });
   }
 
   createDireccion(payload: Pick<Direccion, 'nombre' | 'estado'>) {
@@ -38,8 +41,11 @@ export class OrgsApiService {
     return this.http.delete(`${API_BASE_URL}/direcciones/${id}/`);
   }
 
-  getDepartamentos(params: DepartamentoFilters = {}): Observable<PaginatedResponse<Departamento>> {
-    return this.requestPaginated<Departamento>('departamentos', params);
+  // -------------------------- DEPARTAMENTOS --------------------------
+  getDepartamentos(params: DepartamentoFilters = {}): Observable<Departamento[]> {
+    return this.http.get<Departamento[]>(`${API_BASE_URL}/departamentos/`, {
+      params: this.buildParams(params)
+    });
   }
 
   createDepartamento(payload: { nombre: string; estado: boolean; direccion: number }) {
@@ -57,8 +63,11 @@ export class OrgsApiService {
     return this.http.delete(`${API_BASE_URL}/departamentos/${id}/`);
   }
 
-  getCuadrillas(params: CuadrillaFilters = {}) {
-    return this.requestPaginated<Cuadrilla>('cuadrillas', params);
+  // -------------------------- CUADRILLAS --------------------------
+  getCuadrillas(params: CuadrillaFilters = {}): Observable<Cuadrilla[]> {
+    return this.http.get<Cuadrilla[]>(`${API_BASE_URL}/cuadrillas/`, {
+      params: this.buildParams(params)
+    });
   }
 
   createCuadrilla(payload: { nombre: string; estado: boolean; departamento: number }) {
@@ -73,8 +82,11 @@ export class OrgsApiService {
     return this.http.delete(`${API_BASE_URL}/cuadrillas/${id}/`);
   }
 
-  getTerritoriales(params: TerritorialFilters = {}) {
-    return this.requestPaginated<Territorial>('territoriales', params);
+  // -------------------------- TERRITORIALES --------------------------
+  getTerritoriales(params: TerritorialFilters = {}): Observable<Territorial[]> {
+    return this.http.get<Territorial[]>(`${API_BASE_URL}/territoriales/`, {
+      params: this.buildParams(params)
+    });
   }
 
   createTerritorial(payload: { nombre: string; profile: number | null }) {
@@ -89,21 +101,11 @@ export class OrgsApiService {
     return this.http.delete(`${API_BASE_URL}/territoriales/${id}/`);
   }
 
-  private requestPaginated<T>(
-    endpoint: string,
-    params: Record<string, string | number | boolean | undefined> = {}
-  ) {
-    return this.http.get<PaginatedResponse<T>>(`${API_BASE_URL}/${endpoint}/`, {
-      params: this.buildParams(params)
-    });
-  }
-
+  // -------------------------- HELPERS --------------------------
   private buildParams(params: Record<string, string | number | boolean | undefined>) {
     let httpParams = new HttpParams();
     Object.entries(params).forEach(([key, value]) => {
-      if (value === null || value === undefined || value === '') {
-        return;
-      }
+      if (value === null || value === undefined || value === '') return;
       httpParams = httpParams.set(key, String(value));
     });
     return httpParams;

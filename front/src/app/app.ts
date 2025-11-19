@@ -1,3 +1,4 @@
+import { Sidebar } from './layout/sidebar/sidebar';
 import { CommonModule } from '@angular/common';
 import {
   ChangeDetectionStrategy,
@@ -27,7 +28,7 @@ type Feedback = { type: 'success' | 'error'; text: string };
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, Sidebar],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -144,7 +145,7 @@ export class App implements OnInit {
       .getDirecciones({ estado: 'activa', page_size: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.direccionOptions.set(response.results),
+        next: (response) => this.direccionOptions.set(response),
         error: () => undefined
       });
   }
@@ -154,33 +155,38 @@ export class App implements OnInit {
       .getDepartamentos({ estado: 'activo', page_size: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.departamentoOptions.set(response.results),
+        next: (response) => this.departamentoOptions.set(response),
         error: () => undefined
       });
   }
 
   // --------------------------------------------------------- Direcciones
 
-  protected loadDirecciones(page = this.direccionesState().page): void {
-    this.startLoading(this.direccionesState);
-    const filters = this.direccionFilters.value;
-    this.api
-      .getDirecciones({
-        q: filters.q || undefined,
-        estado: filters.estado || undefined,
-        responsable: filters.responsable || undefined,
-        page
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => this.resolveState(this.direccionesState, response, page),
-        error: (error) =>
-          this.failState(
-            this.direccionesState,
-            this.extractError(error, 'No se pudieron cargar las direcciones.')
-          )
-      });
-  }
+protected loadDirecciones(page = this.direccionesState().page): void {
+  this.startLoading(this.direccionesState);
+  const filters = this.direccionFilters.value;
+
+  this.api
+    .getDirecciones({
+      q: filters.q || undefined,
+      estado: filters.estado || undefined,
+      responsable: filters.responsable || undefined,
+      page
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response: any[]) => {
+        this.resolveState(this.direccionesState, response, page);
+      },
+      error: (error) =>
+        this.failState(
+          this.direccionesState,
+          this.extractError(error, 'No se pudieron cargar las direcciones.')
+        )
+    });
+}
+
+
 
   protected onDireccionesFilter(): void {
     this.loadDirecciones(1);
@@ -258,25 +264,29 @@ export class App implements OnInit {
   // --------------------------------------------------------- Departamentos
 
   protected loadDepartamentos(page = this.departamentosState().page): void {
-    this.startLoading(this.departamentosState);
-    const filters = this.departamentoFilters.value;
-    this.api
-      .getDepartamentos({
-        q: filters.q || undefined,
-        estado: filters.estado || undefined,
-        direccion: filters.direccion || undefined,
-        page
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => this.resolveState(this.departamentosState, response, page),
-        error: (error) =>
-          this.failState(
-            this.departamentosState,
-            this.extractError(error, 'No se pudieron cargar los departamentos.')
-          )
-      });
-  }
+  this.startLoading(this.departamentosState);
+  const filters = this.departamentoFilters.value;
+
+  this.api
+    .getDepartamentos({
+      q: filters.q || undefined,
+      estado: filters.estado || undefined,
+      direccion: filters.direccion || undefined,
+      page
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response: any[]) => {
+        this.resolveState(this.departamentosState, response, page);
+      },
+      error: (error) =>
+        this.failState(
+          this.departamentosState,
+          this.extractError(error, 'No se pudieron cargar los departamentos.')
+        )
+    });
+}
+
 
   protected onDepartamentosFilter(): void {
     this.loadDepartamentos(1);
@@ -363,25 +373,29 @@ export class App implements OnInit {
   // --------------------------------------------------------- Cuadrillas
 
   protected loadCuadrillas(page = this.cuadrillasState().page): void {
-    this.startLoading(this.cuadrillasState);
-    const filters = this.cuadrillaFilters.value;
-    this.api
-      .getCuadrillas({
-        q: filters.q || undefined,
-        estado: filters.estado || undefined,
-        departamento: filters.departamento || undefined,
-        page
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => this.resolveState(this.cuadrillasState, response, page),
-        error: (error) =>
-          this.failState(
-            this.cuadrillasState,
-            this.extractError(error, 'No se pudieron cargar las cuadrillas.')
-          )
-      });
-  }
+  this.startLoading(this.cuadrillasState);
+  const filters = this.cuadrillaFilters.value;
+
+  this.api
+    .getCuadrillas({
+      q: filters.q || undefined,
+      estado: filters.estado || undefined,
+      departamento: filters.departamento || undefined,
+      page
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response: any[]) => {
+        this.resolveState(this.cuadrillasState, response, page);
+      },
+      error: (error) =>
+        this.failState(
+          this.cuadrillasState,
+          this.extractError(error, 'No se pudieron cargar las cuadrillas.')
+        )
+    });
+}
+
 
   protected onCuadrillasFilter(): void {
     this.loadCuadrillas(1);
@@ -462,23 +476,26 @@ export class App implements OnInit {
   // --------------------------------------------------------- Territoriales
 
   protected loadTerritoriales(page = this.territorialesState().page): void {
-    this.startLoading(this.territorialesState);
-    const filters = this.territorialFilters.value;
-    this.api
-      .getTerritoriales({
-        q: filters.q || undefined,
-        page
-      })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (response) => this.resolveState(this.territorialesState, response, page),
-        error: (error) =>
-          this.failState(
-            this.territorialesState,
-            this.extractError(error, 'No se pudieron cargar los territoriales.')
-          )
-      });
-  }
+  this.startLoading(this.territorialesState);
+  const filters = this.territorialFilters.value;
+
+  this.api
+    .getTerritoriales({
+      q: filters.q || undefined,
+      page
+    })
+    .pipe(takeUntilDestroyed(this.destroyRef))
+    .subscribe({
+      next: (response: any[]) => {
+        this.resolveState(this.territorialesState, response, page);
+      },
+      error: (error) =>
+        this.failState(
+          this.territorialesState,
+          this.extractError(error, 'No se pudieron cargar los territoriales.')
+        )
+    });
+}
 
   protected onTerritorialesFilter(): void {
     this.loadTerritoriales(1);
@@ -602,19 +619,19 @@ export class App implements OnInit {
     state.update((current) => ({ ...current, loading: true, error: null }));
   }
 
-  private resolveState<T>(
-    state: WritableSignal<CollectionState<T>>,
-    response: PaginatedResponse<T>,
-    page: number
-  ): void {
-    state.set({
-      items: response.results,
-      count: response.count,
-      loading: false,
-      error: null,
-      page
-    });
-  }
+private resolveState<T>(
+  state: WritableSignal<CollectionState<T>>,
+  response: T[],
+  page: number
+): void {
+  state.set({
+    items: response || [],
+    count: response?.length || 0,
+    loading: false,
+    error: null,
+    page
+  });
+}
 
   private failState<T>(state: WritableSignal<CollectionState<T>>, message: string): void {
     state.update((current) => ({ ...current, loading: false, error: message }));

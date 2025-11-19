@@ -1,3 +1,7 @@
+<div class="layout">
+  <app-sidebar></app-sidebar>
+  <div class="page-content">
+
 <section class="section">
   <div class="container">
     <div
@@ -8,33 +12,7 @@
       <button class="delete" type="button" (click)="closeFeedback()"></button>
       {{ feedback()?.text }}
     </div>
-
-    <div class="columns is-multiline stats-row">
-      <div class="column is-6-tablet is-3-desktop">
-        <div class="stat-card is-link-light">
-          <p class="stat-label">Direcciones</p>
-          <p class="stat-value">{{ summary().direcciones }}</p>
-        </div>
-      </div>
-      <div class="column is-6-tablet is-3-desktop">
-        <div class="stat-card is-primary-light">
-          <p class="stat-label">Departamentos</p>
-          <p class="stat-value">{{ summary().departamentos }}</p>
-        </div>
-      </div>
-      <div class="column is-6-tablet is-3-desktop">
-        <div class="stat-card is-info-light">
-          <p class="stat-label">Cuadrillas</p>
-          <p class="stat-value">{{ summary().cuadrillas }}</p>
-        </div>
-      </div>
-      <div class="column is-6-tablet is-3-desktop">
-        <div class="stat-card is-warning-light">
-          <p class="stat-label">Territoriales</p>
-          <p class="stat-value">{{ summary().territoriales }}</p>
-        </div>
-      </div>
-    </div>
+    
 
     <!-- Direcciones -->
     <div class="box data-section" id="direcciones">
@@ -110,7 +88,7 @@
                 <tr *ngFor="let direccion of direccionesState().items; trackBy: trackByDireccion">
                   <td>
                     <p class="has-text-weight-semibold">{{ direccion.nombre }}</p>
-                    <p class="is-size-7 has-text-dark">ID {{ direccion.direccion_id }}</p>
+                    
                   </td>
                   <td>
                     <span class="tag" [ngClass]="badgeClass(direccion.estado)">
@@ -118,7 +96,7 @@
                     </span>
                   </td>
                   <td>
-                    <ng-container *ngIf="direccion.memberships.length; else noDireccionMembers">
+                    <ng-container *ngIf="direccion.memberships?.length; else noDireccionMembers">
                       <div class="tags are-medium">
                         <span
                           class="tag"
@@ -153,7 +131,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr *ngIf="!direccionesState().items.length && !direccionesState().loading">
+                <tr *ngIf="!direccionesState().items?.length && !direccionesState().loading">
                   <td colspan="4" class="has-text-centered has-text-dark">
                     Aún no hay direcciones registradas.
                   </td>
@@ -299,7 +277,7 @@
                 <tr *ngFor="let departamento of departamentosState().items; trackBy: trackByDepartamento">
                   <td>
                     <p class="has-text-weight-semibold">{{ departamento.nombre }}</p>
-                    <p class="is-size-7 has-text-dark">ID {{ departamento.departamento_id }}</p>
+                    
                   </td>
                   <td>
                     <ng-container *ngIf="departamento.direccion_detalle as direccion; else noDireccionDetalle">
@@ -315,7 +293,7 @@
                     </span>
                   </td>
                   <td>
-                    <ng-container *ngIf="departamento.memberships.length; else noDeptMembers">
+                    <ng-container *ngIf="departamento.memberships?.length; else noDeptMembers">
                       <div class="tags">
                         <span
                           class="tag is-light"
@@ -350,7 +328,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr *ngIf="!departamentosState().items.length && !departamentosState().loading">
+                <tr *ngIf="!departamentosState().items?.length && !departamentosState().loading">
                   <td colspan="5" class="has-text-centered has-text-dark">
                     No hay departamentos con los filtros actuales.
                   </td>
@@ -511,7 +489,7 @@
                 <tr *ngFor="let cuadrilla of cuadrillasState().items; trackBy: trackByCuadrilla">
                   <td>
                     <p class="has-text-weight-semibold">{{ cuadrilla.nombre }}</p>
-                    <p class="is-size-7 has-text-dark">ID {{ cuadrilla.cuadrilla_id }}</p>
+                    
                   </td>
                   <td>
                     <ng-container *ngIf="cuadrilla.departamento_detalle as departamento; else sinDepartamento">
@@ -535,7 +513,7 @@
                     </span>
                   </td>
                   <td>
-                    <ng-container *ngIf="cuadrilla.memberships.length; else noCuadrillaMembers">
+                    <ng-container *ngIf="cuadrilla.memberships?.length; else noCuadrillaMembers">
                       <div class="tags">
                         <span class="tag is-light" *ngFor="let miembro of cuadrilla.memberships">
                           {{ membershipLabel(miembro.usuario?.full_name, miembro.usuario?.username) }}
@@ -565,7 +543,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr *ngIf="!cuadrillasState().items.length && !cuadrillasState().loading">
+                <tr *ngIf="!cuadrillasState().items?.length && !cuadrillasState().loading">
                   <td colspan="5" class="has-text-centered has-text-dark">
                     No se encontraron cuadrillas.
                   </td>
@@ -703,7 +681,7 @@
                 <tr *ngFor="let territorial of territorialesState().items; trackBy: trackByTerritorial">
                   <td>
                     <p class="has-text-weight-semibold">{{ territorial.nombre }}</p>
-                    <p class="is-size-7 has-text-dark">ID {{ territorial.territorial_id }}</p>
+
                   </td>
                   <td>
                     <div *ngIf="territorial.profile_detalle; else noProfile">
@@ -728,7 +706,7 @@
                     </div>
                   </td>
                 </tr>
-                <tr *ngIf="!territorialesState().items.length && !territorialesState().loading">
+                <tr *ngIf="!territorialesState().items?.length && !territorialesState().loading">
                   <td colspan="3" class="has-text-centered has-text-dark">
                     No hay territoriales registrados.
                   </td>
@@ -813,3 +791,5 @@
     </div>
   </div>
 </section>
+  </div>
+</div>

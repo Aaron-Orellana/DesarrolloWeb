@@ -1,0 +1,37 @@
+<div class="sidebar">
+  <div class="sidebar-title">Menú</div>
+
+  <nav class="sidebar-menu">
+    <a 
+      class="sidebar-item dir" 
+      [class.active]="current === 'direcciones'"
+      (click)="go('direcciones')"
+    >
+      Direcciones
+    </a>
+
+    <a 
+      class="sidebar-item dep"
+      [class.active]="current === 'departamentos'"
+      (click)="go('departamentos')"
+    >
+      Departamentos
+    </a>
+
+    <a 
+      class="sidebar-item cua"
+      [class.active]="current === 'cuadrillas'"
+      (click)="go('cuadrillas')"
+    >
+      Cuadrillas
+    </a>
+
+    <a 
+      class="sidebar-item ter"
+      [class.active]="current === 'territoriales'"
+      (click)="go('territoriales')"
+    >
+      Territoriales
+    </a>
+  </nav>
+</div>
