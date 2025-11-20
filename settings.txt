@@ -138,6 +138,7 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
+STATICFILES_DIRS = [ BASE_DIR / "static",] 
 
 # Campos nuevos para ayudar a llenar campos validacion y mensajes de error
 from django.contrib.messages import constants as messages
