@@ -23,6 +23,7 @@
         <div id="pregunta-form-container">
             {% for form in formset %}
             <div class="pregunta-form mb-3 p-3 border rounded bg-light position-relative">
+                {{ form.pregunta_id }}
                 <div class="row">
                     <div class="col-md-10">
                         {{ form.nombre.label_tag }}
@@ -40,6 +41,7 @@
         <!-- plantilla oculta para nuevas preguntas -->
         <template id="empty-form-template">
             <div class="pregunta-form mb-3 p-3 border rounded bg-light position-relative">
+                {{ formset.empty_form.pregunta_id }}
                 <div class="row">
                     <div class="col-md-10">
                         {{ formset.empty_form.nombre.label_tag }}
@@ -94,7 +96,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const checkboxId = label.getAttribute('for');
             const checkbox = document.getElementById(checkboxId);
             if (checkbox) {
-                checkbox.checked = true; // ✅ Marca el form como eliminado
+                checkbox.checked = true;
+                checkbox.value = "on";
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = checkbox.name;
+                hidden.value = 'on';
+                label.closest('.pregunta-form')?.appendChild(hidden);
                 const formDiv = label.closest('.pregunta-form');
                 if (formDiv) {
                     formDiv.style.display = 'none'; // Oculta visualmente

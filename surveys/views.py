@@ -97,22 +97,37 @@ def encuesta_editar(request, encuesta_id):
         return redirect('encuesta_listar')
     if request.method == 'POST':
         encuesta_form = EncuestaForm(request.POST, instance=encuesta)
-        formset = PreguntaFormSet(request.POST, instance=encuesta, prefix='preguntas')
-        if encuesta_form.is_valid():
+        formset = PreguntaFormSet(
+            request.POST,
+            instance=encuesta,
+            prefix='preguntas',
+            queryset=Pregunta.objects.filter(encuesta=encuesta, fue_borrado=False),
+        )
+        if encuesta_form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
                     encuesta = encuesta_form.save()
 
-                    preguntas = formset.save(commit=False)
-                    for pregunta in preguntas:
+                    for idx, form in enumerate(formset.forms):
+                        # Tomar flag DELETE directamente del POST para asegurarlo
+                        raw_delete = formset.data.get(f"{formset.prefix}-{idx}-DELETE")
+                        delete_flag = form.cleaned_data.get('DELETE') or (raw_delete in ("on", "true", "True", "1"))
+
+                        # Ignorar formularios en blanco sin cambios
+                        if not delete_flag and not form.has_changed() and not form.cleaned_data.get('nombre'):
+                            continue
+
+                        pregunta = form.save(commit=False)
+                        if delete_flag:
+                            if pregunta.pk:
+                                pregunta.fue_borrado = True
+                                pregunta.save(update_fields=['fue_borrado'])
+                            continue
+
                         pregunta.encuesta = encuesta
-                        pregunta.fue_borrado = False  # Reactiva si estaba marcada antes
+                        pregunta.fue_borrado = False
                         pregunta.save()
-                    print(formset.deleted_forms)
-                    for form in formset.deleted_forms:
-                        if form.pk:
-                            form.fue_borrado = True
-                            form.save()
+
                     messages.success(request, 'Encuesta y preguntas actualizadas correctamente.')
                     return redirect('encuesta_listar')
             except Exception as e:
@@ -128,7 +143,7 @@ def encuesta_editar(request, encuesta_id):
         #Solo mostrar preguntas NO borradas
         formset = PreguntaFormSet(
             instance=encuesta,
-            queryset=Pregunta.objects.filter(fue_borrado=False),
+            queryset=Pregunta.objects.filter(encuesta=encuesta, fue_borrado=False),
             prefix='preguntas'
         )
     #Hacer los campos existentes solo lectura
