@@ -1,63 +1,311 @@
-{% extends "core/base.html" %}
-{% block content %}
 
-<h1 style="text-align: center; margin-bottom: 20px;">Dashboard Dirección</h1>
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
 
-{% if direccion %}
-<h2 style="margin-bottom: 15px;">Panel de {{ direccion.nombre }}</h2>
+    :root {
+        --dashboard-primary: #F9B17A;
+        --dashboard-primary-hover: #d89361;
+        --dashboard-bg: #2D3250;
+        --dashboard-surface: #424769;
+        --dashboard-muted: #676F9D;
+        --dashboard-text: #FFFFFF;
+    }
 
-<p>Total de solicitudes asociadas a las cuadrillas de esta dirección: {{ total }}</p>
+    body {
+        background-color: var(--dashboard-bg);
+        color: var(--dashboard-text);
+    }
 
-<div style="height: 20px;"></div>
+    body > header {
+        background-color: var(--dashboard-surface);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
 
-<form method="get" >
-    <label for="estado">Filtrar por estado:</label>
-    <select name="estado" id="estado" onchange="this.form.submit()" >
-        <option value="todo" {% if estado_filtro == 'todo' %}selected{% endif %}>Todas</option>
-        {% for estado, cantidad in estado_totales.items %}
-            <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>
-                {{ estado }} ({{ cantidad }})
-            </option>
-        {% endfor %}
-    </select>
-</form>
+    body > header nav a {
+        color: var(--dashboard-text);
+    }
 
-<h3>Listado de incidencias ({{ estado_filtro }})</h3>
-<table>
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Incidencia</th>
-            <th>Estado</th>
-            <th>Cuadrilla</th>
-            <th>Departamento</th>
-            <th>Fecha creación</th>
-            <th>Descripción</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for inc in incidencias_filtradas %}
-        <tr>
-            <td>{{ inc.pk }}</td>
-            <td>{{ inc.incidencia.nombre }}</td>
-            <td>{{ inc.estado }}</td>
-            <td>{{ inc.cuadrilla.nombre }}</td>
-            <td>{{ inc.cuadrilla.departamento.nombre }}</td>
-            <td>{{ inc.fecha|date:"d/m/Y H:i" }}</td>
-            <td>{{ inc.descripcion|default:"Sin descripción" }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="7" >No hay incidencias para mostrar.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    body > .container {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 30px !important;
+    }
 
-{% else %}
-<div style="color: red">
-    Tu perfil no está asociado a ninguna dirección. No hay datos para mostrar.
+    .dashboard-direccion-page {
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--dashboard-text);
+    }
+
+    .text-secondary {
+        color: var(--dashboard-muted) !important;
+    }
+
+    .dashboard-hero {
+        background: var(--dashboard-surface);
+        border-radius: 28px;
+        padding: 32px;
+        box-shadow: 0 25px 45px rgba(7, 10, 26, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .dashboard-hero h1 {
+        font-weight: 600;
+        letter-spacing: 0.02em;
+    }
+
+    .dashboard-hero .hero-stat {
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 18px;
+        padding: 18px 28px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .filter-card,
+    .incidencias-card,
+    .info-card {
+        background: var(--dashboard-surface);
+        border-radius: 22px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        box-shadow: 0 14px 32px rgba(5, 7, 20, 0.45);
+    }
+
+    .legend-pill {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--dashboard-muted);
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+    }
+
+    .legend-pill::before {
+        content: "";
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: currentColor;
+    }
+
+    .badge-status {
+        padding: 0.4rem 1rem;
+        border-radius: 999px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+
+    .table-dark-custom {
+        color: var(--dashboard-text);
+    }
+
+    .table-dark-custom tbody tr:hover {
+        background-color: rgba(255,255,255,0.04);
+    }
+
+    .alert-dashboard {
+        background-color: var(--dashboard-surface);
+        border-radius: 20px;
+        color: var(--dashboard-text);
+        border: 1px solid rgba(249, 177, 122, 0.35);
+        box-shadow: 0 14px 32px rgba(9, 15, 35, 0.45);
+    }
+
+    .btn-primary {
+        background-color: var(--dashboard-primary);
+        border-color: var(--dashboard-primary);
+        color: #2D3250;
+        font-weight: 600;
+        border-radius: 999px;
+        padding: 0.5rem 1.5rem;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--dashboard-primary-hover);
+    }
+  
+
+.table-dark-dashboard {
+    background: var(--dashboard-surface); 
+    color: var(--dashboard-text); 
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 20px 40px rgba(5,7,20,0.45);
+}
+
+.table-dark-dashboard table {
+    background: transparent !important;
+    color: var(--dashboard-text);
+}
+
+.table-dark-dashboard thead th {
+    background: transparent !important;
+    color: var(--dashboard-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding-top: 1.2rem;
+    padding-bottom: 0.9rem;
+}
+
+.table-dark-dashboard tbody td {
+    background: transparent !important;
+    color: var(--dashboard-text);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding-top: 0.9rem;
+    padding-bottom: 0.9rem;
+}
+
+.table-dark-dashboard tbody tr:hover {
+    background-color: rgba(255,255,255,0.03) !important;
+}
+
+
+.status-finalizada {
+    background-color: rgba(76, 175, 80, 0.18);
+    color: #58d98d !important;
+}
+
+.status-proceso {
+    background-color: rgba(249, 177, 122, 0.18);
+    color: var(--dashboard-primary) !important;
+}
+
+.status-pendiente {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff !important;
+}
+
+
+
+
+
+</style>
+
+
+
+<div class="dashboard-direccion-page" style="padding: 50px;">
+
+    <!------------------ HERO --------------------->
+    <div class="dashboard-hero mb-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between gap-4 align-items-md-center">
+            <div>
+                <p class="text-secondary mb-2 text-uppercase fw-semibold" style="letter-spacing: 0.18em;">
+                    Panel de Dirección
+                </p>
+                <h1 class="mb-2">{{ direccion.nombre }}</h1>
+                <p class="text-secondary mb-0">
+                    Revisa las incidencias generadas por los departamentos bajo tu coordinación.
+                </p>
+            </div>
+
+            <div class="hero-stat text-center text-md-end">
+                <span class="text-secondary text-uppercase" style="letter-spacing: 0.15em;">Total incidencias</span>
+                <h2 class="mt-2 mb-0 display-6">{{ total }}</h2>
+            </div>
+        </div>
+    </div>
+
+
+    {% if not direccion %}
+        <div class="alert alert-warning alert-dashboard mt-4">
+            <strong>No estás asociado a ninguna dirección.</strong>
+            <p class="mb-0 text-secondary">Solicita asignación para acceder al panel.</p>
+        </div>
+    {% else %}
+
+
+
+    <!------------------ FILTRO --------------------->
+    <div class="filter-card mb-4">
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-auto">
+                <label for="estado" class="col-form-label text-secondary">Filtrar por estado:</label>
+            </div>
+
+            <div class="col-auto">
+                <select name="estado" id="estado"
+                        class="form-select"
+                        style="background-color: #2D3250; color: #FFFFFF; border: 1px solid var(--dashboard-muted);"
+                        onchange="this.form.submit()">
+                    <option value="todo" {% if estado_filtro == 'todo' %}selected{% endif %}>Todas</option>
+                    {% for estado, cantidad in estado_totales.items %}
+                        <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>
+                            {{ estado }} ({{ cantidad }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+
+
+    <!------------------ TABLA --------------------->
+    <div class="incidencias-card p-4">
+
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+            <h3 class="mb-1">Incidencias filtradas ({{ estado_filtro }})</h3>
+
+            <div class="d-flex gap-4 flex-wrap">
+                <span class="legend-pill" style="color:#58d98d">Finalizada</span>
+                <span class="legend-pill" style="color:var(--dashboard-primary)">En proceso</span>
+                <span class="legend-pill" style="color:rgba(255,255,255,0.65)">Pendiente</span>
+            </div>
+        </div>
+
+        <div class="table-dark-dashboard p-4">
+        <table class="table align-middle mb-0 table-borderless">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Incidencia</th>
+                        <th>Estado</th>
+                        <th>Cuadrilla</th>
+                        <th>Departamento</th>
+                        <th>Fecha creación</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for inc in incidencias_filtradas %}
+                    <tr>
+                        <td class="fw-semibold">#{{ inc.pk }}</td>
+                        <td>{{ inc.incidencia.nombre }}</td>
+
+                        <td>
+                            {% if inc.estado == 'Finalizada' %}
+                                <span class="badge-status status-finalizada">Finalizada</span>
+                            {% elif inc.estado == 'En Proceso' %}
+                                <span class="badge-status status-proceso">En Proceso</span>
+                            {% else %}
+                                <span class="badge-status status-pendiente">{{ inc.estado }}</span>
+                            {% endif %}
+                        </td>
+
+                        <td>{{ inc.cuadrilla.nombre }}</td>
+                        <td>{{ inc.cuadrilla.departamento.nombre }}</td>
+                        <td>{{ inc.fecha|date:"d/m/Y H:i" }}</td>
+                        <td class="text-secondary">{{ inc.descripcion|default:"Sin descripción" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-secondary">
+                            No hay incidencias para mostrar.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+
+    </div>
+
+    {% endif %}
+
 </div>
-{% endif %}
-
-{% endblock %}
