@@ -1,68 +1,77 @@
-{% extends 'core/base.html' %}
+{% extends "core/list_base.html" %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="card" style="padding: 20px; border-radius: 10px;">
+{# === APLICAR TEMA OSCURO === #}
+{% block theme_class %}custom-theme{% endblock %}
 
-        {% if es_supervisor %}
-            <h3>Panel de Mis Incidencias</h3>
-        {% else %}
-            <h3>Panel de Mis Incidencias - Cuadrilla: {{ cuadrilla.nombre }}</h3>
-        {% endif %}
+{# === TÍTULO DE LA PÁGINA === #}
+{% block title %}
+    {% if es_supervisor %}
+        Panel de Mis Incidencias
+    {% else %}
+        Panel de Mis Incidencias – Cuadrilla: {{ cuadrilla.nombre }}
+    {% endif %}
+{% endblock %}
 
-        <table class="table table-striped mt-3">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Incidencia</th>
-                    <th>Cuadrilla</th>
-                    <th>Estado</th>
-                    <th>Fecha creación</th>
-                    <th>Fecha inicio</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% if incidencias %}
-                    {% for incidencia in incidencias %}
-                        <tr>
-                            <td>{{ incidencia.pk }}</td>
-                            <td>{{ incidencia.incidencia }}</td>
-                            <td>
-                                {% if incidencia.cuadrilla %}
-                                    {{ incidencia.cuadrilla.nombre }}
-                                {% else %}
-                                    Sin asignar
-                                {% endif %}
-                            </td>
-                            <td>{{ incidencia.estado }}</td>
-                            <td>{{ incidencia.fecha|date:"d-m-Y H:i" }}</td>
-                            <td>
-                                {% if incidencia.fecha_inicio %}
-                                    {{ incidencia.fecha_inicio|date:"d-m-Y H:i" }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if incidencia.estado != "En Proceso" %}
-                                    <a href="{% url 'marcar_en_proceso' incidencia.pk %}" class="btn btn-warning btn-sm">
-                                        Marcar En Proceso
-                                    </a>
-                                {% else %}
-                                    <span class="text-success">En Proceso</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
+{% block create_button %}{% endblock %}
+
+{% block filters %}{% endblock %}
+
+{# === ENCABEZADOS DE TABLA === #}
+{% block headers %}
+    <th>ID</th>
+    <th>Incidencia</th>
+    <th>Cuadrilla</th>
+    <th>Estado</th>
+    <th>Fecha creación</th>
+    <th>Fecha inicio</th>
+    <th style="width: 200px;">Acciones</th>
+{% endblock %}
+
+{# === FILAS DE LA TABLA === #}
+{% block rows %}
+    {% for incidencia in incidencias %}
+        <tr>
+            <td><strong>#{{ incidencia.pk }}</strong></td>
+
+            <td>{{ incidencia.incidencia }}</td>
+
+            <td>
+                {% if incidencia.cuadrilla %}
+                    {{ incidencia.cuadrilla.nombre }}
                 {% else %}
-                    <tr>
-                        <td colspan="7" class="text-center">No hay incidencias registradas.</td>
-                    </tr>
+                    <em class="text-muted">Sin asignar</em>
                 {% endif %}
-            </tbody>
-        </table>
+            </td>
 
-    </div>
-</div>
+            <td>{{ incidencia.estado }}</td>
+
+            <td>{{ incidencia.fecha|date:"d-m-Y H:i" }}</td>
+
+            <td>
+                {% if incidencia.fecha_inicio %}
+                    {{ incidencia.fecha_inicio|date:"d-m-Y H:i" }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+
+            <td>
+                {% if incidencia.estado != "En Proceso" %}
+                    <a href="{% url 'marcar_en_proceso' incidencia.pk %}"
+                       class="btn-accion btn-editar btn-sm w-100">
+                        Marcar En Proceso
+                    </a>
+                {% else %}
+                    <span class="badge bg-success">En Proceso</span>
+                {% endif %}
+            </td>
+        </tr>
+
+    {% empty %}
+        <tr>
+            <td colspan="7" class="text-center py-5">
+                <h5 class="text-muted">No hay incidencias registradas.</h5>
+            </td>
+        </tr>
+    {% endfor %}
 {% endblock %}

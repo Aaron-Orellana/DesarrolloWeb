@@ -1,53 +1,87 @@
-{% extends 'core/base.html' %}
+{% extends "core/list_base.html" %}
 
-{% block content %}
-<h4>Gestión de usuarios</h4>
+{# === TEMA OSCURO OPCIONAL === #}
+{% block theme_class %}custom-theme{% endblock %}
 
-<p>
-    <a href="{% url 'user_create' %}" class="btn">Crear usuario</a>
-</p>
+{# === TÍTULO === #}
+{% block title %}
+    Gestión de Usuarios
+{% endblock %}
 
-<table class="table table-bordered">
-    <thead>
+{# === BOTÓN CREAR === #}
+{% block create_button %}
+    <a href="{% url 'user_create' %}" class="btn-accion btn-crear">
+        Crear Usuario
+    </a>
+{% endblock %}
+
+{# === FILTROS (no tiene filtros, queda vacío) === #}
+{% block filters %}{% endblock %}
+
+{# === ENCABEZADOS === #}
+{% block headers %}
+    <th>Usuario</th>
+    <th>Nombre completo</th>
+    <th>Email</th>
+    <th>Rol</th>
+    <th>Estado</th>
+    <th style="width: 260px;">Acciones</th>
+{% endblock %}
+
+{# === FILAS === #}
+{% block rows %}
+    {% for item in users %}
+        {% with user=item.user %}
         <tr>
-            <th>Usuario</th>
-            <th>Nombre completo</th>
-            <th>Email</th>
-            <th>Rol</th>
-            <th>Estado</th>
-            <th>Acciones</th>
+            <td>{{ user.username }}</td>
+            <td>{{ user.get_full_name|default:"-" }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ item.role_label }}</td>
+
+            <td>
+                {% if user.is_active %}
+                    <span class="badge badge-success-custom">Activo</span>
+                {% else %}
+                    <span class="badge badge-secondary-custom">Bloqueado</span>
+                {% endif %}
+            </td>
+
+            <td>
+
+                {# === BOTÓN EDITAR === #}
+                <a href="{% url 'user_edit' user.pk %}" class="btn-accion btn-editar btn-sm">
+                    Editar
+                </a>
+
+                {# === ACCIONES (si no es el usuario actual) === #}
+                {% if user.pk != request.user.pk %}
+
+                    <form action="{% url 'user_toggle_active' user.pk %}"
+                          method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-accion btn-editar btn-sm">
+                            {% if user.is_active %}Bloquear{% else %}Activar{% endif %}
+                        </button>
+                    </form>
+
+                    <a href="{% url 'user_delete' user.pk %}"
+                       class="btn-accion btn-eliminar btn-sm">
+                        Eliminar
+                    </a>
+
+                {% else %}
+                    <span class="btn btn-sm btn-secondary" disabled>
+                        Acciones limitadas
+                    </span>
+                {% endif %}
+            </td>
         </tr>
-    </thead>
-    <tbody>
-        {% for item in users %}
-            {% with user=item.user %}
-            <tr>
-                <td>{{ user.username }}</td>
-                <td>{{ user.get_full_name|default:"-" }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ item.role_label }}</td>
-                <td>{{ user.is_active|yesno:"Activo,Bloqueado" }}</td>
-                <td>
-                    <a href="{% url 'user_edit' user.pk %}" class="btn">Editar</a>
-                    {% if user.pk != request.user.pk %}
-                        <form action="{% url 'user_toggle_active' user.pk %}" method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="btn">
-                                {% if user.is_active %}Bloquear{% else %}Activar{% endif %}
-                            </button>
-                        </form>
-                        <a href="{% url 'user_delete' user.pk %}" class="btn">Eliminar</a>
-                    {% else %}
-                        <span class="btn" style="background:#999;">Acciones limitadas</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endwith %}
-        {% empty %}
-            <tr>
-                <td colspan="6">No hay usuarios registrados.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        {% endwith %}
+    {% empty %}
+        <tr>
+            <td colspan="6" class="text-center py-5">
+                <h5 class="text-muted">No hay usuarios registrados.</h5>
+            </td>
+        </tr>
+    {% endfor %}
 {% endblock %}

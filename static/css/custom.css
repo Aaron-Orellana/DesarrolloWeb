@@ -317,3 +317,13 @@
 .custom-theme .table .status-pill {
     color: white !important;
 }
+.formset-row input[type="text"],
+.formset-row textarea,
+.formset-row select {
+    color: #333 !important;      /* texto gris */
+}
+
+.formset-row input::placeholder,
+.formset-row textarea::placeholder {
+    color: #888 !important;      /* placeholder gris */
+}
