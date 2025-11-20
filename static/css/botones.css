@@ -1,0 +1,89 @@
+/* ===== PALETA PRINCIPAL ===== */
+:root {
+    --color-main: #F9B17A;
+    --color-main-hover: #E8A361;
+
+    --color-volver: #424769;
+    --color-volver-hover: #35395a;
+}
+
+/* ===== BOTONES BASE ===== */
+.btn-accion {
+    border-radius: 6px;
+    font-weight: 500;
+    color: white !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ====== BOTÓN CREAR ====== */
+.btn-crear {
+    background-color: var(--color-main);
+    border-color: var(--color-main);
+}
+.btn-crear:hover {
+    background-color: var(--color-main-hover);
+    border-color: var(--color-main-hover);
+}
+
+/* ====== BOTÓN EDITAR ====== */
+.btn-editar {
+    background-color: var(--color-main);
+    border-color: var(--color-main);
+}
+.btn-editar:hover {
+    background-color: var(--color-main-hover);
+    border-color: var(--color-main-hover);
+}
+
+/* ====== BOTÓN ELIMINAR ====== */
+.btn-eliminar {
+    background-color: #d9534f;
+    border-color: #d9534f;
+}
+.btn-eliminar:hover {
+    background-color: #c94440;
+    border-color: #c94440;
+}
+
+/* ====== BOTÓN VOLVER ====== */
+/* BOTÓN VOLVER CORRECTO */
+.btn.btn-volver {
+    /* Variables que Bootstrap realmente usa */
+    --bs-btn-bg: var(--color-volver) !important;
+    --bs-btn-border-color: var(--color-volver) !important;
+    --bs-btn-color: white !important;
+
+    --bs-btn-hover-bg: var(--color-volver-hover) !important;
+    --bs-btn-hover-border-color: var(--color-volver-hover) !important;
+
+    /* Por si acaso */
+    background-color: var(--color-volver) !important;
+    border-color: var(--color-volver) !important;
+    color: white !important;
+}
+
+.btn.btn-volver:hover {
+    background-color: var(--color-volver-hover) !important;
+    border-color: var(--color-volver-hover) !important;
+    color: white !important;
+}
+
+.btn.btn-volver i {
+    color: white !important;
+}
+
+#botoncolor {
+    --bs-btn-bg: var(--color-volver) !important;
+    --bs-btn-border-color: var(--color-volver) !important;
+    --bs-btn-color: white !important;
+
+    --bs-btn-hover-bg: var(--color-volver-hover) !important;
+    --bs-btn-hover-border-color: var(--color-volver-hover) !important;
+
+    /* Por si acaso */
+    background-color: var(--color-volver) !important;
+    border-color: var(--color-volver) !important;
+    color: white !important;
+}

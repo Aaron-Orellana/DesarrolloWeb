@@ -18,9 +18,15 @@
             <label class="form-label">Subir imágenes o videos</label>
             <input type="file" name="archivos" class="form-control" multiple required>
         </div>
+        <div class="mt-3 d-flex gap-2">
+            <button type="submit" class="btn btn-success">
+                Enviar Respuesta
+            </button>
 
-        <button type="submit" class="btn btn-success">Enviar Respuesta</button>
-        <a href="{% url 'dashboard_cuadrilla' %}" class="btn btn-secondary">Cancelar</a>
+            <a href="{% url 'dashboard_cuadrilla' %}" class="btn btn-accion btn-volver" id="#botoncolor">
+                <i class="bi bi-arrow-left-circle"></i> Volver
+            </a>
+        </div>
     </form>
 </div>
 {% endblock %}
