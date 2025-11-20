@@ -62,28 +62,26 @@ def encuesta_listar(request):
 def encuesta_crear(request):
     if request.method == 'POST':
         encuesta_form = EncuestaForm(request.POST)
-        formset = PreguntaFormSet(request.POST, prefix='preguntas')  # ← añadí prefix para que coincida
-
+        formset = PreguntaFormSet(request.POST)
         if encuesta_form.is_valid() and formset.is_valid():
             try:
                 with transaction.atomic():
                     encuesta = encuesta_form.save()
                     formset.instance = encuesta
-                    formset.save()  
+                    formset.save()
                     messages.success(request, 'Encuesta creada correctamente.')
                     return redirect('encuesta_listar')
-            except Exception as e:
-                messages.error(request, f"Error al guardar la encuesta: {e}")
+            except:
+                messages.error(request, "Error al guardar la encuesta")
         else:
             messages.error(request, 'Corrige los errores en los formularios (Encuesta y Pregunta).')
+            encuesta_form = EncuestaForm(request.POST)
     else:
         encuesta_form = EncuestaForm()
-        formset = PreguntaFormSet(prefix='preguntas')
+        formset = PreguntaFormSet()
 
-    return render(request, 'surveys/encuesta_crear.html', {
-        'encuesta_form': encuesta_form,
-        'formset': formset
-    })
+    return render(request, 'surveys/encuesta_crear.html', {'encuesta_form': encuesta_form, 'formset': formset})
+
 
 @role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def encuesta_ver(request, encuesta_id):
@@ -94,60 +92,55 @@ def encuesta_ver(request, encuesta_id):
 @role_required("Secpla","Territoriales","Direcciones")
 def encuesta_editar(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    
     if encuesta.estado == True:
-        messages.error(request, 'No se puede editar una encuesta que está "Activa".')
+        messages.error(request,'No se puede editar una encuesta que está "Activa".')
         return redirect('encuesta_listar')
-
     if request.method == 'POST':
         encuesta_form = EncuestaForm(request.POST, instance=encuesta)
         formset = PreguntaFormSet(request.POST, instance=encuesta, prefix='preguntas')
-
-        if encuesta_form.is_valid() and formset.is_valid():
+        if encuesta_form.is_valid():
             try:
                 with transaction.atomic():
                     encuesta = encuesta_form.save()
 
-                    # GUARDAR PREGUNTAS NUEVAS Y REACTIVAR LAS NO BORRADAS
-                    for form in formset:
-                        if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
-                            pregunta = form.save(commit=False)
-                            pregunta.encuesta = encuesta
-                            pregunta.fue_borrado = False
-                            pregunta.save()
-
-                    #MARCAR COMO BORRADAS LAS QUE TIENEN DELETE
+                    preguntas = formset.save(commit=False)
+                    for pregunta in preguntas:
+                        pregunta.encuesta = encuesta
+                        pregunta.fue_borrado = False  # Reactiva si estaba marcada antes
+                        pregunta.save()
+                    print(formset.deleted_forms)
                     for form in formset.deleted_forms:
-                        if form.instance.pk:
-                            pregunta = form.instance
-                            pregunta.fue_borrado = True
-                            pregunta.save()
-
+                        if form.pk:
+                            form.fue_borrado = True
+                            form.save()
                     messages.success(request, 'Encuesta y preguntas actualizadas correctamente.')
                     return redirect('encuesta_listar')
             except Exception as e:
                 messages.error(request, f"Error al guardar la encuesta: {e}")
         else:
+            print("Errores encuesta_form:", encuesta_form.errors)
+            print("Errores formset:", formset.errors)
+            print("Errores no-form del formset:", formset.non_form_errors())
             messages.error(request, "Corrige los errores antes de guardar. Revisa la consola para más detalles.")
+        
     else:
         encuesta_form = EncuestaForm(instance=encuesta)
+        #Solo mostrar preguntas NO borradas
         formset = PreguntaFormSet(
             instance=encuesta,
             queryset=Pregunta.objects.filter(fue_borrado=False),
             prefix='preguntas'
         )
+    #Hacer los campos existentes solo lectura
+    for form in formset.forms:
+        if form.instance.pk:
+            # Mostrar solo lectura en la interfaz
+            form.fields['nombre'].widget.attrs['readonly'] = True
+            # Asegurar que el valor se envíe al POST
+            form.fields['nombre'].required = False
 
-        #Hacer preguntas existentes de solo lectura
-        for form in formset.forms:
-            if form.instance.pk:
-                form.fields['nombre'].widget.attrs['readonly'] = True
-                form.fields['nombre'].required = False
+    return render(request, 'surveys/encuesta_editar.html', {'encuesta_form': encuesta_form, 'formset': formset, 'encuesta': encuesta})
 
-    return render(request, 'surveys/encuesta_editar.html', {
-        'encuesta_form': encuesta_form,
-        'formset': formset,
-        'encuesta': encuesta
-    })
 
 @role_required("Secpla","Territoriales","Direcciones")
 def encuesta_bloquear(request, encuesta_id):
