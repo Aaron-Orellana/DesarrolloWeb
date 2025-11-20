@@ -1,10 +1,116 @@
 {% extends 'core/base.html' %}
 
 {% block content %}
-<div class="container text-center mt-5">
-    <h2 class="mb-3">Sesión cerrada correctamente</h2>
-    <p>Gracias por usar el sistema municipal. Tu sesión ha sido cerrada con éxito.</p>
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
 
-    <a href="{% url 'login' %}" class="btn btn-primary mt-4">Volver a Iniciar Sesión</a>
+    :root {
+        --primary-color: #F9B17A;
+        --primary-hover: #d89361;
+        --bg-primary: #2D3250;
+        --bg-surface: #424769;
+        --text-muted: #676F9D;
+        --text-white: #FFFFFF;
+    }
+
+   
+    body > header {
+        background-color: var(--bg-surface) !important;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    body > header nav a {
+        color: var(--text-white) !important;
+    }
+
+    body > header h1 {
+        color: var(--text-white) !important;
+    }
+
+
+    body {
+        background-color: var(--bg-primary) !important;
+        color: var(--text-white) !important;
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
+    }
+
+    body > .container {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 0 !important;
+    }
+
+  
+    .logout-wrapper {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+
+    .logout-card {
+        background: var(--bg-surface);
+        border-radius: 28px;
+        padding: 3rem;
+        box-shadow: 0 25px 45px rgba(7, 10, 26, 0.35);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        max-width: 450px;
+        width: 100%;
+        text-align: center;
+        margin: 0 auto;
+    }
+
+    .logout-card h2 {
+        color: var(--text-white);
+        font-weight: 600;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+    }
+
+    .logout-card p {
+        color: var(--text-muted);
+        margin-bottom: 2rem;
+        font-size: 1rem;
+    }
+
+    .btn-logout {
+        background-color: var(--primary-color);
+        border: none;
+        border-radius: 999px;
+        color: var(--bg-primary);
+        font-weight: 600;
+        padding: 0.75rem 2rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-logout:hover {
+        background-color: var(--primary-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(249, 177, 122, 0.3);
+        
+    }
+
+    @media (max-width: 480px) {
+        .logout-card {
+            margin: 1rem;
+            padding: 2rem 1.5rem;
+        }
+    }
+</style>
+
+<div class="logout-wrapper">
+    <div class="logout-card">
+        <h2>Sesión cerrada correctamente</h2>
+        <p>Gracias por usar el sistema municipal. Tu sesión ha sido cerrada con éxito.</p>
+
+        <a href="{% url 'login' %}" class="btn btn-logout">
+            Volver a Iniciar Sesión
+        </a>
+    </div>
 </div>
 {% endblock %}

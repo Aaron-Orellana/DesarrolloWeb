@@ -301,35 +301,48 @@ def responder_incidencia(request, incidencia_id):
         respuesta_texto = request.POST.get("respuesta")
         archivos = request.FILES.getlist("archivos")
 
+        
+        archivo_invalido = False
+
+        
         Respuesta = RespuestaCuadrilla.objects.create(
             solicitud=incidencia,
             cuadrilla=cuadrilla,
             respuesta=respuesta_texto
         )
 
-        # Guardar multimedia (imágenes o videos)
+        
         for archivo in archivos:
-            tipo = "imagen" if archivo.content_type.startswith("image") else "video"
+            if archivo.content_type.startswith("image"):
+                tipo = "imagen"
+            elif archivo.content_type.startswith("video"):
+                tipo = "video"
+            else:
+                messages.error(request, f"El archivo '{archivo.name}' no es válido. Solo imágenes o videos.")
+                archivo_invalido = True 
+                continue
+
             MultimediaCuadrilla.objects.create(
                 respuesta=Respuesta,
                 archivo=archivo,
                 tipo=tipo,
             )
 
-        # Actualizar estado y descripción
+       
+        if archivo_invalido:
+            return render(request, "dashboards/respuesta_incidencia.html", {
+                "incidencia": incidencia,
+                "respuesta_texto": respuesta_texto  
+            })
+
+      
         incidencia.estado = "Finalizada"
         incidencia.save()
-
 
         messages.success(request, "Respuesta registrada correctamente. La incidencia ha sido finalizada.")
         return redirect("dashboard_cuadrilla")
 
-
-
-
-
     return render(request, "dashboards/respuesta_incidencia.html", {"incidencia": incidencia})
-
 def asignar_cuadrilla(request, incidencia_id):
     incidencia = get_object_or_404(SolicitudIncidencia, pk=incidencia_id)
     profile = request.user.profile
