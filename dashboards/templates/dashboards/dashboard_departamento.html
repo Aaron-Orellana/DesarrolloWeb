@@ -1,181 +1,306 @@
 {% extends "core/base.html" %}
 {% block content %}
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
 
-<h1 class="text-center mb-4">Dashboard Departamento</h1>
+    :root {
+        --primary: #F9B17A;
+        --primary-hover: #d89361;
+        --bg-dark: #2D3250;
+        --surface: #424769;
+        --muted: #8c92c7;
+        --text: #FFFFFF;
+    }
 
-{% if departamento %}
-    <h2 class="mb-3">Panel de {{ departamento.nombre }}</h2>
-    <p class="lead mb-4">Total de solicitudes asociadas: <strong>{{ total_general }}</strong></p>
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text);
+    }
 
-    <style>
-        .tab-buttons {
-            display: flex;
-            border-bottom: 3px solid #3f51b5;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        .tab-btn {
-            padding: 12px 20px;
-            background: #e0e0e0;
-            border: none;
-            cursor: pointer;
-            font-weight: bold;
-            border-radius: 6px 6px 0 0;
-            transition: all 0.3s;
-        }
-        .tab-btn:hover {
-            background: #d0d0d0;
-        }
-        .tab-btn.active {
-            background: #3f51b5;
-            color: white;
-        }
-        .tab-content > div {
-            display: none;
-            animation: fadeIn 0.4s;
-        }
-        .tab-content > div.active {
-            display: block;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        .badge-custom {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 0.8em;
-            font-weight: bold;
-            margin-left: 8px;
-        }
-        .badge-pendientes { background: #ffc107; color: #000; }
-        .badge-tomadas { background: #17a2b8; color: white; }
-        .badge-asignadas { background: #007bff; color: white; }
-        .badge-completadas { background: #28a745; color: white; }
-    </style>
+    header {
+        background-color: var(--surface);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    /* Evitar fondo blanco que Bootstrap aplica por defecto */
+    body > .container {
+        background-color: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 30px !important;
+    }
 
-    <div class="tab-buttons">
-        <button class="tab-btn active" onclick="openTab('pendientes')">
-            Pendientes <span class="badge-custom badge-pendientes">{{ counts.pendientes }}</span>
-        </button>
-        <button class="tab-btn" onclick="openTab('tomadas')">
-            Tomadas <span class="badge-custom badge-tomadas">{{ counts.tomadas }}</span>
-        </button>
-        <button class="tab-btn" onclick="openTab('asignadas')">
-            Asignadas <span class="badge-custom badge-asignadas">{{ counts.asignadas }}</span>
-        </button>
-        <button class="tab-btn" onclick="openTab('completadas')">
-            Completadas <span class="badge-custom badge-completadas">{{ counts.completadas }}</span>
-        </button>
+
+    header nav a {
+        color: var(--text);
+    }
+
+    .hero-box {
+        background: var(--surface);
+        border-radius: 26px;
+        padding: 40px 55px;
+        width: 85%;
+        margin: 25px auto;
+        box-shadow: 0 26px 55px rgba(7,10,26,0.38);
+        border: 1px solid rgba(255,255,255,0.05);
+        text-align: center;
+    }
+
+    .hero-title {
+        font-size: 2.4rem;
+        font-weight: 600;
+    }
+
+    .hero-sub {
+        color: var(--muted);
+        margin-top: 6px;
+        font-size: 1.05rem;
+    }
+
+    /* ---------------- MÉTRICAS ---------------- */
+    .metric-card {
+        background: var(--surface);
+        padding: 22px 28px;
+        border-radius: 22px;
+        width: 230px;
+        height: 150px;
+        cursor: pointer;
+        border-left: 6px solid var(--primary);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.30);
+        transition: .25s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 34px rgba(0,0,0,0.45);
+        background-color: #474c72;
+    }
+
+    .metric-card.active {
+        background-color: #51567e;
+        transform: translateY(-4px);
+        border-left-color: var(--primary-hover);
+    }
+
+    .metric-title {
+        font-size: 1.05rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .metric-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    /* ---------------- CONTENEDOR SECCIONES ---------------- */
+    .content-box {
+        background: var(--surface);
+        border-radius: 26px;
+        padding: 40px;
+        width: 88%;
+        margin: 40px auto;
+        box-shadow: 0 26px 55px rgba(7,10,26,0.38);
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .tab-section {
+        display: none;
+        animation: fade .3s ease-in-out;
+    }
+
+    .tab-section.active {
+        display: block;
+    }
+
+    @keyframes fade {
+        from {opacity:0;}
+        to {opacity:1;}
+    }
+
+    .section-title {
+        font-size: 1.6rem;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    /* TABLA */
+    table {
+        width: 100%;
+        background: var(--surface) !important;
+        color: white !important;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    thead th {
+        background: rgba(255,255,255,0.07) !important;
+        border: none !important;
+        color: var(--muted) !important;
+    }
+
+    tbody tr {
+        border-top: 1px solid rgba(255,255,255,0.06) !important;
+    }
+</style>
+
+<!-- ---------------- HERO ---------------- -->
+<div class="hero-box">
+    <h1 class="hero-title">Dashboard de Departamento</h1>
+    <p class="hero-sub">Monitorea el estado de las solicitudes asociadas a tu departamento.</p>
+</div>
+
+<!-- ---------------- MÉTRICAS (TABS) ---------------- -->
+<div class="d-flex justify-content-center flex-wrap gap-4 mt-4">
+
+    <div class="metric-card active" onclick="selectTab('pendientes', this)">
+        <div class="metric-title">Pendientes</div>
+        <div class="metric-number">{{ counts.pendientes }}</div>
     </div>
 
-    <div class="tab-content">
-        <div id="pendientes" class="active">
-            <h4>Solicitudes disponibles para tomar</h4>
-            <p class="text-muted">Incidencias creadas pero aún no asignadas a ningún departamento.</p>
-            {% include "dashboards/_tabla_incidencias.html" with incidencias=pendientes tomar_departamento=True es_encargado=es_encargado %}
-        </div>
-
-        <div id="tomadas">
-            <h4>Tomadas por {{ departamento.nombre }}</h4>
-            <p class="text-muted">Ya están en tu departamento. Puedes asignar o cambiar la cuadrilla.</p>
-            {% include "dashboards/_tabla_incidencias.html" with incidencias=tomadas asignar_cuadrilla=True es_encargado=es_encargado %}
-        </div>
-
-        <div id="asignadas">
-            <h4>Asignadas a cuadrillas</h4>
-            <p class="text-muted">En proceso por las cuadrillas de tu departamento.</p>
-            {% include "dashboards/_tabla_incidencias.html" with incidencias=asignadas es_encargado=es_encargado %}
-        </div>
-
-        <div id="completadas">
-            <h4>Finalizadas y aprobadas</h4>
-            <p class="text-muted">Histórico de solicitudes completadas.</p>
-            {% include "dashboards/_tabla_incidencias.html" with incidencias=completadas es_encargado=es_encargado %}
-        </div>
+    <div class="metric-card" onclick="selectTab('tomadas', this)">
+        <div class="metric-title">Tomadas</div>
+        <div class="metric-number">{{ counts.tomadas }}</div>
     </div>
 
-    {% if es_encargado %}
-        <div class="modal" id="modalTomar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
-            <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:450px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
-                <h4>Tomar Solicitud</h4>
-                <p>¿Deseas tomar la solicitud <strong>ID: <span id="tomar-id"></span></strong> para {{ departamento.nombre }}?</p>
-                <form id="formTomar" method="post" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn">Sí, tomar</button>
-                    <button type="button" class="btn" style="background:#666;" onclick="cerrarModal('modalTomar')">Cancelar</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="modal" id="modalAsignar" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
-            <div style="background:white; padding:25px; border-radius:10px; width:90%; max-width:450px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
-                <h4>Asignar / Cambiar Cuadrilla</h4>
-                <p><strong>ID:</strong> <span id="modal-incidencia-id"></span></p>
-                <p><strong>Cuadrilla actual:</strong> <span id="modal-cuadrilla-actual"></span></p>
-                <form id="formAsignarCuadrilla" method="post">
-                    {% csrf_token %}
-                    <select name="cuadrilla_id" style="width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:5px;" required>
-                        <option value="">-- Seleccionar cuadrilla --</option>
-                        {% for cuad in cuadrillas_disponibles %}
-                            <option value="{{ cuad.pk }}">{{ cuad.nombre }}</option>
-                        {% endfor %}
-                    </select>
-                    <div style="text-align:right; margin-top:15px;">
-                        <button type="submit" class="btn">Guardar</button>
-                        <button type="button" class="btn" style="background:#666;" onclick="cerrarModal('modalAsignar')">Cancelar</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    {% endif %}
-
-    <script>
-        function openTab(tabName) {
-            document.querySelectorAll('.tab-content > div').forEach(div => {
-                div.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        {% if es_encargado %}
-        function abrirModalTomar(id) {
-            document.getElementById('tomar-id').textContent = id;
-            document.getElementById('formTomar').action = "{% url 'tomar_solicitud' 0 %}".replace('0', id);
-            document.getElementById('modalTomar').style.display = 'flex';
-        }
-
-        function abrirModalAsignar(id, cuadrillaActual = '') {
-            document.getElementById('modal-incidencia-id').textContent = id;
-            document.getElementById('modal-cuadrilla-actual').textContent = cuadrillaActual || 'Ninguna';
-            const form = document.getElementById('formAsignarCuadrilla');
-            form.action = "{% url 'asignar_cuadrilla' 0 %}".replace('0', id);
-            form.querySelector('select').value = '';
-            document.getElementById('modalAsignar').style.display = 'flex';
-        }
-        {% endif %}
-
-        window.addEventListener('click', function(e) {
-            if (e.target.classList.contains('modal')) {
-                e.target.style.display = 'none';
-            }
-        });
-    </script>
-
-{% else %}
-    <div class="alert alert-danger">
-        Tu perfil no está asociado a ningún departamento.
+    <div class="metric-card" onclick="selectTab('asignadas', this)">
+        <div class="metric-title">Asignadas</div>
+        <div class="metric-number">{{ counts.asignadas }}</div>
     </div>
+
+    <div class="metric-card" onclick="selectTab('completadas', this)">
+        <div class="metric-title">Completadas</div>
+        <div class="metric-number">{{ counts.completadas }}</div>
+    </div>
+</div>
+
+<!-- ---------------- TABLAS ---------------- -->
+<div class="content-box">
+
+    <!-- PENDIENTES -->
+    <div id="pendientes" class="tab-section active">
+        <h2 class="section-title">Pendientes</h2>
+        {% include "dashboards/_tabla_incidencias.html" with incidencias=pendientes tomar_departamento=True es_encargado=es_encargado %}
+    </div>
+
+    <!-- TOMADAS -->
+    <div id="tomadas" class="tab-section">
+        <h2 class="section-title">Tomadas</h2>
+        {% include "dashboards/_tabla_incidencias.html" with incidencias=tomadas asignar_cuadrilla=True es_encargado=es_encargado %}
+    </div>
+
+    <!-- ASIGNADAS -->
+    <div id="asignadas" class="tab-section">
+        <h2 class="section-title">Asignadas</h2>
+        {% include "dashboards/_tabla_incidencias.html" with incidencias=asignadas es_encargado=es_encargado %}
+    </div>
+
+    <!-- COMPLETADAS -->
+    <div id="completadas" class="tab-section">
+        <h2 class="section-title">Completadas</h2>
+        {% include "dashboards/_tabla_incidencias.html" with incidencias=completadas es_encargado=es_encargado %}
+    </div>
+
+</div>
+
+<!-- ---------------------- MODALES ---------------------- -->
+{% if es_encargado %}
+
+<!-- MODAL TOMAR -->
+<div class="modal" id="modalTomar" style="
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7); z-index:9999; justify-content:center;
+    align-items:center;">
+    <div style="background:rgba(0,0,0,0.3); padding:25px; border-radius:10px; width:90%;
+        max-width:450px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+
+        <h4>Tomar Solicitud</h4>
+        <p>¿Deseas tomar la solicitud <strong>ID: <span id="tomar-id"></span></strong>?</p>
+
+        <form id="formTomar" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">Sí, tomar</button>
+            <button type="button" onclick="cerrarModal('modalTomar')"
+                    class="btn btn-secondary">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL ASIGNAR -->
+<div class="modal" id="modalAsignar" style="
+    display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7); z-index:9999; justify-content:center;
+    align-items:center;">
+    <div style="background: rgba(0,0,0,0.3); padding:25px; border-radius:10px; width:90%;
+        max-width:450px; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+
+        <h4>Asignar / Cambiar Cuadrilla</h4>
+
+        <p><strong>ID:</strong> <span id="modal-incidencia-id"></span></p>
+        <p><strong>Cuadrilla actual:</strong> 
+            <span id="modal-cuadrilla-actual"></span>
+        </p>
+
+        <form id="formAsignarCuadrilla" method="post">
+            {% csrf_token %}
+            <select name="cuadrilla_id" required class="form-select mb-3">
+                <option value="">-- Seleccionar cuadrilla --</option>
+                {% for cuad in cuadrillas_disponibles %}
+                <option value="{{ cuad.pk }}">{{ cuad.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" onclick="cerrarModal('modalAsignar')"
+                    class="btn btn-secondary">Cancelar</button>
+        </form>
+    </div>
+</div>
+
 {% endif %}
 
+<!-- ---------------- SCRIPTS ---------------- -->
+<script>
+function selectTab(tabId, card) {
+    document.querySelectorAll('.metric-card').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+
+    document.querySelectorAll('.tab-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+}
+
+function cerrarModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
+{% if es_encargado %}
+function abrirModalTomar(id) {
+    document.getElementById('tomar-id').textContent = id;
+    document.getElementById('formTomar').action =
+        "{% url 'tomar_solicitud' 0 %}".replace('0', id);
+    document.getElementById('modalTomar').style.display = 'flex';
+}
+
+function abrirModalAsignar(id, cuadrillaActual = '') {
+    document.getElementById('modal-incidencia-id').textContent = id;
+    document.getElementById('modal-cuadrilla-actual').textContent =
+        cuadrillaActual || 'Ninguna';
+
+    const form = document.getElementById('formAsignarCuadrilla');
+    form.action = "{% url 'asignar_cuadrilla' 0 %}".replace('0', id);
+
+    document.getElementById('modalAsignar').style.display = 'flex';
+}
+{% endif %}
+
+window.addEventListener('click', function(e) {
+    if (e.target.classList.contains('modal')) {
+        e.target.style.display = 'none';
+    }
+});
+</script>
 {% endblock %}
