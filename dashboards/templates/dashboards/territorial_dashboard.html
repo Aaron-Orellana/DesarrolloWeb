@@ -119,8 +119,7 @@
 
     .terr-graph {
         border-radius: 18px;
-        border: 2px dashed rgba(249,177,122,0.8);
-        background-color: rgba(66,71,105,0.6);
+        background-color: var(--terr-bg-surface);
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -211,6 +210,58 @@
         border-color: #e09c62;
         color: #2D3250;
     }
+
+
+    .terr-graph {
+    border-radius: 18px;
+    background-color: var(--terr-bg-surface);
+    padding: 20px;
+    position: relative;
+    min-height: 300px;
+    }
+
+    .terr-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    }
+
+    .terr-graph-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    }
+
+    .terr-graph-container {
+    position: relative;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+
+    .terr-graph-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+    .terr-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    }
+
+    .terr-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    }
+
 </style>
 
 <div class="territorial-wrapper">
@@ -258,12 +309,15 @@
         </div>
 
         <div class="terr-graph">
-            <strong>Espacio reservado para gráficos (Historia 7.8)</strong>
-            <span>
-                Aquí se pueden mostrar gráficos de distribución de estados,
-                tiempos de resolución u otros indicadores territoriales.
-            </span>
+            <div class="terr-graph-header">
+                <h3 class="terr-graph-title">Distribución por Estado</h3>
+            </div>
+            <div class="terr-graph-container">
+                <canvas id="estadosChart"></canvas>
+            </div>
+            <div class="terr-graph-legend" id="chartLegend"></div>
         </div>
+
     </div>
 
 
@@ -480,4 +534,88 @@
     </div>
 
 </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{{ estados_totales|json_script:"estados-data" }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadosTotales = JSON.parse(document.getElementById('estados-data').textContent);
+    const estadosLabels = Object.keys(estadosTotales);
+    const estadosValues = Object.values(estadosTotales);
+    
+    const estadosData = {
+        labels: estadosLabels,
+        data: estadosValues
+    };
+
+    const colorPalette = ['#F9B17A', '#45B7D1', '#676F9D', '#4ECDC4', '#96CEB4', '#FF6B6B'];
+
+    const ctx = document.getElementById('estadosChart').getContext('2d');
+    const estadosChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: estadosData.labels,
+            datasets: [{
+                data: estadosData.data,
+                backgroundColor: colorPalette.slice(0, estadosData.labels.length),
+                borderColor: 'var(--terr-bg-surface)',
+                borderWidth: 1,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    },
+                    ticks: {
+                        color: 'var(--terr-text-muted)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: 'var(--terr-text-muted)'
+                    }
+                }
+            }
+        }
+    });
+
+    const legendContainer = document.getElementById('chartLegend');
+    estadosData.labels.forEach((label, index) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'terr-legend-item';
+        legendItem.innerHTML = `
+            <div class="terr-legend-color" style="background-color: ${colorPalette[index]}"></div>
+            <span>${label}</span>
+        `;
+        legendContainer.appendChild(legendItem);
+    });
+});
+</script>
 {% endblock %}
+
