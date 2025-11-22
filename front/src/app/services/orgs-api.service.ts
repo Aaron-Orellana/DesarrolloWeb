@@ -9,7 +9,7 @@ import {
   DepartamentoFilters,
   Direccion,
   DireccionFilters,
-  
+  PaginatedResponse,
   Territorial,
   TerritorialFilters
 } from '../models/orgs';
@@ -23,8 +23,8 @@ export class OrgsApiService {
   private readonly http = inject(HttpClient);
 
   // -------------------------- DIRECCIONES --------------------------
-  getDirecciones(params: DireccionFilters = {}): Observable<Direccion[]> {
-    return this.http.get<Direccion[]>(`${API_BASE_URL}/direcciones/`, {
+  getDirecciones(params: DireccionFilters = {}): Observable<PaginatedResponse<Direccion>> {
+    return this.http.get<PaginatedResponse<Direccion>>(`${API_BASE_URL}/direcciones/`, {
       params: this.buildParams(params)
     });
   }
@@ -42,8 +42,10 @@ export class OrgsApiService {
   }
 
   // -------------------------- DEPARTAMENTOS --------------------------
-  getDepartamentos(params: DepartamentoFilters = {}): Observable<Departamento[]> {
-    return this.http.get<Departamento[]>(`${API_BASE_URL}/departamentos/`, {
+  getDepartamentos(
+    params: DepartamentoFilters = {}
+  ): Observable<PaginatedResponse<Departamento>> {
+    return this.http.get<PaginatedResponse<Departamento>>(`${API_BASE_URL}/departamentos/`, {
       params: this.buildParams(params)
     });
   }
@@ -64,8 +66,8 @@ export class OrgsApiService {
   }
 
   // -------------------------- CUADRILLAS --------------------------
-  getCuadrillas(params: CuadrillaFilters = {}): Observable<Cuadrilla[]> {
-    return this.http.get<Cuadrilla[]>(`${API_BASE_URL}/cuadrillas/`, {
+  getCuadrillas(params: CuadrillaFilters = {}): Observable<PaginatedResponse<Cuadrilla>> {
+    return this.http.get<PaginatedResponse<Cuadrilla>>(`${API_BASE_URL}/cuadrillas/`, {
       params: this.buildParams(params)
     });
   }
@@ -83,8 +85,10 @@ export class OrgsApiService {
   }
 
   // -------------------------- TERRITORIALES --------------------------
-  getTerritoriales(params: TerritorialFilters = {}): Observable<Territorial[]> {
-    return this.http.get<Territorial[]>(`${API_BASE_URL}/territoriales/`, {
+  getTerritoriales(
+    params: TerritorialFilters = {}
+  ): Observable<PaginatedResponse<Territorial>> {
+    return this.http.get<PaginatedResponse<Territorial>>(`${API_BASE_URL}/territoriales/`, {
       params: this.buildParams(params)
     });
   }

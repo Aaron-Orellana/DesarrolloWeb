@@ -5,7 +5,8 @@
     <a 
       class="sidebar-item dir" 
       [class.active]="current === 'direcciones'"
-      (click)="go('direcciones')"
+      [attr.href]="'#direcciones'"
+      (click)="go($event, 'direcciones')"
     >
       Direcciones
     </a>
@@ -13,7 +14,8 @@
     <a 
       class="sidebar-item dep"
       [class.active]="current === 'departamentos'"
-      (click)="go('departamentos')"
+      [attr.href]="'#departamentos'"
+      (click)="go($event, 'departamentos')"
     >
       Departamentos
     </a>
@@ -21,7 +23,8 @@
     <a 
       class="sidebar-item cua"
       [class.active]="current === 'cuadrillas'"
-      (click)="go('cuadrillas')"
+      [attr.href]="'#cuadrillas'"
+      (click)="go($event, 'cuadrillas')"
     >
       Cuadrillas
     </a>
@@ -29,9 +32,17 @@
     <a 
       class="sidebar-item ter"
       [class.active]="current === 'territoriales'"
-      (click)="go('territoriales')"
+      [attr.href]="'#territoriales'"
+      (click)="go($event, 'territoriales')"
     >
       Territoriales
     </a>
   </nav>
+
+  <div class="scroll-hint" *ngIf="scrollDirection">
+    <span class="pill" [class.up]="scrollDirection === 'up'" [class.down]="scrollDirection === 'down'">
+      {{ scrollDirection === 'down' ? 'Bajando' : 'Subiendo' }}
+      <span class="arrow">{{ scrollDirection === 'down' ? '↓' : '↑' }}</span>
+    </span>
+  </div>
 </div>

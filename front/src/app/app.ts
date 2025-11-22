@@ -145,7 +145,10 @@ export class App implements OnInit {
       .getDirecciones({ estado: 'activa', page_size: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.direccionOptions.set(response),
+        next: (response) => {
+          const { items } = this.unpackResponse(response);
+          this.direccionOptions.set(items);
+        },
         error: () => undefined
       });
   }
@@ -155,7 +158,10 @@ export class App implements OnInit {
       .getDepartamentos({ estado: 'activo', page_size: 100 })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response) => this.departamentoOptions.set(response),
+        next: (response) => {
+          const { items } = this.unpackResponse(response);
+          this.departamentoOptions.set(items);
+        },
         error: () => undefined
       });
   }
@@ -175,8 +181,9 @@ protected loadDirecciones(page = this.direccionesState().page): void {
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response: any[]) => {
-        this.resolveState(this.direccionesState, response, page);
+      next: (response) => {
+        const { items, count } = this.unpackResponse(response);
+        this.resolveState(this.direccionesState, items, page, count);
       },
       error: (error) =>
         this.failState(
@@ -276,8 +283,9 @@ protected loadDirecciones(page = this.direccionesState().page): void {
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response: any[]) => {
-        this.resolveState(this.departamentosState, response, page);
+      next: (response) => {
+        const { items, count } = this.unpackResponse(response);
+        this.resolveState(this.departamentosState, items, page, count);
       },
       error: (error) =>
         this.failState(
@@ -385,8 +393,9 @@ protected loadDirecciones(page = this.direccionesState().page): void {
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response: any[]) => {
-        this.resolveState(this.cuadrillasState, response, page);
+      next: (response) => {
+        const { items, count } = this.unpackResponse(response);
+        this.resolveState(this.cuadrillasState, items, page, count);
       },
       error: (error) =>
         this.failState(
@@ -486,8 +495,9 @@ protected loadDirecciones(page = this.direccionesState().page): void {
     })
     .pipe(takeUntilDestroyed(this.destroyRef))
     .subscribe({
-      next: (response: any[]) => {
-        this.resolveState(this.territorialesState, response, page);
+      next: (response) => {
+        const { items, count } = this.unpackResponse(response);
+        this.resolveState(this.territorialesState, items, page, count);
       },
       error: (error) =>
         this.failState(
@@ -611,6 +621,19 @@ protected loadDirecciones(page = this.direccionesState().page): void {
 
   // --------------------------------------------------------- generic helpers
 
+  private unpackResponse<T>(response: PaginatedResponse<T> | T[]): { items: T[]; count: number } {
+    if (Array.isArray(response)) {
+      const items = response ?? [];
+      return { items, count: items.length };
+    }
+    const items = response?.results ?? [];
+    const count =
+      typeof response?.count === 'number' && !Number.isNaN(response.count)
+        ? response.count
+        : items.length;
+    return { items, count };
+  }
+
   private createInitialState<T>(): CollectionState<T> {
     return { items: [], count: 0, loading: false, error: null, page: 1 };
   }
@@ -619,19 +642,20 @@ protected loadDirecciones(page = this.direccionesState().page): void {
     state.update((current) => ({ ...current, loading: true, error: null }));
   }
 
-private resolveState<T>(
-  state: WritableSignal<CollectionState<T>>,
-  response: T[],
-  page: number
-): void {
-  state.set({
-    items: response || [],
-    count: response?.length || 0,
-    loading: false,
-    error: null,
-    page
-  });
-}
+  private resolveState<T>(
+    state: WritableSignal<CollectionState<T>>,
+    items: T[],
+    page: number,
+    count?: number
+  ): void {
+    state.set({
+      items: items || [],
+      count: count ?? items?.length ?? 0,
+      loading: false,
+      error: null,
+      page
+    });
+  }
 
   private failState<T>(state: WritableSignal<CollectionState<T>>, message: string): void {
     state.update((current) => ({ ...current, loading: false, error: message }));
