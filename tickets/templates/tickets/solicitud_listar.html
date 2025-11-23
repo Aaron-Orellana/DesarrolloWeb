@@ -66,6 +66,7 @@
     <th>Tipo Incidencia</th>
     <th>Territorial</th>
     <th>Vecino</th>
+    <th>Ubicación</th>
     <th>Cuadrilla</th>
     <th>Estado</th>
     <th>Fecha</th>
@@ -89,6 +90,7 @@
             </td>
 
             <td style="max-width: 180px; white-space: pre-wrap;">{{ solicitud.vecino|truncatechars:60 }}</td>
+            <td>{{ solicitud.ubicacion|default:"—" }}</td>
 
             <td>
                 {% if solicitud.cuadrilla %}

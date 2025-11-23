@@ -20,7 +20,7 @@ class SolicitudIncidenciaForm(forms.ModelForm):
         widgets = {
             'encuesta': forms.Select(attrs={'class': 'form-select'}),
             'vecino': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Información del vecino'}),
-            'ubicacion': forms.Select(attrs={'class': 'form-select'}),
+            'ubicacion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Calle y número, sector, referencia'}),
             'descripcion': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Detalle la naturaleza de la incidencia'}),
         }
         

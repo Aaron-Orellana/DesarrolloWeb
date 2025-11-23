@@ -45,12 +45,10 @@ class SolicitudIncidencia(models.Model):
         null=True, 
         blank=True
     )
-    ubicacion = models.ForeignKey(
-        'locations.Ubicacion',
-        on_delete=models.PROTECT,
-        db_column='Ubicacion_id',
-        related_name='solicitudes_incidencia',
-        null=True, 
+    ubicacion = models.CharField(
+        max_length=255,
+        db_column='Ubicacion',
+        null=True,
         blank=True
     )
 
@@ -206,4 +204,3 @@ class MultimediaCuadrilla(models.Model):
         on_delete=models.CASCADE,
         related_name='multimedia'
         )
-

@@ -5,6 +5,7 @@ from core.decorators import role_required
 from django.contrib.auth.models import User
 from tickets.models import Multimedia, SolicitudIncidencia, RespuestaCuadrilla, MultimediaCuadrilla
 from orgs.models import Cuadrilla, Departamento, Direccion, Territorial
+from locations.models import Ubicacion
 from registration.models import Profile
 from django.utils import timezone
 from django.contrib import messages
@@ -18,6 +19,7 @@ def dashboard_secpla(request):
     incidencias_derivadas = SolicitudIncidencia.objects.filter(estado="Derivada").count()
     incidencias_rechazadas = SolicitudIncidencia.objects.filter(estado="Rechazada").count()
     incidencias_finalizadas = SolicitudIncidencia.objects.filter(estado="Finalizada").count()
+    total_ubicaciones = Ubicacion.objects.count()
 
     
     incidencias = SolicitudIncidencia.objects.all().select_related(
@@ -31,6 +33,7 @@ def dashboard_secpla(request):
         "incidencias_rechazadas": incidencias_rechazadas,
         "incidencias_finalizadas": incidencias_finalizadas,
         "incidencias": incidencias, 
+        "total_ubicaciones": total_ubicaciones,
     }
 
     return render(request, "dashboards/dashboard_secpla.html", context)

@@ -1,0 +1,38 @@
+{% extends "core/base.html" %}
+{% block body_class %}custom-theme{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="dashboard-hero p-4 p-md-5 mb-4">
+        <h3 class="mb-2">Crear Ubicación</h3>
+        <p class="text-secondary mb-0">Registra una nueva dirección de referencia.</p>
+    </div>
+
+    <div class="info-card p-4 p-md-5">
+        <form method="post" class="row g-4">
+            {% csrf_token %}
+            <div class="col-md-6">
+                <label class="form-label text-primary fw-semibold">Calle</label>
+                {{ form.calle }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-primary fw-semibold">Número / Referencia</label>
+                {{ form.numero_casa }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-primary fw-semibold">Latitud</label>
+                {{ form.latitud }}
+            </div>
+            <div class="col-md-6">
+                <label class="form-label text-primary fw-semibold">Longitud</label>
+                {{ form.longitud }}
+            </div>
+
+            <div class="d-flex justify-content-end gap-3 mt-3">
+                <a href="{% url 'ubicacion_listar' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

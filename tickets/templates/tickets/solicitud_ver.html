@@ -81,7 +81,7 @@
                 <i class="bi bi-calendar3"></i> {{ solicitud.fecha|date:"d/m/Y H:i" }}
             </span>
             <span class="pill-neutral">
-                <i class="bi bi-geo-alt"></i> {{ solicitud.ubicacion.nombre }}
+                <i class="bi bi-geo-alt"></i> {{ solicitud.ubicacion|default:"—" }}
             </span>
             <span class="status-pill {% if solicitud.estado == 'Finalizada' or solicitud.estado == 'Aprobada' %}status-finalizada{% elif solicitud.estado in 'Derivada,En proceso' %}status-proceso{% elif solicitud.estado == 'Pendiente' %}status-pendiente{% else %}badge-secondary-custom{% endif %}">
                 {{ solicitud.estado }}

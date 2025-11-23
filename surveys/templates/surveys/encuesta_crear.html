@@ -3,6 +3,31 @@
 {% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
+<style>
+    .pregunta-form {
+        background: var(--dashboard-surface);
+        border: 1px solid var(--dashboard-border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 10px 22px var(--dashboard-shadow);
+    }
+    .pregunta-form label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dashboard-muted);
+        font-weight: 700;
+    }
+    .pregunta-form textarea {
+        min-height: 90px;
+    }
+    .pregunta-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+</style>
 <div class="container py-4">
 
     <!-- Hero superior -->
@@ -70,19 +95,18 @@
 
             {{ formset.management_form }}
 
-            <div id="pregunta-form-container">
+            <div id="pregunta-form-container" class="d-grid gap-3">
                 {% for form in formset %}
-                    <div class="pregunta-form mb-3 p-3 border rounded bg-light position-relative">
-                        <div class="row">
-                            <div class="col-md-10">
-                                {{ form.nombre.label_tag }}
-                                {{ form.nombre }}
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn-accion btn-eliminar remove-form w-100">
-                                    Eliminar
-                                </button>
-                            </div>
+                    <div class="pregunta-form position-relative">
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                        <div class="d-flex flex-column gap-2">
+                            {{ form.nombre.label_tag }}
+                            {{ form.nombre }}
+                        </div>
+                        <div class="pregunta-toolbar mt-3">
+                            <button type="button" class="btn-accion btn-eliminar remove-form">
+                                Eliminar
+                            </button>
                         </div>
                     </div>
                 {% endfor %}
@@ -90,17 +114,16 @@
 
             <!-- Plantilla vacía -->
             <template id="empty-form-template">
-                <div class="pregunta-form mb-3 p-3 border rounded bg-light position-relative">
-                    <div class="row">
-                        <div class="col-md-10">
-                            {{ formset.empty_form.nombre.label_tag }}
-                            {{ formset.empty_form.nombre }}
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                            <button type="button" class="btn-accion btn-eliminar remove-form w-100">
-                                Eliminar
-                            </button>
-                        </div>
+                <div class="pregunta-form position-relative">
+                    {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="d-flex flex-column gap-2">
+                        {{ formset.empty_form.nombre.label_tag }}
+                        {{ formset.empty_form.nombre }}
+                    </div>
+                    <div class="pregunta-toolbar mt-3">
+                        <button type="button" class="btn-accion btn-eliminar remove-form">
+                            Eliminar
+                        </button>
                     </div>
                 </div>
             </template>
@@ -165,5 +188,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-
 
