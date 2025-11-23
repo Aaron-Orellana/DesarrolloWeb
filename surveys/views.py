@@ -86,7 +86,11 @@ def encuesta_crear(request):
 @role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def encuesta_ver(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    return render(request, 'surveys/encuesta_ver.html', {'encuesta': encuesta})
+    preguntas_activas = encuesta.preguntas.filter(fue_borrado=False)
+    return render(request, 'surveys/encuesta_ver.html', {
+        'encuesta': encuesta,
+        'preguntas': preguntas_activas,
+    })
 
 
 @role_required("Secpla","Territoriales","Direcciones")

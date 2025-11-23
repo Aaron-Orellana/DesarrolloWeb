@@ -6,8 +6,13 @@
 
 <div class="{% block theme_class %}custom-theme{% endblock %}">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0">{% block title %}{% endblock %}</h3>
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'check_profile' %}" class="btn btn-accion btn-volver">
+               <i class="bi bi-arrow-left-circle"></i> Volver
+            </a>
+            <h3 class="fw-bold mb-0">{% block title %}{% endblock %}</h3>
+        </div>
         {% block create_button %}{% endblock %}
     </div>
 
@@ -16,7 +21,7 @@
     <!-- MENSAJE VACÍO – CORREGIDO -->
     {% block empty_message %}{% endblock %}
 
-    <div class="table-responsive rounded shadow-sm overflow-hidden">
+    <div class="rounded shadow-sm w-100" style="overflow: hidden;">
         <table class="table table-hover align-middle mb-0">
             <thead>
                 <tr>

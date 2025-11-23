@@ -27,10 +27,12 @@
             <p class="text-secondary mb-4">
                 Aún no se han subido imágenes o videos para esta solicitud.
             </p>
-            <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" 
-               class="btn btn-primary px-4">
-                Subir Primer Archivo
-            </a>
+            {% if es_cuadrilla %}
+                <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" 
+                   class="btn btn-primary px-4">
+                    Subir Primer Archivo
+                </a>
+            {% endif %}
         </div>
     {% else %}
         <!-- Galería de archivos -->
@@ -85,12 +87,14 @@
         </div>
     {% endif %}
 
-    <!-- Botón para subir nuevo archivo (siempre visible) -->
-    <div class="mt-5 text-center">
-        <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" 
-           class="btn btn-success px-5 py-3">
-            Subir Nuevo Archivo
-        </a>
-    </div>
+    {% if es_cuadrilla %}
+        <!-- Botón para subir nuevo archivo -->
+        <div class="mt-5 text-center">
+            <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" 
+               class="btn btn-success px-5 py-3">
+                Subir Nuevo Archivo
+            </a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

@@ -1,49 +1,165 @@
 {% extends 'core/base.html' %}
 
+{% block body_class %}custom-theme{% endblock %}
+
 {% block content %}
-<h4>Detalle de Encuesta</h4>
+<style>
+    .encuesta-detail .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 16px;
+    }
 
-<div class="mb-3">
-    <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-primary">Editar</a>
-    <form method="post" action="{% url 'encuesta_bloquear' encuesta.pk %}" style="display:inline;">
-        {% csrf_token %}
-        <input type="hidden" name="accion" value="{% if encuesta.estado %}bloquear{% else %}activar{% endif %}">
-        <button type="submit" class="btn btn-warning">
-            {% if encuesta.estado %}Bloquear{% else %}Activar{% endif %}
-        </button>
-    </form>
-    <form
-        method="post"
-        action="{% url 'encuesta_eliminar' encuesta.pk %}"
-        style="display:inline;"
-        onsubmit="return confirm('¿Seguro que deseas eliminar esta encuesta?');"
-    >
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-    </form>
-    <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Volver al listado</a>
+    .encuesta-detail .meta-item {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--dashboard-border);
+        border-radius: 16px;
+        padding: 16px;
+    }
+
+    .encuesta-detail .meta-label {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--dashboard-muted);
+        font-size: 0.82rem;
+        margin-bottom: 6px;
+    }
+
+    .encuesta-detail .meta-value {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+
+    .encuesta-detail .status-activa {
+        background-color: rgba(76, 175, 80, 0.18);
+        color: #58d98d;
+    }
+
+    .encuesta-detail .status-bloqueada {
+        background-color: rgba(249, 177, 122, 0.18);
+        color: var(--dashboard-primary);
+    }
+
+    .encuesta-detail .badge-prioridad-alta {
+        background: rgba(217, 83, 79, 0.2);
+        color: #ffddd9;
+    }
+
+    .encuesta-detail .badge-prioridad-media {
+        background: rgba(249, 177, 122, 0.18);
+        color: var(--dashboard-primary);
+    }
+
+    .encuesta-detail .badge-prioridad-baja {
+        background: rgba(255, 255, 255, 0.12);
+        color: var(--dashboard-text);
+    }
+
+    .encuesta-detail .question-item {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--dashboard-border);
+        border-radius: 14px;
+        padding: 12px 14px;
+    }
+
+    .encuesta-detail .question-item small {
+        color: var(--dashboard-muted);
+    }
+</style>
+
+<div class="dashboard-cuadrilla-page encuesta-detail py-1">
+    <div class="dashboard-hero p-4 p-md-5 mb-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-start">
+            <div>
+                <p class="text-secondary mb-2 text-uppercase fw-semibold" style="letter-spacing: 0.16em;">Encuestas · Detalle</p>
+                <h1 class="mb-2">{{ encuesta.titulo }}</h1>
+                <p class="text-secondary mb-0">{{ encuesta.descripcion|default:"Sin descripción registrada." }}</p>
+            </div>
+            <div class="d-flex flex-column align-items-lg-end gap-2">
+                <span class="status-pill {% if encuesta.estado %}status-activa{% else %}status-bloqueada{% endif %}">
+                    {% if encuesta.estado %}Activa{% else %}Bloqueada{% endif %}
+                </span>
+                <span class="badge {% if encuesta.prioridad == 'Alta' %}badge-prioridad-alta{% elif encuesta.prioridad == 'Media' %}badge-prioridad-media{% elif encuesta.prioridad == 'Baja' %}badge-prioridad-baja{% else %}badge-secondary-custom{% endif %}">
+                    Prioridad {{ encuesta.prioridad|default:"—" }}
+                </span>
+                <small class="text-secondary">Creada el {{ encuesta.fecha_creacion|date:"d/m/Y H:i" }}</small>
+            </div>
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <a href="{% url 'encuesta_editar' encuesta.pk %}" class="btn btn-warn">Editar</a>
+            <form method="post" action="{% url 'encuesta_bloquear' encuesta.pk %}" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="accion" value="{% if encuesta.estado %}bloquear{% else %}activar{% endif %}">
+                <button type="submit" class="btn {% if encuesta.estado %}btn-danger-custom{% else %}btn-success-custom{% endif %}">
+                    {% if encuesta.estado %}Bloquear{% else %}Activar{% endif %}
+                </button>
+            </form>
+            <form
+                method="post"
+                action="{% url 'encuesta_eliminar' encuesta.pk %}"
+                class="d-inline"
+                onsubmit="return confirm('¿Seguro que deseas eliminar esta encuesta?');"
+            >
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger-custom">Eliminar</button>
+            </form>
+            <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary">Volver al listado</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="info-card p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="mb-0">Información general</h5>
+                    <span class="text-secondary small">Resumen de la ficha</span>
+                </div>
+
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <p class="meta-label">Estado</p>
+                        <p class="meta-value">{% if encuesta.estado %}Activa{% else %}Bloqueada{% endif %}</p>
+                    </div>
+                    <div class="meta-item">
+                        <p class="meta-label">Prioridad</p>
+                        <p class="meta-value">{{ encuesta.prioridad|default:"—" }}</p>
+                    </div>
+                    <div class="meta-item">
+                        <p class="meta-label">Tipo de incidencia</p>
+                        <p class="meta-value">{{ encuesta.tipo_incidencia|default:"—" }}</p>
+                    </div>
+                    <div class="meta-item">
+                        <p class="meta-label">Fecha de creación</p>
+                        <p class="meta-value">{{ encuesta.fecha_creacion|date:"d/m/Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="info-card p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h6 class="mb-0">Preguntas activas</h6>
+                    <span class="badge badge-secondary-custom">{{ preguntas|length }}</span>
+                </div>
+
+                {% if preguntas %}
+                    <div class="d-flex flex-column gap-2">
+                        {% for pregunta in preguntas %}
+                            <div class="question-item">
+                                <div class="fw-semibold">{{ pregunta.nombre }}</div>
+                                <small>Asociada a esta encuesta</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="question-item text-secondary">
+                        No hay preguntas activas registradas en esta encuesta.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
-
-<table class="table table-bordered">
-    <tr>
-        <th>Título</th>
-        <td>{{ encuesta.titulo }}</td>
-    </tr>
-    <tr>
-        <th>Descripción</th>
-        <td>{{ encuesta.descripcion|default:"—" }}</td>
-    </tr>
-    <tr>
-        <th>Prioridad</th>
-        <td>{{ encuesta.prioridad }}</td>
-    </tr>
-    <tr>
-        <th>Estado</th>
-        <td>{{ encuesta.estado|yesno:"Activo,Inactivo" }}</td>
-    </tr>
-    <tr>
-        <th>Fecha de Creación</th>
-        <td>{{ encuesta.fecha_creacion }}</td>
-    </tr>
-</table>
 {% endblock %}

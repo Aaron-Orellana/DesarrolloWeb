@@ -8,9 +8,11 @@
 
 {# === BOTÓN CREAR NUEVO === #}
 {% block create_button %}
-    <a href="{% url 'solicitud_crear' %}" class="btn btn-primary">
-        Crear Nueva Solicitud
-    </a>
+    {% if puede_crear_incidencia %}
+        <a href="{% url 'solicitud_crear' %}" class="btn btn-primary">
+            Crear Nueva Solicitud
+        </a>
+    {% endif %}
 {% endblock %}
 
 {# === FILTROS MODERNOS Y RESPONSIVOS === #}
@@ -64,12 +66,10 @@
     <th>Tipo Incidencia</th>
     <th>Territorial</th>
     <th>Vecino</th>
-    <th>Ubicación</th>
     <th>Cuadrilla</th>
     <th>Estado</th>
-    <th>Descripción</th>
     <th>Fecha</th>
-    <th style="width: 340px;">Acciones</th>
+    <th>Acciones</th>
 {% endblock %}
 
 {# === FILAS DE LA TABLA === #}
@@ -78,10 +78,17 @@
         <tr>
             <td><strong>#{{ solicitud.solicitud_incidencia_id }}</strong></td>
             <td class="fw-medium">{{ solicitud.encuesta.titulo }}</td>
-            <td>{{ solicitud.incidencia.nombre }}</td>
-            <td>{{ solicitud.territorial.nombre }}</td>
+            <td>{{ solicitud.encuesta.tipo_incidencia }}</td>
+            
+            <td>
+                {% if solicitud.territorial %}
+                    <span class="badge badge-main">{{ solicitud.territorial.nombre }}</span>
+                {% else %}
+                    <span class="text-muted">— Sin asignar</span>
+                {% endif %}
+            </td>
+
             <td style="max-width: 180px; white-space: pre-wrap;">{{ solicitud.vecino|truncatechars:60 }}</td>
-            <td>{{ solicitud.ubicacion.nombre }}</td>
 
             <td>
                 {% if solicitud.cuadrilla %}
@@ -109,26 +116,26 @@
                 {% endif %}
             </td>
 
-            <td title="{{ solicitud.descripcion|striptags }}">
-                {{ solicitud.descripcion|striptags|truncatechars:50 }}
-            </td>
-
             <td class="text-nowrap">
                 <small>{{ solicitud.fecha|date:"d/m/Y H:i" }}</small>
             </td>
 
-            <td class="text-nowrap">
-                <a href="{% url 'solicitud_ver' solicitud.solicitud_incidencia_id %}"
-                   class="btn btn-sm btn-alt">Ver</a>
+            <td style="white-space: normal;">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <a href="{% url 'solicitud_ver' solicitud.solicitud_incidencia_id %}"
+                       class="btn btn-sm btn-alt">Ver</a>
 
-                <a href="{% url 'solicitud_editar' solicitud.solicitud_incidencia_id %}"
-                   class="btn btn-sm btn-warn">Editar</a>
+                    <a href="{% url 'solicitud_editar' solicitud.solicitud_incidencia_id %}"
+                       class="btn btn-sm btn-warn">Editar</a>
 
-                <a href="{% url 'multimedia_listar' solicitud.solicitud_incidencia_id %}"
-                   class="btn btn-sm btn-info text-white">Multimedia</a>
+                    <a href="{% url 'multimedia_listar' solicitud.solicitud_incidencia_id %}"
+                       class="btn btn-sm btn-secondary text-white">Multimedia</a>
 
-                <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}"
-                   class="btn btn-sm btn-success">Subir</a>
+                    {% if es_cuadrilla %}
+                        <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}"
+                           class="btn btn-sm btn-primary">Subir</a>
+                    {% endif %}
+                </div>
             </td>
         </tr>
 
@@ -143,9 +150,11 @@
                             No hay solicitudes de incidencia registradas aún.
                         {% endif %}
                     </h5>
-                    <a href="{% url 'solicitud_crear' %}" class="btn btn-primary mt-3">
-                        Crear la primera solicitud
-                    </a>
+                    {% if puede_crear_incidencia %}
+                        <a href="{% url 'solicitud_crear' %}" class="btn btn-primary mt-3">
+                            Crear la primera solicitud
+                        </a>
+                    {% endif %}
                 </div>
             </td>
         </tr>

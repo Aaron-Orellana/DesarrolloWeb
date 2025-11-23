@@ -23,6 +23,9 @@ def solicitud_listar(request):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
 
+    puede_crear_incidencia = request.user.groups.filter(id=6).exists()
+    es_cuadrilla = request.user.groups.filter(name__iexact="cuadrilla").exists() or profile.role_type == "cuadrilla"
+
     q = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
     cuadrilla = request.GET.get('cuadrilla', '').strip()
@@ -63,6 +66,8 @@ def solicitud_listar(request):
         'sin_resultados': sin_resultados,
         'query_string': query_string,
         'request': request,
+        'puede_crear_incidencia': puede_crear_incidencia,
+        'es_cuadrilla': es_cuadrilla,
     })
 
 @role_required("Territoriales","Secpla")
@@ -184,7 +189,13 @@ def solicitud_editar(request, solicitud_incidencia_id):
 def solicitud_ver(request, solicitud_incidencia_id):
     solicitud = get_object_or_404(SolicitudIncidencia, pk=solicitud_incidencia_id)
     logs = solicitud.logs.all() 
-    return render(request, 'tickets/solicitud_ver.html', {'solicitud': solicitud,'logs': logs,})
+    es_cuadrilla = False
+    if hasattr(request.user, "profile"):
+        es_cuadrilla = (
+            request.user.groups.filter(name__iexact="cuadrilla").exists()
+            or request.user.profile.role_type == "cuadrilla"
+        )
+    return render(request, 'tickets/solicitud_ver.html', {'solicitud': solicitud,'logs': logs, 'es_cuadrilla': es_cuadrilla})
 
 
 
@@ -204,7 +215,16 @@ class MultimediaListView(RoleRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['solicitud'] = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
+        solicitud = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
+        es_cuadrilla = False
+        if hasattr(self.request.user, "profile"):
+            es_cuadrilla = (
+                self.request.user.groups.filter(name__iexact="cuadrilla").exists()
+                or self.request.user.profile.role_type == "cuadrilla"
+            )
+
+        context['solicitud'] = solicitud
+        context['es_cuadrilla'] = es_cuadrilla
         return context
 
 
