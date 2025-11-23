@@ -31,7 +31,6 @@ def check_profile(request):
         messages.add_message(request, messages.INFO, 'Hubo un error con su usuario, por favor contactese con los administradores')              
         return redirect('login')
 
-    print(profile.role_type)
     if profile.role_type == "secpla":
         return redirect('dashboard_secpla')
     elif profile.role_type == "territorial":

@@ -13,8 +13,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.shortcuts import render, redirect, get_object_or_404
 from django import forms
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import ensure_csrf_cookie
 from .models import Profile
 from .utils import clear_profile_role, get_role_display, has_admin_role
+from django.contrib.auth.views import LoginView
 
 class SignUpView(CreateView):
     form_class = UserCreationFormWithEmail
@@ -31,6 +34,12 @@ class SignUpView(CreateView):
         form.fields['password1'].widget = forms.PasswordInput(attrs={'class':'form-control mb-2','placeholder':'Ingrese su contraseña'})
         form.fields['password2'].widget = forms.PasswordInput(attrs={'class':'form-control mb-2','placeholder':'Re ingrese su contraseña'})    
         return form
+
+
+@method_decorator(ensure_csrf_cookie, name="dispatch")
+class CustomLoginView(LoginView):
+    """Login que siempre entrega un CSRF cookie actualizado (evita tokens expirados tras logout/back)."""
+    template_name = "registration/login.html"
 
 @method_decorator(login_required, name='dispatch')
 class ProfileUpdate(UpdateView):

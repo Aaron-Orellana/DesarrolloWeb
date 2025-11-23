@@ -33,5 +33,6 @@ urlpatterns = [
     path('dashboards/', include('dashboards.urls')),
     path('tickets/', include('tickets.urls')),
     path("dashboards/", include("dashboards.urls")),
+    path('locations/', include('locations.urls')),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

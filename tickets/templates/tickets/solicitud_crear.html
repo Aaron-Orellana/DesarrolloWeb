@@ -1,29 +1,92 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Crear Nueva Solicitud de Incidencia</h4>
+<div class="container py-4">
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Crear Nueva Solicitud de Incidencia</h2>
+        <p class="text-secondary mb-0">Registra una nueva incidencia reportada por un vecino.</p>
+    </div>
 
-{% if messages %}
-    <div class="alert alert-info">
+    {% if messages %}
         {% for message in messages %}
-            <p>{{ message }}</p>
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">{{ message }}</div>
         {% endfor %}
-    </div>
-{% endif %}
+    {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-    
-    {{ form.as_p }}
+    <div class="info-card p-4 p-md-5">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
 
-    <div>
-    <label for="comentario">Comentario extra:</label>
-    <textarea name="comentario" id="comentario" style="white-space: pre-wrap; overflow-wrap: break-word;" rows='2' cols='50'  placeholder='Opcional para documentar el cambio de estado de la solicitud.'>{{ request.POST.comentario|default_if_none:'' }}</textarea>
-    
+            <div class="row g-4 mb-5">
+                <div class="col-lg-6">
+                    <label class="form-label fs-5 text-primary">Encuesta Asociada</label>
+                    {{ form.encuesta }}
+                </div>
+                <div class="col-lg-6">
+                    <label class="form-label fs-5 text-primary">Datos del Vecino</label>
+                    {{ form.vecino }}
+                </div>
+                <div class="col-lg-8">
+                    <label class="form-label fs-5 text-primary">Ubicación de la Incidencia</label>
+                    {{ form.ubicacion }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label fs-5 text-primary">Descripción Detallada</label>
+                    {{ form.descripcion }}
+                </div>
+            </div>
+
+            {% if form.fields|length > 4 %}
+                <hr class="border-secondary my-5">
+                <h4 class="text-primary mb-4">Preguntas de la Encuesta</h4>
+                <div class="row g-4">
+                    {% for field in form %}
+                        {% if field.name|slice:":9" == "pregunta_" %}
+                            <div class="col-lg-6">
+                                <label class="form-label text-light fw-medium">
+                                    {{ field.label }}
+                                    {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="text-danger small mt-1">{{ field.errors }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <p><em>Selecciona una encuesta para ver las preguntas asociadas</em></p>
+                </div>
+            {% endif %}
+
+            <hr class="border-secondary my-5">
+            <div class="mb-4">
+                <label for="comentario" class="form-label fs-5 text-primary">Comentario Adicional (opcional)</label>
+                <textarea name="comentario" id="comentario" class="form-control form-control-lg" rows="3"
+                          placeholder="Observaciones internas...">{{ request.POST.comentario|default:'' }}</textarea>
+            </div>
+
+            <div class="d-flex gap-3 flex-wrap justify-content-end">
+                <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary px-5 py-3">Cancelar</a>
+                <button type="submit" class="btn btn-primary px-5 py-3">Guardar Solicitud</button>
+            </div>
+        </form>
     </div>
-    <div>
-    
-    <button type="submit" class="btn btn-primary">Guardar Solicitud</button>
-    <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const select = document.querySelector('[name="encuesta"]');
+    if (select) {
+        select.addEventListener('change', function () {
+            if (this.value) {
+                window.location = '?encuesta_id=' + this.value;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

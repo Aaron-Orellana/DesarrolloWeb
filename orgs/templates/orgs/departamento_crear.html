@@ -1,20 +1,41 @@
 {% extends 'core/base.html' %}
 
+{% block body_class %}custom-theme{% endblock %}
+
 {% block content %}
-<h4>Crear Departamento</h4>
+<div class="container py-4">
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Crear Departamento</h2>
+        <p class="text-secondary mb-0">Agrega un nuevo departamento al sistema para organizar las cuadrillas y direcciones.</p>
+    </div>
 
-{% if messages %}
-  <div class="alert alert-info">
-    {% for message in messages %}
-      <p>{{ message }}</p>
-    {% endfor %}
-  </div>
-{% endif %}
+    <!-- Mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{% url 'departamento_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                {{ form.as_p }}
+            </div>
+
+            <div class="mt-5 d-flex gap-3 flex-wrap">
+                <button type="submit" class="btn btn-primary px-4">
+                    Guardar Departamento
+                </button>
+                <a href="{% url 'departamento_listar' %}" class="btn btn-secondary px-4">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

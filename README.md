@@ -96,7 +96,7 @@ user: `dir_obras`
 pass: `pass1234`
 
 Usuario Cuadrilla
-user: `` --- creo q no hay aun.
+user: `cuadrilla_infra`
 pass: `pass1234`
 
 Usuario territorial
@@ -151,3 +151,38 @@ class UsuarioListView(RoleRequiredMixin, ListView):
 ```
 
 **ya no es necesario en las clases poner LoginRequiredMixin**
+
+# Guía de Uso de Botones y Iconos
+Explicacion de **cómo implementar los estilos definidos en `botones.css`**, cómo usar los **iconos de Bootstrap Icons**.
+## 1. Variables Globales en `botones.css`
+En `:root` se definen colores reutilizables para los botones, estas variables permiten cambiar la paleta de colores desde un solo lugar
+## 2. Clase Base: `.btn-accion`
+Todos los botones comparten esta clase:
+Esta clase asegura que **todos los botones tengan el mismo estilo base**.
+## 3. Botones con Colores Específicos
+**Crear / Editar / Eliminar / Volver**
+## 4. Iconos (Bootstrap Icons)
+Ejemplos de iconos:
+- **Crear:** `<i class="bi bi-plus-circle"></i>`
+- **Editar:** `<i class="bi bi-pencil-square"></i>`
+- **Ver:** `<i class="bi bi-eye"></i>`
+- **Volver:** `<i class="bi bi-arrow-left-circle"></i>`
+- **Eliminar:** `<i class="bi bi-trash"></i>`
+- **Actualizar:** `<i class="bi bi-arrow-repeat"></i>`
+- **Enviar:** `<i class="bi bi-send"></i>`
+- **Bloquear:** `<i class="bi bi-lock-fill"></i>`
+- **Desbloquear:** `<i class="bi bi-unlock-fill"></i>`
+- **Guardar:** `<i class="bi bi-save"></i>`
+## 5. Ejemplo de Uso Completo
+Botón para **volver al dashboard**:
+
+```html
+<a href="{% url 'dashboard_cuadrilla' %}" class="btn btn-accion btn-volver">
+    <i class="bi bi-arrow-left-circle"></i> Volver
+</a>
+```
+- `class="btn"` -> Clase base de Bootstrap.
+- `btn-accion` -> Aplica el estilo general de botones (bordes, alineación, tipografía).
+- `btn-volver` -> Cambia los colores a la paleta específica del botón "Volver".
+
+**Nota:** Estos colores podrían cambiar en un futuro en caso de dificultades al visualizar en los fondos.

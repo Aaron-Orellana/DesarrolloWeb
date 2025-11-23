@@ -1,170 +1,621 @@
 {% extends "core/base.html" %}
+{% load static %}
+
+
+{% block body_class %}territorial-body{% endblock %}
 
 {% block content %}
-<h1>Dashboard Territorial</h1>
+<style>
+    :root {
+        --terr-bg-main: #2D3250;
+        --terr-bg-surface: #424769;
+        --terr-text-main: #FFFFFF;
+        --terr-text-muted: #676F9D;
+        --terr-accent: #F9B17A;
+    }
 
-{% if territorial %}
-<p>Estás gestionando las solicitudes del territorio <strong>{{ territorial.nombre }}</strong>.</p>
-{% else %}
-<div class="alert alert-danger">
-    Tu perfil no tiene un territorio asignado, por lo que no hay datos para mostrar.
+
+    body.territorial-body {
+        margin: 0;
+        background-color: var(--terr-bg-main);
+        font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body.territorial-body header {
+        background-color: var(--terr-bg-main);
+        border-radius: 0;
+        box-shadow: none;
+        padding: 16px 40px;
+        margin: 0;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.25);
+    }
+
+    body.territorial-body header h1 {
+        font-size: 1.3rem;
+        margin-bottom: 2px;
+    }
+
+
+    body.territorial-body .container {
+        background: transparent;
+        box-shadow: none;
+        margin-top: 0;
+        padding: 24px 40px 40px 40px;
+        max-width: 1200px;
+    }
+
+    .territorial-wrapper {
+        color: var(--terr-text-main);
+    }
+
+
+    .terr-panel {
+        background-color: var(--terr-bg-surface);
+        border-radius: 18px;
+        padding: 16px 20px;
+        margin-bottom: 18px;
+        box-shadow: 0 14px 32px rgba(0,0,0,0.35);
+    }
+
+    .terr-panel h2 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .terr-panel p {
+        font-size: 0.85rem;
+        color: var(--terr-text-muted);
+        margin-bottom: 4px;
+    }
+
+
+    .terr-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .terr-header-left h1 {
+        font-size: 1.8rem;
+        margin-bottom: 4px;
+    }
+
+    .terr-header-left small {
+        color: var(--terr-text-muted);
+        font-size: 0.85rem;
+    }
+
+    .terr-header-right span.label {
+        font-size: 0.8rem;
+        color: var(--terr-text-muted);
+        display: block;
+        text-align: right;
+    }
+
+    .terr-header-right span.value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--terr-accent);
+        line-height: 1;
+    }
+
+
+    .terr-row-top {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr;
+        gap: 18px;
+        margin-top: 10px;
+        margin-bottom: 18px;
+    }
+
+    @media (max-width: 992px) {
+        .terr-row-top {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+    .terr-graph {
+        border-radius: 18px;
+        background-color: var(--terr-bg-surface);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 14px;
+        font-size: 0.9rem;
+        color: var(--terr-text-muted);
+    }
+
+    .terr-graph strong {
+        color: var(--terr-text-main);
+        display: block;
+        margin-bottom: 6px;
+    }
+
+
+    .territorial-wrapper table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .territorial-wrapper table thead {
+        background-color: var(--terr-accent) !important;
+    }
+
+    .territorial-wrapper table thead th {
+        color: #2D3250 !important;
+        font-weight: 700;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(0,0,0,0.25);
+    }
+
+    .territorial-wrapper table tbody td {
+        background-color: var(--terr-bg-surface);
+        color: var(--terr-text-main);
+        padding: 7px 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .territorial-wrapper table tbody tr:hover td {
+        background-color: #50577a;
+    }
+
+
+    .terr-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    @media (max-width: 992px) {
+        .terr-grid-2 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+    .terr-panel-slim {
+        padding: 12px 18px;
+        margin-bottom: 14px;
+    }
+
+
+    .terr-muted {
+        color: var(--terr-text-muted) !important;
+        font-size: 0.82rem;
+    }
+
+
+    .terr-btn-accent {
+        background-color: var(--terr-accent);
+        border-color: var(--terr-accent);
+        color: #2D3250;
+        font-weight: 600;
+        font-size: 0.8rem;
+        padding: 6px 16px;
+        border-radius: 999px;
+    }
+
+    .terr-btn-accent:hover {
+        background-color: #e09c62;
+        border-color: #e09c62;
+        color: #2D3250;
+    }
+
+
+    .terr-graph {
+    border-radius: 18px;
+    background-color: var(--terr-bg-surface);
+    padding: 20px;
+    position: relative;
+    min-height: 300px;
+    }
+
+    .terr-graph-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    }
+
+    .terr-graph-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    }
+
+    .terr-graph-container {
+    position: relative;
+    height: 250px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+
+    .terr-graph-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: center;
+}
+
+    .terr-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    }
+
+    .terr-legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    }
+
+</style>
+
+<div class="territorial-wrapper">
+
+
+    <div class="terr-panel">
+        <div class="terr-header">
+            <div class="terr-header-left">
+                <h1>Dashboard Territorial</h1>
+                {% if territorial %}
+                    <small>Monitorea las solicitudes del territorio <strong>{{ territorial.nombre }}</strong>.</small>
+                {% else %}
+                    <small>Tu perfil no tiene un territorio asignado, por lo que no hay datos para mostrar.</small>
+                {% endif %}
+            </div>
+            <div class="terr-header-right">
+                <span class="label">Total de solicitudes registradas</span>
+                <span class="value">{{ total_solicitudes }}</span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="terr-row-top">
+        <div class="terr-panel">
+            <h2>Resumen de Solicitudes</h2>
+            <p>Distribución por estado dentro de tu territorio.</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Estado</th>
+                        <th>Cantidad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for estado, total in estados_totales.items %}
+                    <tr>
+                        <td>{{ estado }}</td>
+                        <td>{{ total }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="terr-graph">
+            <div class="terr-graph-header">
+                <h3 class="terr-graph-title">Distribución por Estado</h3>
+            </div>
+            <div class="terr-graph-container">
+                <canvas id="estadosChart"></canvas>
+            </div>
+            <div class="terr-graph-legend" id="chartLegend"></div>
+        </div>
+
+    </div>
+
+
+    <div class="terr-grid-2">
+        <div class="terr-panel">
+            <h2>Incidencias abiertas</h2>
+            <p>Solicitudes que permanecen en seguimiento por parte del territorial.</p>
+
+            {% if incidencias_abiertas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Solicitud</th>
+                        <th>Incidencia</th>
+                        <th>Encuesta</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incidencia in incidencias_abiertas %}
+                    <tr>
+                        <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                        <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
+                        <td>{{ incidencia.encuesta.titulo }}</td>
+                        <td>{{ incidencia.estado }}</td>
+                        <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="terr-muted mb-0">No hay incidencias abiertas.</p>
+            {% endif %}
+        </div>
+
+        <div class="terr-panel">
+            <h2>Incidencias derivadas</h2>
+            <p>Solicitudes derivadas a una cuadrilla para su resolución.</p>
+
+            {% if incidencias_derivadas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Solicitud</th>
+                        <th>Incidencia</th>
+                        <th>Cuadrilla</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incidencia in incidencias_derivadas %}
+                    <tr>
+                        <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                        <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
+                        <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
+                        <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="terr-muted mb-0">No hay incidencias derivadas.</p>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <div class="terr-grid-2">
+        <div class="terr-panel">
+            <h2>Incidencias rechazadas</h2>
+            <p>Solicitudes que deben ser revisadas y reenviadas al departamento correspondiente.</p>
+
+            {% if incidencias_rechazadas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Solicitud</th>
+                        <th>Incidencia</th>
+                        <th>Motivo de Rechazo</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incidencia in incidencias_rechazadas %}
+                    <tr>
+                        <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                        <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
+                        <td>
+                            {% if incidencia.motivo != 'Otro motivo' %}
+                                {{ incidencia.motivo }}
+                            {% else %}
+                                {{ incidencia.otro }}
+                            {% endif %}
+                        </td>
+                        <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <a href="{% url 'redirigir_incidencia' incidencia.solicitud_incidencia_id %}"
+                               class="btn terr-btn-accent btn-sm">
+                                Redirigir
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="terr-muted mb-0">No hay incidencias rechazadas.</p>
+            {% endif %}
+        </div>
+
+        <div class="terr-panel">
+            <h2>Incidencias finalizadas</h2>
+            <p>Revisa las incidencias marcadas como finalizadas por la cuadrilla y apruébalas si corresponden.</p>
+
+            {% if incidencias_filtradas %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Incidencia</th>
+                        <th>Descripción</th>
+                        <th>Cuadrilla</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for incidencia in incidencias_filtradas %}
+                        {% if incidencia.estado == "Finalizada" %}
+                        <tr>
+                            <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                            <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
+                            <td>{{ incidencia.descripcion|truncatewords:10 }}</td>
+                            <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
+                            <td>{{ incidencia.estado }}</td>
+                            <td>
+                                <a href="{% url 'aprobar_incidencia' incidencia.solicitud_incidencia_id %}"
+                                   class="btn terr-btn-accent btn-sm">
+                                    Revisar
+                                </a>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="terr-muted mb-0">No hay incidencias finalizadas para aprobar.</p>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <div class="terr-panel terr-panel-slim">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+            <div>
+                <h2 class="mb-1">Ver solicitudes</h2>
+                <p class="mb-0">Filtra rápidamente las solicitudes por estado.</p>
+            </div>
+
+            <form method="get" class="d-flex flex-wrap align-items-center gap-2 mt-2 mt-md-0">
+                <label for="estado" class="terr-muted me-1 mb-0">Estado</label>
+                <select name="estado" id="estado"
+                        class="form-select form-select-sm"
+                        style="width: 150px; background-color: var(--terr-bg-surface); color: var(--terr-text-main); border-color: var(--terr-text-muted);">
+                    <option value="todas" {% if estado_filtro == "todas" %}selected{% endif %}>Todas</option>
+                    {% for estado in estados_para_filtrar %}
+                    <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>{{ estado }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit" class="btn terr-btn-accent btn-sm">Aplicar filtro</button>
+            </form>
+        </div>
+
+        {% if incidencias_filtradas %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Solicitud</th>
+                    <th>Incidencia</th>
+                    <th>Estado</th>
+                    <th>Encuesta</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incidencia in incidencias_filtradas %}
+                <tr>
+                    <td>#{{ incidencia.solicitud_incidencia_id }}</td>
+                    <td>{{ incidencia.encuesta.tipo_incidencia }}</td>
+                    <td>{{ incidencia.estado }}</td>
+                    <td>{{ incidencia.encuesta.titulo }}</td>
+                    <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="terr-muted mb-0">No hay solicitudes que coincidan con el filtro seleccionado.</p>
+        {% endif %}
+    </div>
+
+
+    <div class="terr-panel terr-panel-slim d-flex justify-content-between align-items-center">
+        <div>
+            <h2 class="mb-1">Crear nueva solicitud</h2>
+            <p class="mb-0">Inicia el registro de una nueva incidencia seleccionando la encuesta correspondiente.</p>
+        </div>
+        <a class="btn terr-btn-accent" href="{% url 'solicitud_crear' %}">
+            Crear solicitud
+        </a>
+    </div>
+
 </div>
-{% endif %}
 
-<section>
-    <h2>Resumen de Solicitudes</h2>
-    <p>Total de solicitudes registradas: <strong>{{ total_solicitudes }}</strong></p>
-    <table>
-        <thead>
-            <tr>
-                <th>Estado</th>
-                <th>Cantidad</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for estado, total in estado_totales.items %}
-            <tr>
-                <td>{{ estado }}</td>
-                <td>{{ total }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</section>
 
-<section>
-    <h2>Incidencias Abiertas</h2>
-    <p>Solicitudes que permanecen en seguimiento por parte del territorial.</p>
-    {% if incidencias_abiertas %}
-    <table>
-        <thead>
-            <tr>
-                <th>Solicitud</th>
-                <th>Incidencia</th>
-                <th>Encuesta</th>
-                <th>Estado</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for incidencia in incidencias_abiertas %}
-            <tr>
-                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
-                <td>{{ incidencia.encuesta.titulo }}</td>
-                <td>{{ incidencia.estado }}</td>
-                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No hay incidencias abiertas.</p>
-    {% endif %}
-</section>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<section>
-    <h2>Incidencias Derivadas</h2>
-    <p>Solicitudes derivadas a una cuadrilla para su resolución.</p>
-    {% if incidencias_derivadas %}
-    <table>
-        <thead>
-            <tr>
-                <th>Solicitud</th>
-                <th>Incidencia</th>
-                <th>Cuadrilla</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for incidencia in incidencias_derivadas %}
-            <tr>
-                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
-                <td>{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</td>
-                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No hay incidencias derivadas.</p>
-    {% endif %}
-</section>
+{{ estados_totales|json_script:"estados-data" }}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const estadosTotales = JSON.parse(document.getElementById('estados-data').textContent);
+    const estadosLabels = Object.keys(estadosTotales);
+    const estadosValues = Object.values(estadosTotales);
+    
+    const estadosData = {
+        labels: estadosLabels,
+        data: estadosValues
+    };
 
-<section>
-    <h2>Incidencias Rechazadas</h2>
-    <p>Solicitudes que deben ser revisadas y reenviadas al departamento correspondiente.</p>
-    {% if incidencias_rechazadas %}
-    <table>
-        <thead>
-            <tr>
-                <th>Solicitud</th>
-                <th>Incidencia</th>
-                <th>Motivo / Descripción</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for incidencia in incidencias_rechazadas %}
-            <tr>
-                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
-                <td>{{ incidencia.descripcion|default:"Sin comentarios" }}</td>
-                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No hay incidencias rechazadas.</p>
-    {% endif %}
-</section>
+    const colorPalette = ['#F9B17A', '#45B7D1', '#676F9D', '#4ECDC4', '#96CEB4', '#FF6B6B'];
 
-<section>
-    <h2>Ver Solicitudes</h2>
-    <form method="get" style="margin-bottom: 15px;">
-        <label for="estado">Filtrar por estado:</label>
-        <select name="estado" id="estado">
-            <option value="todas" {% if estado_filtro == "todas" %}selected{% endif %}>Todas</option>
-            {% for estado in estados_para_filtrar %}
-            <option value="{{ estado }}" {% if estado_filtro == estado %}selected{% endif %}>{{ estado }}</option>
-            {% endfor %}
-        </select>
-        <button type="submit" class="btn">Aplicar filtro</button>
-    </form>
+    const ctx = document.getElementById('estadosChart').getContext('2d');
+    const estadosChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: estadosData.labels,
+            datasets: [{
+                data: estadosData.data,
+                backgroundColor: colorPalette.slice(0, estadosData.labels.length),
+                borderColor: 'var(--terr-bg-surface)',
+                borderWidth: 1,
+                borderRadius: 6,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: 'rgba(255,255,255,0.1)'
+                    },
+                    ticks: {
+                        color: 'var(--terr-text-muted)'
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: 'var(--terr-text-muted)'
+                    }
+                }
+            }
+        }
+    });
 
-    {% if incidencias_filtradas %}
-    <table>
-        <thead>
-            <tr>
-                <th>Solicitud</th>
-                <th>Incidencia</th>
-                <th>Estado</th>
-                <th>Encuesta</th>
-                <th>Fecha</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for incidencia in incidencias_filtradas %}
-            <tr>
-                <td>#{{ incidencia.solicitud_incidencia_id }}</td>
-                <td>{{ incidencia.incidencia.nombre }}</td>
-                <td>{{ incidencia.estado }}</td>
-                <td>{{ incidencia.encuesta.titulo }}</td>
-                <td>{{ incidencia.fecha|date:"d/m/Y H:i" }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No hay solicitudes que coincidan con el filtro seleccionado.</p>
-    {% endif %}
-</section>
-
-<section>
-    <h2>Crear Nueva Solicitud</h2>
-    <p>Inicia el registro de una nueva incidencia seleccionando la encuesta correspondiente.</p>
-    <a class="btn" href="{% url 'solicitud_crear' %}">Crear solicitud</a>
-</section>
+    const legendContainer = document.getElementById('chartLegend');
+    estadosData.labels.forEach((label, index) => {
+        const legendItem = document.createElement('div');
+        legendItem.className = 'terr-legend-item';
+        legendItem.innerHTML = `
+            <div class="terr-legend-color" style="background-color: ${colorPalette[index]}"></div>
+            <span>${label}</span>
+        `;
+        legendContainer.appendChild(legendItem);
+    });
+});
+</script>
 {% endblock %}
+

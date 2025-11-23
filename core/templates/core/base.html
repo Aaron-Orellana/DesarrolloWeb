@@ -1,14 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    {% load static %}
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sistema de Administración</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" 
+          rel="stylesheet" 
+          integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" 
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/botones.css' %}">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background-color: #f9f9f9; }
-        header { background-color: #3f51b5; color: white; padding: 15px; border-radius: 8px; }
-        header h1 { margin: 0; }
-        nav a { color: white; margin-right: 15px; text-decoration: none; }
-        nav a:hover { text-decoration: underline; }
+        header { background-color: #3f51b5; color: white; padding: 15px 20px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .header-greeting { margin: 0; font-weight: 600; font-size: 1.05rem; }
+        .logout-btn { background: white; color: #3f51b5; padding: 8px 14px; border-radius: 6px; font-weight: 600; text-decoration: none; border: 1px solid rgba(255,255,255,0.4); transition: all 0.15s ease-in-out; }
+        .logout-btn:hover { background: #eef1ff; color: #2c3e9f; }
         .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-top: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
@@ -20,27 +31,20 @@
         .alert-danger { background-color: #f8d7da; color: #721c24; }
     </style>
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
 <header>
-    <h1>Panel Principal</h1>
-    <nav>
-        <a href="{% url 'direccion_listar' %}">Direcciones</a>
-        <a href="{% url 'departamento_listar' %}">Departamentos</a>
-        <a href="{% url 'cuadrilla_listar' %}">Cuadrillas</a>
-        <a href="{% url 'territorial_listar' %}">Territoriales</a>
-        <a href="{% url 'incidencia_listar' %}">Incidencias</a>
-        <a href="{% url 'encuesta_listar' %}">Encuestas</a>
-        <a href="{% url 'pregunta_listar' %}">Preguntas</a>
-        <a href="{% url 'user_list' %}">Usuarios</a>
-        <a href="{% url 'solicitud_listar' %}">Solicitud Incidencia</a>
-        {% if user.is_authenticated and user.profile.role_type in "cuadrilla secpla" %}
-          <a href="{% url 'mis_incidencias_cuadrilla' %}">Mis Incidencias (Cuadrilla)</a>
-        {% endif %}
-
-        <a href="{% url 'logout' %}">Cerrar sesión</a>
-    </nav>
+    {% if user.is_authenticated %}
+        {% with nombre=user.get_full_name|default:user.username rol=user.profile.get_role_type_display|default:"Sin rol" %}
+            <p class="header-greeting mb-0">Hola {{ nombre }} [{{ rol }}]</p>
+        {% endwith %}
+        <a href="{% url 'logout' %}" class="logout-btn">Cerrar sesión</a>
+    {% else %}
+        <p class="header-greeting mb-0">Hola invitado [Sin sesión]</p>
+        <a href="{% url 'login' %}" class="logout-btn">Iniciar sesión</a>
+    {% endif %}
 </header>
+
 <!-- Bloque mensajes de Django -->
 {% if messages %}
   <div class="container">

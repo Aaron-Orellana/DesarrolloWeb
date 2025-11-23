@@ -1,72 +1,96 @@
-{% extends 'core/base.html' %}
+{% extends "core/list_base.html" %}
 
-{% block content %}
-<h4>Listado de Territoriales</h4>
+{# === TEMA OSCURO ACTIVADO === #}
+{% block theme_class %}custom-theme{% endblock %}
 
-<form method="get" class="mb-3">
-    <input type="text" name="q" placeholder="Buscar por nombre o responsable" value="{{ query }}">
-    <button type="submit" class="btn btn-primary">Filtrar</button>
-    <a href="{% url 'territorial_listar' %}" class="btn btn-secondary">Limpiar</a>
+{# === TÍTULO === #}
+{% block title %}Listado de Territoriales{% endblock %}
+
+{# === BOTÓN CREAR NUEVO === #}
+{% block create_button %}
+    <a href="{% url 'territorial_crear' %}" class="btn btn-primary">
+        Crear Territorial
+    </a>
+{% endblock %}
+
+{# === FILTROS === #}
+{% block filters %}
+<form method="get" class="mb-4 row g-3 align-items-end">
+    <div class="col-md-8 col-lg-6">
+        <input type="text" name="q" class="form-control" 
+               placeholder="Buscar por nombre o responsable..." 
+               value="{{ request.GET.q|default:'' }}">
+    </div>
+
+    <div class="col-md-4 col-lg-3">
+        <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+    </div>
 </form>
 
-<p><a href="{% url 'territorial_crear' %}" class="btn btn-success">Crear Territorial</a></p>
+<div class="mb-4">
+    <a href="{% url 'territorial_listar' %}" class="btn btn-secondary btn-sm">
+        Limpiar filtro
+    </a>
+</div>
+{% endblock %}
 
-<div style="overflow-x:auto;">
-<table class="table table-bordered table-hover table-sm">
-    <thead>
+{# === ENCABEZADOS DE TABLA === #}
+{% block headers %}
+    <th>Nombre</th>
+    <th>Responsable</th>
+    <th style="width: 260px;">Acciones</th>
+{% endblock %}
+
+{# === FILAS DE LA TABLA === #}
+{% block rows %}
+    {% for territorial in territoriales %}
         <tr>
-            <th>Nombre</th>
-            <th>Responsable</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for territorial in territoriales %}
-            <tr>
-                <td>{{ territorial.nombre }}</td>
-                <td>
-                    {% if territorial.profile %}
+            <td class="fw-semibold">{{ territorial.nombre }}</td>
+            <td>
+                {% if territorial.profile %}
+                    <span class="badge badge-main">
                         {{ territorial.profile.user.get_full_name|default:territorial.profile.user.username }}
-                    {% else %}
-                        <em>Sin asignar</em>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{% url 'territorial_ver' territorial.pk %}" class="btn btn-sm btn-outline-primary">Ver</a>
-                    <a href="{% url 'territorial_editar' territorial.pk %}" class="btn btn-sm btn-outline-warning">Editar</a>
-                    <form method="post" action="{% url 'territorial_eliminar' territorial.pk %}" style="display:inline;" onsubmit="return confirm('¿Deseas eliminar este territorial?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Eliminar</button>
-                    </form>
-                </td>
-            </tr>
-        {% empty %}
-            <tr>
-                <td colspan="3" class="text-center">No hay territoriales registrados.</td>
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
-</div>
+                    </span>
+                    <small class="text-muted d-block">Responsable</small>
+                {% else %}
+                    <em class="text-muted">Sin responsable asignado</em>
+                {% endif %}
+            </td>
 
-{% if territoriales.has_other_pages %}
-<div class="pagination">
-    {% if territoriales.has_previous %}
-        <a href="?page={{ territoriales.previous_page_number }}&q={{ query }}" class="btn btn-outline-primary">&laquo; Anterior</a>
-    {% endif %}
+            <td class="text-nowrap">
+                <a href="{% url 'territorial_ver' territorial.pk %}"
+                   class="btn btn-sm btn-alt">Ver</a>
 
-    {% for num in territoriales.paginator.page_range %}
-        {% if territoriales.number == num %}
-            <span class="btn btn-primary disabled">{{ num }}</span>
-        {% else %}
-            <a href="?page={{ num }}&q={{ query }}" class="btn btn-outline-primary">{{ num }}</a>
-        {% endif %}
+                <a href="{% url 'territorial_editar' territorial.pk %}"
+                   class="btn btn-sm btn-warn">Editar</a>
+
+                <form method="post" action="{% url 'territorial_eliminar' territorial.pk %}" 
+                      class="d-inline"
+                      onsubmit="return confirm('¿Estás seguro de eliminar este territorial?\n\nEsto también eliminará todas las direcciones y departamentos asociados.');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger-custom">
+                        Eliminar
+                    </button>
+                </form>
+            </td>
+        </tr>
+
+    {% empty %}
+        <tr>
+            <td colspan="3" class="text-center py-5">
+                <div class="my-4">
+                    <h5 class="text-muted">
+                        {% if request.GET.q %}
+                            No se encontraron territoriales con el filtro aplicado.
+                        {% else %}
+                            No hay territoriales registrados aún.
+                        {% endif %}
+                    </h5>
+                    <a href="{% url 'territorial_crear' %}" class="btn btn-primary mt-3">
+                        Crear el primer territorial
+                    </a>
+                </div>
+            </td>
+        </tr>
     {% endfor %}
-
-    {% if territoriales.has_next %}
-        <a href="?page={{ territoriales.next_page_number }}&q={{ query }}" class="btn btn-outline-primary">Siguiente &raquo;</a>
-    {% endif %}
-</div>
-{% endif %}
-
 {% endblock %}

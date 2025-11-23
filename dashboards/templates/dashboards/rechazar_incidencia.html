@@ -1,0 +1,131 @@
+{% extends "core/base.html" %}
+{% block body_class %}custom-theme{% endblock %}
+
+{% block content %}
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
+
+    :root {
+        --dashboard-primary: #F9B17A;
+        --dashboard-primary-hover: #d89361;
+        --dashboard-bg: #2D3250;
+        --dashboard-surface: #424769;
+        --dashboard-muted: #676F9D;
+        --dashboard-text: #FFFFFF;
+    }
+
+    body {
+        background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 30%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.05), transparent 32%), var(--dashboard-bg) !important;
+    }
+
+    .container {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 28px !important;
+        max-width: 900px !important;
+    }
+
+    .reject-card {
+        background: var(--dashboard-surface);
+        border-radius: 22px;
+        padding: 26px 28px;
+        border: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 18px 36px rgba(6, 8, 20, 0.45);
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--dashboard-text);
+    }
+
+    .form-label {
+        color: var(--dashboard-muted);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+
+    .form-control, .form-select {
+        background-color: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--dashboard-text);
+        border-radius: 14px;
+        padding: 0.9rem 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: var(--dashboard-primary);
+        box-shadow: 0 0 0 0.2rem rgba(249, 177, 122, 0.25);
+        color: var(--dashboard-text);
+    }
+
+    .btn-danger {
+        background-color: #d9534f;
+        border-color: #d9534f;
+        font-weight: 700;
+        border-radius: 12px;
+        padding: 0.65rem 1.4rem;
+    }
+
+    .btn-danger:hover {
+        background-color: #c94440;
+        border-color: #c94440;
+    }
+
+    .btn-outline-light {
+        color: var(--dashboard-text);
+        border-color: rgba(255, 255, 255, 0.3);
+        border-radius: 12px;
+        padding: 0.65rem 1.4rem;
+    }
+
+    .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.45);
+    }
+</style>
+
+<div class="reject-card">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+        <div>
+            <p class="text-uppercase fw-semibold mb-1" style="letter-spacing:0.12em; color: var(--dashboard-muted);">Revisión territorial</p>
+            <h3 class="mb-0">Rechazar incidencia</h3>
+        </div>
+        <span class="badge bg-danger text-uppercase" style="letter-spacing:0.05em;">Acción requerida</span>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="mb-3">
+          <label class="form-label">Motivo</label>
+          {{ form.motivo }}
+      </div>
+      <div id="otro-field" class="mb-3" style="display: none;">
+        <label class="form-label">Otro motivo</label>
+        {{ form.otro }}
+      </div>
+
+      <div class="d-flex gap-2 flex-wrap">
+          <button type="submit" class="btn btn-danger">Rechazar</button>
+          <a href="{% url 'dashboard_territorial' %}" class="btn btn-outline-light">Volver</a>
+      </div>
+    </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const motivoSelect = document.getElementById('id_motivo');
+    const otroDiv = document.getElementById('otro-field');
+
+    function toggleOtroField() {
+      const selected = motivoSelect.options[motivoSelect.selectedIndex].text.toLowerCase();
+      if (selected.includes('otro')) {
+        otroDiv.style.display = 'block';
+      } else {
+        otroDiv.style.display = 'none';
+      }
+    }
+
+    toggleOtroField();
+    motivoSelect.addEventListener('change', toggleOtroField);
+  });
+</script>
+{% endblock %}

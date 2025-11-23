@@ -1,13 +1,76 @@
 {% extends 'core/base.html' %}
 
+{% block body_class %}custom-theme{% endblock %}
+
 {% block content %}
-<h4>Eliminar usuario</h4>
+<style>
+    .confirm-delete-wrapper {
+        min-height: 60vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-<p>¿Seguro que deseas eliminar al usuario <strong>{{ user_obj.username }}</strong>?</p>
+    .confirm-delete-card {
+        background: var(--dashboard-surface);
+        border: 1px solid var(--dashboard-border);
+        box-shadow: 0 18px 40px var(--dashboard-shadow);
+        border-radius: 24px;
+        padding: 32px;
+    }
 
-<form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn">Eliminar</button>
-    <a href="{% url 'user_list' %}" class="btn">Cancelar</a>
-</form>
+    .confirm-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        background: rgba(217, 83, 79, 0.16);
+        color: #ff9d92;
+    }
+
+    .confirm-actions .btn {
+        min-width: 150px;
+    }
+</style>
+
+<div class="confirm-delete-wrapper">
+    <div class="col-lg-7 col-xl-6">
+        <div class="confirm-delete-card">
+            <div class="d-flex align-items-start gap-3 mb-3">
+                <div class="confirm-icon">
+                    <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+                </div>
+                <div>
+                    <p class="text-uppercase text-secondary fw-semibold mb-1" style="letter-spacing: 0.08em;">
+                        Acción irreversible
+                    </p>
+                    <h3 class="mb-1">Eliminar usuario</h3>
+                    <p class="mb-0 text-secondary">
+                        Estás a punto de eliminar la cuenta de <strong class="text-white">{{ user_obj.username }}</strong>.
+                        Esta acción no se puede deshacer y removerá su acceso al sistema.
+                    </p>
+                </div>
+            </div>
+
+            <div class="alert alert-dashboard d-flex align-items-center gap-2 mb-4">
+                <i class="bi bi-info-circle-fill text-warning"></i>
+                <div>
+                    <div class="fw-semibold">Verifica antes de continuar</div>
+                    <small class="text-secondary">Confirma que el usuario no tenga tareas pendientes o incidencias asignadas.</small>
+                </div>
+            </div>
+
+            <form method="post" class="confirm-actions d-flex flex-wrap gap-3 justify-content-end">
+                {% csrf_token %}
+                <a href="{% url 'user_list' %}" class="btn btn-secondary">
+                    Cancelar
+                </a>
+                <button type="submit" class="btn btn-danger-custom">
+                    Sí, eliminar usuario
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

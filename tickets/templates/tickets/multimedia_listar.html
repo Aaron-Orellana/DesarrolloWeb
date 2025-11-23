@@ -1,37 +1,100 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Archivos Multimedia de la Solicitud #{{ solicitud.solicitud_incidencia_id }}</h4>
+<div class="container py-4">
 
-<p><a href="{% url 'solicitud_listar' %}" class="btn btn-primary">Volver a Solicitudes</a></p>
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+            <div>
+                <h2 class="mb-2">Archivos Multimedia</h2>
+                <p class="text-secondary mb-0">
+                    Solicitud de Incidencia <strong>#{{ solicitud.solicitud_incidencia_id }}</strong>
+                </p>
+            </div>
+            <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary px-4">
+                Volver a Solicitudes
+            </a>
+        </div>
+    </div>
 
-{% if multimedias %}
-    <div class="row">
-        {% for multimedia in multimedias %}
-            <div class="col-md-4">
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ multimedia.tipo|title }}</h5>
-                        <p class="card-text">Solicitud: {{ multimedia.solicitud_incidencia.pk }}</p>
+    <!-- Mensaje si no hay archivos -->
+    {% if not multimedias %}
+        <div class="empty-state p-5 text-center">
+            <h4 class="mb-3 text-muted">No hay archivos multimedia</h4>
+            <p class="text-secondary mb-4">
+                Aún no se han subido imágenes o videos para esta solicitud.
+            </p>
+            {% if es_cuadrilla %}
+                <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" 
+                   class="btn btn-primary px-4">
+                    Subir Primer Archivo
+                </a>
+            {% endif %}
+        </div>
+    {% else %}
+        <!-- Galería de archivos -->
+        <div class="row g-4">
+            {% for multimedia in multimedias %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="info-card p-4 h-100 d-flex flex-column">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <span class="badge badge-main fs-6">
+                                {% if multimedia.tipo == 'imagen' %}
+                                    Imagen
+                                {% elif multimedia.tipo == 'video' %}
+                                    Video
+                                {% else %}
+                                    {{ multimedia.tipo|title }}
+                                {% endif %}
+                            </span>
+                            <small class="text-muted">
+                                #{{ multimedia.solicitud_incidencia.pk }}
+                            </small>
+                        </div>
+
+                        <!-- Vista previa -->
                         {% if multimedia.tipo == 'imagen' %}
-                            <img src="{{ multimedia.archivo.url }}" class="img-fluid" alt="Imagen" style="max-width: 100%;">
+                            <div class="text-center mb-4">
+                                <img src="{{ multimedia.archivo.url }}" 
+                                     class="img-fluid rounded" 
+                                     alt="Imagen de la solicitud" 
+                                     style="max-height: 280px; object-fit: cover;">
+                            </div>
                         {% elif multimedia.tipo == 'video' %}
-                            <video width="100%" controls>
-                                <source src="{{ multimedia.archivo.url }}" type="video/mp4">
-                                Tu navegador no soporta el elemento de video.
-                            </video>
+                            <div class="ratio ratio-16x9 mb-4 rounded overflow-hidden">
+                                <video controls class="w-100">
+                                    <source src="{{ multimedia.archivo.url }}" type="video/mp4">
+                                    Tu navegador no soporta video.
+                                </video>
+                            </div>
                         {% endif %}
-                        <a href="{{ multimedia.archivo.url }}" class="btn btn-sm btn-primary" target="_blank">Descargar</a>
+
+                        <!-- Acciones -->
+                        <div class="mt-auto d-flex gap-2">
+                            <a href="{{ multimedia.archivo.url }}" 
+                               class="btn btn-primary btn-sm flex-fill" 
+                               target="_blank">
+                                Ver / Descargar
+                            </a>
+                            {# Si tienes eliminar, puedes agregarlo aquí #}
+                        </div>
                     </div>
                 </div>
-            </div>
-        {% empty %}
-            <p>No hay archivos multimedia para esta solicitud.</p>
-        {% endfor %}
-    </div>
-{% else %}
-    <p>No hay archivos multimedia para esta solicitud.</p>
-{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
 
-<p><a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" class="btn btn-success">Subir Nuevo Archivo</a></p>
+    {% if es_cuadrilla %}
+        <!-- Botón para subir nuevo archivo -->
+        <div class="mt-5 text-center">
+            <a href="{% url 'multimedia_crear' solicitud.solicitud_incidencia_id %}" 
+               class="btn btn-success px-5 py-3">
+                Subir Nuevo Archivo
+            </a>
+        </div>
+    {% endif %}
+</div>
 {% endblock %}

@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import SolicitudIncidencia, Multimedia
-from orgs.models import Profile, Cuadrilla
+from .models import SolicitudIncidencia, Multimedia, RespuestaCuadrilla, MultimediaCuadrilla
+from orgs.models import Profile, Cuadrilla, Territorial
 from .forms import SolicitudIncidenciaForm 
 from django.views.generic.list import ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -23,13 +23,16 @@ def solicitud_listar(request):
         messages.info(request, 'Hubo un error con tu perfil.')
         return redirect('login')
 
+    puede_crear_incidencia = request.user.groups.filter(id=6).exists()
+    es_cuadrilla = request.user.groups.filter(name__iexact="cuadrilla").exists() or profile.role_type == "cuadrilla"
+
     q = request.GET.get('q', '').strip()
     estado = request.GET.get('estado', '').strip()
     cuadrilla = request.GET.get('cuadrilla', '').strip()
     fecha = request.GET.get('fecha', '').strip()
 
     solicitudes = SolicitudIncidencia.objects.select_related(
-        'incidencia', 'cuadrilla', 'ubicacion', 'territorial', 'encuesta'
+        'incidencia', 'cuadrilla', 'territorial', 'encuesta'
     ).all().order_by('-fecha')
 
     filtros = Q()
@@ -63,43 +66,83 @@ def solicitud_listar(request):
         'sin_resultados': sin_resultados,
         'query_string': query_string,
         'request': request,
+        'puede_crear_incidencia': puede_crear_incidencia,
+        'es_cuadrilla': es_cuadrilla,
     })
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Territoriales")
 def solicitud_crear(request):
+    from surveys.models import Pregunta, Respuesta  
+
     try:
-        profile = Profile.objects.filter(user_id=request.user.id).get()
+        profile = Profile.objects.get(user_id=request.user.id)
     except Profile.DoesNotExist:
         messages.error(request, 'Hubo un error con tu perfil.')
         return redirect('logout')
+
+    
+    encuesta_id = request.GET.get('encuesta_id')
+
     if request.method == 'POST':
-        form = SolicitudIncidenciaForm(request.POST)
+        
+        form = SolicitudIncidenciaForm(request.POST, encuesta_id=request.POST.get('encuesta'))
         comentario = request.POST.get('comentario', '').strip()
+
         if form.is_valid():
             solicitud = form.save(commit=False)
 
+            
+            try:
+                solicitud.territorial = Territorial.objects.get(profile=request.user.profile)
+            except Territorial.DoesNotExist:
+                solicitud.territorial = None
+
+            
             if solicitud.cuadrilla:
                 estado_anterior = solicitud.estado
                 solicitud.estado = 'Derivada'
-                
+
             solicitud.save()
+
+            
+            for key, value in request.POST.items():
+                if key.startswith('pregunta_'):
+                    pregunta_id = key.split('_')[1]
+                    Respuesta.objects.create(
+                        pregunta_id=pregunta_id,
+                        solicitud_incidencia=solicitud,
+                        respuesta_texto=value
+                    )
+
+            
             if solicitud.cuadrilla:
                 solicitud.registrar_log(
-                    profile= request.user.profile,
-                    from_estado = estado_anterior, 
-                    to_estado = solicitud.estado,
-                    fecha = now(),
-                    comentario =comentario
-                    )
-            messages.success(request, 'Solicitud de incidencia creada correctamente.')
+                    profile=request.user.profile,
+                    from_estado=estado_anterior,
+                    to_estado=solicitud.estado,
+                    fecha=now(),
+                    comentario=comentario
+                )
+
+            messages.success(request, 'Solicitud de incidencia creada correctamente con respuestas.')
             return redirect('solicitud_listar')
         else:
             messages.error(request, 'Error al guardar. Revise los datos del formulario.')
     else:
-        form = SolicitudIncidenciaForm()
+        
+        initial = {}
+        if encuesta_id:
+            initial['encuesta'] = encuesta_id
+
+        form = SolicitudIncidenciaForm(encuesta_id=encuesta_id, initial=initial)
+
     return render(request, 'tickets/solicitud_crear.html', {'form': form})
 
-@role_required("Secpla","Territoriales","Direcciones")
+#
+
+
+
+@role_required("Territoriales","Direcciones")
 def solicitud_editar(request, solicitud_incidencia_id):
     try:
         profile = Profile.objects.filter(user_id=request.user.id).get()
@@ -146,7 +189,13 @@ def solicitud_editar(request, solicitud_incidencia_id):
 def solicitud_ver(request, solicitud_incidencia_id):
     solicitud = get_object_or_404(SolicitudIncidencia, pk=solicitud_incidencia_id)
     logs = solicitud.logs.all() 
-    return render(request, 'tickets/solicitud_ver.html', {'solicitud': solicitud,'logs': logs,})
+    es_cuadrilla = False
+    if hasattr(request.user, "profile"):
+        es_cuadrilla = (
+            request.user.groups.filter(name__iexact="cuadrilla").exists()
+            or request.user.profile.role_type == "cuadrilla"
+        )
+    return render(request, 'tickets/solicitud_ver.html', {'solicitud': solicitud,'logs': logs, 'es_cuadrilla': es_cuadrilla})
 
 
 
@@ -166,7 +215,16 @@ class MultimediaListView(RoleRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['solicitud'] = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
+        solicitud = SolicitudIncidencia.objects.get(pk=self.kwargs['solicitud_incidencia_id'])
+        es_cuadrilla = False
+        if hasattr(self.request.user, "profile"):
+            es_cuadrilla = (
+                self.request.user.groups.filter(name__iexact="cuadrilla").exists()
+                or self.request.user.profile.role_type == "cuadrilla"
+            )
+
+        context['solicitud'] = solicitud
+        context['es_cuadrilla'] = es_cuadrilla
         return context
 
 

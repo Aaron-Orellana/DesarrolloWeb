@@ -5,38 +5,238 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-  <title>Proyecto Municipalidades</title>
+  <title>Sistema Municipal - Iniciar Sesión</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
+
+    :root {
+      --primary-color: #F9B17A;
+      --primary-hover: #d89361;
+      --bg-primary: #2D3250;
+      --bg-surface: #424769;
+      --text-muted: #676F9D;
+      --text-white: #FFFFFF;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-white);
+      font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-container {
+      background: var(--bg-surface);
+      border-radius: 28px;
+      padding: 3rem;
+      box-shadow: 0 25px 45px rgba(7, 10, 26, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      width: 100%;
+      max-width: 420px;
+      margin: 2rem;
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .login-header h4 {
+      color: var(--text-white);
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+
+    .login-header p {
+      color: var(--text-muted);
+      margin: 0;
+      font-size: 0.9rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      color: var(--text-white);
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    .form-control {
+      background-color: var(--bg-surface);
+      border: 2px solid var(--text-muted);
+      border-radius: 12px;
+      color: var(--text-white);
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .form-control:focus {
+      background-color: var(--bg-surface);
+      border-color: var(--primary-color);
+      color: var(--text-white);
+      box-shadow: 0 0 0 0.2rem rgba(249, 177, 122, 0.25);
+      outline: none;
+    }
+
+    .form-control::placeholder {
+      color: var(--text-muted);
+    }
+
+    .btn-login {
+      background-color: var(--primary-color);
+      border: none;
+      border-radius: 999px;
+      color: var(--bg-primary);
+      font-weight: 600;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      width: 100%;
+      transition: all 0.3s ease;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-login:hover {
+      background-color: var(--primary-hover);
+      
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(249, 177, 122, 0.3);
+    }
+
+    .forgot-password {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      text-align: center;
+      display: block;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-password:hover {
+      color: var(--primary-color);
+    }
+
+    .alert-error {
+      background-color: rgba(220, 53, 69, 0.1);
+      border: 1px solid rgba(220, 53, 69, 0.3);
+      border-radius: 12px;
+      color: #ff6b6b;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .login-logo {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo-text {
+      color: var(--primary-color);
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+        border-radius: 20px;
+      }
+      
+      .login-header h4 {
+        font-size: 1.3rem;
+      }
+    }
+
+    
+    .login-container {
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
 </head>
 <body>
-  <div>
-    <div>
-      <div>
-        <h4>Ingrese sus datos</h4>
-        {% if form.non_field_errors %}
-          <p style="color:red">Credenciales erroneas</p>
-        {% endif %}
-        <form class="login-form" action="" method="post">
-          {% csrf_token %}
-          <div>
-            <label>Usuario:</label>
-            <input type="text" name="username"/>
-          </div>
-          <div>
-            <label>Contraseña:</label>
-            <input type="password" name="password"/>
-          </div>         
-          <div>
-            <button type="submit">
-              <span>Iniciar Sesión</span>
-            </button>
-          </div>
-          <div>
-            <a href="{% url 'password_reset' %}">Olvidé mi contraseña</a>
-          </div>
-        </form>
-      </div>
+  <div class="login-container">
+    <div class="login-logo">
+      <div class="logo-text">Sistema Municipal</div>
     </div>
+    
+    <div class="login-header">
+      <h4>Ingrese sus datos</h4>
+      <p>Acceda a su cuenta para continuar</p>
+    </div>
+    
+    {% if form.non_field_errors %}
+      <div class="alert-error">
+        Credenciales incorrectas
+      </div>
+    {% endif %}
+    
+    <form class="login-form" action="" method="post">
+      {% csrf_token %}
+      
+      <div class="form-group">
+        <label for="username">Usuario:</label>
+        <input type="text" name="username" id="username" class="form-control" placeholder="Ingrese su usuario" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Contraseña:</label>
+        <input type="password" name="password" id="password" class="form-control" placeholder="Ingrese su contraseña" required>
+      </div>
+      
+      <button type="submit" class="btn btn-login ">
+        <span>Iniciar Sesión</span>
+      </button>
+      
+      <div>
+        <a href="{% url 'password_reset' %}" class="forgot-password">
+          Olvidé mi contraseña
+        </a>
+      </div>
+    </form>
   </div>
+
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const inputs = document.querySelectorAll('.form-control');
+      inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+          this.parentElement.classList.add('focused');
+        });
+        input.addEventListener('blur', function() {
+          if (!this.value) {
+            this.parentElement.classList.remove('focused');
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
 {% endblock %}

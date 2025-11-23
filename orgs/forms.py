@@ -6,6 +6,7 @@ from django import forms
 from django.contrib.auth.models import Group
 from django.db import transaction
 from django.db.models import Q
+from core.forms import BaseBootstrapForm
 
 from registration.models import Profile
 from registration.utils import DEFAULT_GROUP_NAME, ROLE_GROUP_NAMES
@@ -412,3 +413,4 @@ class TerritorialForm(forms.ModelForm):
             territorial.save()
 
         return territorial
+

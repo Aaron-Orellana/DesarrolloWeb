@@ -7,8 +7,9 @@ from django.db.models import Q
 from registration.models import Profile
 from registration.utils import has_admin_role
 from .models import Encuesta, Pregunta
-from .forms import EncuestaForm,PreguntaForm
+from .forms import EncuestaForm,PreguntaForm, PreguntaFormSet
 from core.decorators import role_required
+from django.db import transaction
 
 @role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def encuesta_listar(request):
@@ -57,44 +58,110 @@ def encuesta_listar(request):
 
 
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Secpla")
 def encuesta_crear(request):
     if request.method == 'POST':
-        form = EncuestaForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Encuesta creada correctamente.')
-            return redirect('encuesta_listar')
+        encuesta_form = EncuestaForm(request.POST)
+        formset = PreguntaFormSet(request.POST)
+        if encuesta_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    encuesta = encuesta_form.save()
+                    formset.instance = encuesta
+                    formset.save()
+                    messages.success(request, 'Encuesta creada correctamente.')
+                    return redirect('encuesta_listar')
+            except:
+                messages.error(request, "Error al guardar la encuesta")
+        else:
+            messages.error(request, 'Corrige los errores en los formularios (Encuesta y Pregunta).')
+            encuesta_form = EncuestaForm(request.POST)
     else:
-        form = EncuestaForm()
+        encuesta_form = EncuestaForm()
+        formset = PreguntaFormSet()
 
-    return render(request, 'surveys/encuesta_crear.html', {'form': form})
+    return render(request, 'surveys/encuesta_crear.html', {'encuesta_form': encuesta_form, 'formset': formset})
 
 
 @role_required("Secpla","Territoriales","Direcciones","Departamentos")
 def encuesta_ver(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-    return render(request, 'surveys/encuesta_ver.html', {'encuesta': encuesta})
+    preguntas_activas = encuesta.preguntas.filter(fue_borrado=False)
+    return render(request, 'surveys/encuesta_ver.html', {
+        'encuesta': encuesta,
+        'preguntas': preguntas_activas,
+    })
 
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Secpla")
 def encuesta_editar(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
-
+    if encuesta.estado == True:
+        messages.error(request,'No se puede editar una encuesta que está "Activa".')
+        return redirect('encuesta_listar')
     if request.method == 'POST':
-        form = EncuestaForm(request.POST, instance=encuesta)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Encuesta actualizada correctamente.')
-            return redirect('encuesta_listar')
+        encuesta_form = EncuestaForm(request.POST, instance=encuesta)
+        formset = PreguntaFormSet(
+            request.POST,
+            instance=encuesta,
+            prefix='preguntas',
+            queryset=Pregunta.objects.filter(encuesta=encuesta, fue_borrado=False),
+        )
+        if encuesta_form.is_valid() and formset.is_valid():
+            try:
+                with transaction.atomic():
+                    encuesta = encuesta_form.save()
+
+                    for idx, form in enumerate(formset.forms):
+                        # Tomar flag DELETE directamente del POST para asegurarlo
+                        raw_delete = formset.data.get(f"{formset.prefix}-{idx}-DELETE")
+                        delete_flag = form.cleaned_data.get('DELETE') or (raw_delete in ("on", "true", "True", "1"))
+
+                        # Ignorar formularios en blanco sin cambios
+                        if not delete_flag and not form.has_changed() and not form.cleaned_data.get('nombre'):
+                            continue
+
+                        pregunta = form.save(commit=False)
+                        if delete_flag:
+                            if pregunta.pk:
+                                pregunta.fue_borrado = True
+                                pregunta.save(update_fields=['fue_borrado'])
+                            continue
+
+                        pregunta.encuesta = encuesta
+                        pregunta.fue_borrado = False
+                        pregunta.save()
+
+                    messages.success(request, 'Encuesta y preguntas actualizadas correctamente.')
+                    return redirect('encuesta_listar')
+            except Exception as e:
+                messages.error(request, f"Error al guardar la encuesta: {e}")
+        else:
+            print("Errores encuesta_form:", encuesta_form.errors)
+            print("Errores formset:", formset.errors)
+            print("Errores no-form del formset:", formset.non_form_errors())
+            messages.error(request, "Corrige los errores antes de guardar. Revisa la consola para más detalles.")
         
     else:
-        form = EncuestaForm(instance=encuesta)
+        encuesta_form = EncuestaForm(instance=encuesta)
+        #Solo mostrar preguntas NO borradas
+        formset = PreguntaFormSet(
+            instance=encuesta,
+            queryset=Pregunta.objects.filter(encuesta=encuesta, fue_borrado=False),
+            prefix='preguntas'
+        )
+    #Hacer los campos existentes solo lectura
+    for form in formset.forms:
+        if form.instance.pk:
+            # Mostrar solo lectura en la interfaz
+            form.fields['nombre'].widget.attrs['readonly'] = True
+            # Asegurar que el valor se envíe al POST
+            form.fields['nombre'].required = False
 
-    return render(request, 'surveys/encuesta_editar.html', {'form': form, 'encuesta': encuesta})
+    return render(request, 'surveys/encuesta_editar.html', {'encuesta_form': encuesta_form, 'formset': formset, 'encuesta': encuesta})
 
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Secpla")
 def encuesta_bloquear(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
     encuesta.estado = not encuesta.estado
@@ -104,7 +171,7 @@ def encuesta_bloquear(request, encuesta_id):
     return redirect('encuesta_listar')
 
 
-@role_required("Secpla","Direcciones")
+@role_required("Secpla")
 def encuesta_eliminar(request, encuesta_id):
     encuesta = get_object_or_404(Encuesta, pk=encuesta_id)
 
@@ -159,7 +226,7 @@ def pregunta_listar(request):
     })
 
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Secpla")
 def pregunta_crear(request):
     try:
         profile = Profile.objects.get(user_id=request.user.id)
@@ -179,7 +246,7 @@ def pregunta_crear(request):
         form = PreguntaForm()
     return render(request, 'surveys/pregunta_crear.html', {'form': form, 'accion': 'Crear'})
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Secpla")
 def pregunta_editar(request, pregunta_id):
     try:
         profile = Profile.objects.get(user_id=request.user.id)

@@ -1,14 +1,47 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Editar Pregunta: {{ pregunta.nombre }}</h4>
+<div class="container py-4">
 
-<form method="post">
-    {% csrf_token %}
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Editar Pregunta</h2>
+        <p class="text-secondary mb-0">
+            Modificando pregunta de la encuesta: 
+            <strong>{{ pregunta.encuesta.titulo }}</strong>
+            <span class="text-muted">• ID #{{ pregunta.pregunta_id }}</span>
+        </p>
+    </div>
 
-    {{ form.as_p }}
+    <!-- Mensajes de Django -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
 
-    <button type="submit" class="btn btn-primary">Actualizar</button>
-    <a href="{% url 'pregunta_listar'%}" class="btn btn-secondary">Cancelar</a>
-</form>
+    <!-- Formulario -->
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row g-4">
+                {{ form.as_p }}
+            </div>
+
+            <div class="mt-5 d-flex gap-3 flex-wrap">
+                <button type="submit" class="btn btn-primary px-4">
+                    Actualizar Pregunta
+                </button>
+                <a href="{% url 'pregunta_listar' %}" class="btn btn-secondary px-4">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

@@ -1,48 +1,378 @@
 {% extends "core/base.html" %}
 {% block content %}
 
-<h2 style="text-align:center; margin-top:20px;">Panel de Control - Secpla</h2>
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
+    :root {
+        --dashboard-primary: #F9B17A;
+        --dashboard-primary-hover: #d89361;
+        --dashboard-bg: #2D3250;
+        --dashboard-surface: #424769;
+        --dashboard-muted: #676F9D;
+        --dashboard-text: #FFFFFF;
+    }
 
-<div style="display:flex; flex-wrap:wrap; justify-content:center; gap:20px; margin-top:40px;">
+    body {
+        background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 28%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.04), transparent 32%), var(--dashboard-bg) !important;
+        color: var(--dashboard-text);
+    }
 
-  <a href="{% url 'user_list' %}" style="text-decoration:none; color:inherit;">
-    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-      <h3>Usuarios Registrados</h3>
-      <p style="font-size:2em; color:#007bff;">{{ total_usuarios }}</p>
+    body > header {
+        background: linear-gradient(135deg, rgba(66, 71, 105, 0.92), rgba(66, 71, 105, 0.75));
+        color: var(--dashboard-text);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    body > header .header-greeting,
+    body > header nav a {
+        color: var(--dashboard-text);
+    }
+
+    body > header .logout-btn {
+        background: var(--dashboard-primary);
+        color: #2D3250;
+        border: none;
+        box-shadow: 0 10px 22px rgba(249, 177, 122, 0.35);
+    }
+
+    body > header .logout-btn:hover {
+        background: var(--dashboard-primary-hover);
+        color: #2D3250;
+    }
+
+    .container {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 20px !important;
+        max-width: 1200px !important;
+    }
+
+    .dashboard-secpla {
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--dashboard-text);
+        padding-bottom: 32px;
+    }
+
+    .dashboard-hero {
+        background: linear-gradient(135deg, rgba(66, 71, 105, 0.9), rgba(66, 71, 105, 0.65));
+        border-radius: 28px;
+        padding: 38px 42px;
+        margin-top: 25px;
+        box-shadow: 0 28px 60px rgba(7,10,26,0.35);
+        border: 1px solid rgba(255,255,255,0.06);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .dashboard-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 25% 20%, rgba(249, 177, 122, 0.12), transparent 45%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.08), transparent 40%);
+        pointer-events: none;
+    }
+
+    .dashboard-hero .badge {
+        background: rgba(249, 177, 122, 0.14);
+        color: var(--dashboard-primary);
+        border: 1px solid rgba(249, 177, 122, 0.35);
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        font-size: 0.8rem;
+    }
+
+    .dashboard-hero h1 {
+        font-weight: 650;
+        font-size: 2.45rem;
+        color: #FFFFFF;
+        margin: 12px 0 6px;
+        letter-spacing: 0.01em;
+    }
+
+    .dashboard-hero p {
+        color: var(--dashboard-muted);
+        font-size: 1.05rem;
+        margin: 0;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 24px;
+    }
+
+    .stat-card {
+        background: var(--dashboard-surface);
+        padding: 22px 24px;
+        border-radius: 22px;
+        min-height: 150px;
+        text-align: left;
+        box-shadow: 0 16px 36px rgba(5,7,20,0.35);
+        border: 1px solid rgba(255,255,255,0.06);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(145deg, rgba(249, 177, 122, 0.14), transparent 45%);
+        opacity: 0;
+        transition: opacity .22s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 22px 46px rgba(5,7,20,0.48);
+        border-color: rgba(249, 177, 122, 0.35);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-title {
+        font-size: 1.02rem;
+        font-weight: 600;
+        color: #FFFFFF;
+        margin-bottom: 10px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dashboard-primary);
+        margin: 0;
+        position: relative;
+        z-index: 1;
+    }
+
+    .stat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.06);
+        color: var(--dashboard-muted);
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 1;
+    }
+
+    .cta-card {
+        background: linear-gradient(160deg, rgba(66,71,105,0.92), rgba(66,71,105,0.75));
+        border-radius: 22px;
+        padding: 26px;
+        border: 1px solid rgba(255,255,255,0.08);
+        box-shadow: 0 18px 40px rgba(7,10,26,0.4);
+        text-align: center;
+        transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
+        color: #FFFFFF !important;
+        width: 280px;
+        margin: 14px auto 0;
+    }
+
+    .cta-card:hover {
+        background: var(--dashboard-primary);
+        color: #2D3250 !important;
+        transform: translateY(-6px);
+        box-shadow: 0 22px 46px rgba(5,7,20,0.48);
+    }
+
+    .cta-card h3 {
+        margin-bottom: 6px;
+        font-weight: 700;
+        color: inherit;
+    }
+
+    .cta-card .cta-icon {
+        font-size: 2.3rem;
+        font-weight: 700;
+        line-height: 1;
+        color: inherit;
+    }
+
+    .org-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+        gap: 16px;
+    }
+
+    .org-card {
+        background: var(--dashboard-surface);
+        border-radius: 18px;
+        padding: 18px 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 14px 30px rgba(7, 10, 26, 0.35);
+        transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+        color: var(--dashboard-text);
+        text-decoration: none;
+    }
+
+    .org-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 18px 40px rgba(7, 10, 26, 0.45);
+        border-color: rgba(249, 177, 122, 0.4);
+    }
+
+    .org-card h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .org-card p {
+        margin: 6px 0 0;
+        color: var(--dashboard-muted);
+    }
+
+    .org-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        background: rgba(249, 177, 122, 0.12);
+        color: var(--dashboard-primary);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-hero {
+            padding: 28px 24px;
+        }
+
+        .dashboard-hero h1 {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+<div class="dashboard-secpla">
+    <div class="dashboard-hero mt-4 position-relative">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 position-relative" style="z-index:1;">
+            <div>
+                <span class="badge text-uppercase">Gestión municipal</span>
+                <h1>Panel de Control - SECPLA</h1>
+                <p>Vista general de la información municipal.</p>
+            </div>
+        </div>
     </div>
-  </a>
 
+    <div class="stat-grid mt-4">
+        <a href="{% url 'user_list' %}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Usuarios</div>
+                <div class="stat-title mt-2">Usuarios Registrados</div>
+                <div class="stat-number">{{ total_usuarios }}</div>
+            </div>
+        </a>
 
-  <a href="{% url 'solicitud_listar' %}?estado=Creada" style="text-decoration:none; color:inherit;">
-    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-      <h3>Incidencias Creadas</h3>
-      <p style="font-size:2em; color:#28a745;">{{ incidencias_creadas }}</p>
+        <a href="{% url 'solicitud_listar' %}?estado=Creada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Incidencias</div>
+                <div class="stat-title mt-2">Incidencias Creadas</div>
+                <div class="stat-number">{{ incidencias_creadas }}</div>
+            </div>
+        </a>
+
+        <a href="{% url 'solicitud_listar' %}?estado=Derivada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Seguimiento</div>
+                <div class="stat-title mt-2">Incidencias Derivadas</div>
+                <div class="stat-number">{{ incidencias_derivadas }}</div>
+            </div>
+        </a>
+
+        <a href="{% url 'solicitud_listar' %}?estado=Rechazada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Validación</div>
+                <div class="stat-title mt-2">Incidencias Rechazadas</div>
+                <div class="stat-number">{{ incidencias_rechazadas }}</div>
+            </div>
+        </a>
+
+        <a href="{% url 'solicitud_listar' %}?estado=Finalizada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Resultados</div>
+                <div class="stat-title mt-2">Incidencias Finalizadas</div>
+                <div class="stat-number">{{ incidencias_finalizadas }}</div>
+            </div>
+        </a>
+
     </div>
-  </a>
 
-
-  <a href="{% url 'solicitud_listar' %}?estado=Derivada" style="text-decoration:none; color:inherit;">
-    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-      <h3>Incidencias Derivadas</h3>
-      <p style="font-size:2em; color:#ffc107;">{{ incidencias_derivadas }}</p>
+    <div class="mt-4 mb-5 d-flex justify-content-center">
+        <a href="{% url 'encuesta_listar' %}" class="text-decoration-none w-100" style="max-width: 320px;">
+            <div class="cta-card">
+                <h3>Encuestas</h3>
+                <div class="cta-icon">+</div>
+            </div>
+        </a>
     </div>
-  </a>
 
-
-  <a href="{% url 'solicitud_listar' %}?estado=Rechazada" style="text-decoration:none; color:inherit;">
-    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-      <h3>Incidencias Rechazadas</h3>
-      <p style="font-size:2em; color:#dc3545;">{{ incidencias_rechazadas }}</p>
+    <div class="mt-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <p class="text-uppercase text-secondary fw-semibold mb-1" style="letter-spacing: 0.08em;">Organización</p>
+                <h4 class="mb-0">Gestiona estructuras municipales</h4>
+            </div>
+        </div>
+        <div class="org-grid">
+            <a href="{% url 'cuadrilla_listar' %}" class="org-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="org-icon">
+                        <i class="bi bi-people-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5>Cuadrillas</h5>
+                        <p>Crear y administrar equipos operativos.</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{% url 'departamento_listar' %}" class="org-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="org-icon">
+                        <i class="bi bi-diagram-3-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5>Departamentos</h5>
+                        <p>Organiza unidades bajo cada dirección.</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{% url 'direccion_listar' %}" class="org-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="org-icon">
+                        <i class="bi bi-building-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5>Direcciones</h5>
+                        <p>Administra las áreas estratégicas.</p>
+                    </div>
+                </div>
+            </a>
+            <a href="{% url 'territorial_listar' %}" class="org-card">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="org-icon">
+                        <i class="bi bi-geo-alt-fill fs-5"></i>
+                    </div>
+                    <div>
+                        <h5>Territoriales</h5>
+                        <p>Gestiona zonas y responsables locales.</p>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
-  </a>
-
-
-  <a href="{% url 'solicitud_listar' %}?estado=Finalizada" style="text-decoration:none; color:inherit;">
-    <div style="width:220px; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:20px; text-align:center;">
-      <h3>Incidencias Finalizadas</h3>
-      <p style="font-size:2em; color:#17a2b8;">{{ incidencias_finalizadas }}</p>
-    </div>
-  </a>
-
 </div>
 {% endblock %}

@@ -1,13 +1,145 @@
-{% extends 'core/base.html' %}
-
+{% extends "core/base.html" %}
+{% block body_class %}custom-theme{% endblock %}
 {% block content %}
-<h4>Editar Encuesta</h4>
+<style>
+    .pregunta-form {
+        background: var(--dashboard-surface);
+        border: 1px solid var(--dashboard-border);
+        border-radius: 16px;
+        padding: 18px;
+        box-shadow: 0 10px 22px var(--dashboard-shadow);
+    }
+    .pregunta-form label {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--dashboard-muted);
+        font-weight: 700;
+    }
+    .pregunta-form textarea {
+        min-height: 90px;
+    }
+    .pregunta-toolbar {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+    /* Oculta el checkbox DELETE real */
+    input[type="checkbox"][name$="-DELETE"] {
+        display: none;
+    }
+</style>
 
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit" class="btn btn-primary">Actualizar</button>
-  <a href="{% url 'encuesta_listar'%}" class="btn btn-secondary">Cancelar</a>
-</form>
+<div class="container py-4">
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Editar Encuesta</h2>
+        <p class="text-secondary mb-0">Encuesta: <strong>{{ encuesta.titulo }}</strong></p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
+
+            <h5 class="mb-4">Detalles Principales</h5>
+            {{ encuesta_form.as_p }}
+
+            <hr class="my-4">
+            <h5 class="mb-4">Preguntas Asociadas</h5>
+
+            {{ formset.management_form }}
+
+            <div id="pregunta-form-container" class="d-grid gap-3">
+                {% for form in formset %}
+                    <div class="pregunta-form position-relative">
+                        {{ form.pregunta_id }}
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                        <div class="d-flex flex-column gap-2">
+                            {{ form.nombre.label_tag }}
+                            {{ form.nombre }}
+                        </div>
+                        <div class="pregunta-toolbar mt-3">
+                            {{ form.DELETE }}
+                            <label for="{{ form.DELETE.id_for_label }}" class="btn btn-accion btn-eliminar">
+                                Eliminar
+                            </label>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- plantilla oculta para nuevas preguntas -->
+            <template id="empty-form-template">
+                <div class="pregunta-form position-relative">
+                    {{ formset.empty_form.pregunta_id }}
+                    {% for hidden in formset.empty_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="d-flex flex-column gap-2">
+                        {{ formset.empty_form.nombre.label_tag }}
+                        {{ formset.empty_form.nombre }}
+                    </div>
+                    <div class="pregunta-toolbar mt-3">
+                        {{ formset.empty_form.DELETE }}
+                        <label for="{{ formset.empty_form.DELETE.id_for_label }}" class="btn btn-accion btn-eliminar">
+                            Eliminar
+                        </label>
+                    </div>
+                </div>
+            </template>
+
+            <div class="mt-3">
+                <button type="button" id="add-pregunta-form" class="btn btn-accion btn-crear">Añadir Pregunta</button>
+            </div>
+
+            <hr class="my-5">
+
+            <div class="mt-4 d-flex gap-3 flex-wrap justify-content-end">
+                <button type="submit" class="btn-accion btn-crear px-5 py-3">Guardar Cambios</button>
+                <a href="{% url 'encuesta_listar' %}" class="btn btn-secondary px-5 py-3">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addButton = document.getElementById('add-pregunta-form');
+    const formContainer = document.getElementById('pregunta-form-container');
+    const totalForms = document.getElementById('id_preguntas-TOTAL_FORMS');
+    const emptyFormTemplate = document.getElementById('empty-form-template').innerHTML;
+
+    addButton.addEventListener('click', function() {
+        const formIndex = parseInt(totalForms.value);
+        const newFormHtml = emptyFormTemplate.replace(/__prefix__/g, formIndex);
+        formContainer.insertAdjacentHTML('beforeend', newFormHtml);
+        totalForms.value = formIndex + 1;
+    });
+
+    formContainer.addEventListener('click', function(e) {
+        if (e.target.matches('label[for^="id_preguntas-"][for$="-DELETE"]')) {
+            const label = e.target;
+            const checkboxId = label.getAttribute('for');
+            const checkbox = document.getElementById(checkboxId);
+            if (checkbox) {
+                checkbox.checked = true;
+                checkbox.value = "on";
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = checkbox.name;
+                hidden.value = 'on';
+                label.closest('.pregunta-form')?.appendChild(hidden);
+                const formDiv = label.closest('.pregunta-form');
+                if (formDiv) {
+                    formDiv.style.display = 'none';
+                }
+            }
+        }
+    });
+});
+</script>
 {% endblock %}
-

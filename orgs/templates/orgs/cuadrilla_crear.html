@@ -1,20 +1,27 @@
 {% extends 'core/base.html' %}
 
+{% block body_class %}custom-theme{% endblock %}
+
 {% block content %}
-<h4>Crear Cuadrilla</h4>
+<div class="form-card">
+    <h4 class="mb-4">Crear Nueva Cuadrilla</h4>
 
-{% if messages %}
-    <div class="alert alert-info">
+    {% if messages %}
         {% for message in messages %}
-            <p>{{ message }}</p>
+            <div class="alert alert-{{ message.tags }} mb-3">
+                {{ message }}
+            </div>
         {% endfor %}
-    </div>
-{% endif %}
+    {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{% url 'cuadrilla_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            <a href="{% url 'cuadrilla_listar' %}" class="btn btn-secondary ms-2">Cancelar</a>
+        </div>
+    </form>
+</div>
 {% endblock %}

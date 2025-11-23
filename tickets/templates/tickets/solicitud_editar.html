@@ -1,28 +1,65 @@
-{% extends 'core/base.html' %}
+{% extends "core/base.html" %}
+
+{% block body_class %}custom-theme{% endblock %}
 
 {% block content %}
-<h4>Editar Solicitud de Incidencia #{{ solicitud.solicitud_incidencia_id }}</h4>
+<div class="container py-4">
 
-{% if messages %}
-    <div class="alert alert-info">
+    <!-- Hero superior -->
+    <div class="dashboard-hero p-4 p-md-5 mb-5">
+        <h2 class="mb-3">Editar Solicitud de Incidencia</h2>
+        <p class="text-secondary mb-0">
+            Editando solicitud: <strong>#{{ solicitud.solicitud_incidencia_id }}</strong>
+            <span class="text-muted">• {{ solicitud.encuesta.titulo }} • {{ solicitud.territorial.nombre }}</span>
+        </p>
+    </div>
+
+    <!-- Mensajes de Django -->
+    {% if messages %}
         {% for message in messages %}
-            <p>{{ message }}</p>
+            <div class="alert alert-{{ message.tags }} alert-dashboard mb-4">
+                {{ message }}
+            </div>
         {% endfor %}
-    </div>
-{% endif %}
+    {% endif %}
 
-<form method="post">
-    {% csrf_token %}
-    
-    {{ form.as_p }}
-    <div>
-    <label for="comentario">Comentario extra:</label>
-    <textarea name="comentario" id="comentario" style="white-space: pre-wrap; overflow-wrap: break-word;" rows='2' cols='50'  placeholder='Opcional para documentar el cambio de estado de la solicitud.'>{{ request.POST.comentario|default_if_none:'' }}</textarea>
-    
+    <!-- Formulario principal -->
+    <div class="info-card p-4 p-md-5">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="row g-4 mb-5">
+                {{ form.as_p }}
+            </div>
+
+            <!-- Comentario extra (opcional) -->
+            <hr class="border-secondary my-5"> -->
+            <div class="mb-4">
+                <label for="comentario" class="form-label fs-5 text-primary">
+                    Comentario extra (opcional)
+                </label>
+                <textarea 
+                    name="comentario" 
+                    id="comentario" 
+                    class="form-control form-control-lg" 
+                    rows="3" 
+                    placeholder="Documenta aquí el motivo del cambio de estado, observaciones o acciones realizadas..."
+                    style="resize: vertical; font-family: inherit;">{{ request.POST.comentario|default_if_none:'' }}</textarea>
+                <div class="form-text">
+                    Este comentario se guardará en el historial de la solicitud.
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="d-flex gap-3 flex-wrap justify-content-end">
+                <button type="submit" class="btn btn-warning px-5 py-3">
+                    Actualizar Solicitud
+                </button>
+                <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary px-5 py-3">
+                    Cancelar
+                </a>
+            </div>
+        </form>
     </div>
-    <div>
-    <button type="submit" class="btn btn-warning">Actualizar</button>
-    
-    <a href="{% url 'solicitud_listar' %}" class="btn btn-secondary">Cancelar</a></div>
-</form>
+</div>
 {% endblock %}
