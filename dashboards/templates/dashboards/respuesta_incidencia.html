@@ -1,28 +1,186 @@
 {% extends 'core/base.html' %}
+{% block body_class %}custom-theme{% endblock %}
 {% block content %}
-<h4>Responder Incidencia</h4>
+<style>
+    @import url('https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css');
 
-<div class="card p-3">
-    <p><strong>ID Incidencia:</strong> {{ incidencia.solicitud_incidencia_id }}</p>
-    <p><strong>Incidencia:</strong> {{ incidencia.encuesta.tipo_incidencia }}</p>
-    <p><strong>Estado actual:</strong> {{ incidencia.estado }}</p>
+    :root {
+        --dashboard-primary: #F9B17A;
+        --dashboard-primary-hover: #d89361;
+        --dashboard-bg: #2D3250;
+        --dashboard-surface: #424769;
+        --dashboard-muted: #676F9D;
+        --dashboard-text: #FFFFFF;
+    }
 
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label class="form-label">Descripción de la solución</label>
-            <textarea name="respuesta" class="form-control" rows="3" required>{% if respuesta_texto %}{{ respuesta_texto }}{% endif %}</textarea>
+    body {
+        background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.04), transparent 28%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.05), transparent 32%), var(--dashboard-bg) !important;
+        color: var(--dashboard-text);
+    }
+
+    .container {
+        background: transparent !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-top: 28px !important;
+        max-width: 1100px !important;
+    }
+
+    .respuesta-wrapper {
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--dashboard-text);
+    }
+
+    .respuesta-card {
+        background: var(--dashboard-surface);
+        border-radius: 24px;
+        padding: 28px 32px;
+        border: 1px solid rgba(255,255,255,0.06);
+        box-shadow: 0 18px 36px rgba(6, 8, 20, 0.45);
+    }
+
+    .respuesta-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+    }
+
+    .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px 18px;
+        margin-bottom: 12px;
+    }
+
+    .meta-item {
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 14px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .meta-label {
+        display: block;
+        font-size: 0.82rem;
+        letter-spacing: 0.08em;
+        color: var(--dashboard-muted);
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .meta-value {
+        font-weight: 700;
+        color: var(--dashboard-text);
+    }
+
+    .badge-estado {
+        background: rgba(249, 177, 122, 0.14);
+        color: var(--dashboard-primary);
+        border: 1px solid rgba(249, 177, 122, 0.35);
+        border-radius: 999px;
+        padding: 0.35rem 0.9rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+
+    .form-control, .form-control[type="file"] {
+        background-color: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: var(--dashboard-text);
+        border-radius: 14px;
+        padding: 0.9rem 1rem;
+    }
+
+    .form-control:focus {
+        background-color: rgba(255, 255, 255, 0.06);
+        border-color: var(--dashboard-primary);
+        box-shadow: 0 0 0 0.2rem rgba(249, 177, 122, 0.25);
+        color: var(--dashboard-text);
+    }
+
+    .form-label {
+        color: var(--dashboard-muted);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+
+    .btn-primary {
+        background-color: var(--dashboard-primary);
+        border-color: var(--dashboard-primary);
+        color: #2D3250;
+        font-weight: 700;
+        padding: 0.65rem 1.6rem;
+        border-radius: 12px;
+    }
+
+    .btn-primary:hover {
+        background-color: var(--dashboard-primary-hover);
+        border-color: var(--dashboard-primary-hover);
+    }
+
+    .btn-outline-light {
+        color: var(--dashboard-text);
+        border-color: rgba(255, 255, 255, 0.25);
+        border-radius: 12px;
+        padding: 0.65rem 1.4rem;
+    }
+
+    .btn-outline-light:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.4);
+        color: var(--dashboard-text);
+    }
+
+    @media (max-width: 768px) {
+        .respuesta-card { padding: 22px 18px; }
+    }
+</style>
+
+<div class="respuesta-wrapper">
+    <div class="respuesta-card">
+        <div class="respuesta-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <p class="text-uppercase fw-semibold mb-1" style="letter-spacing:0.12em; color: var(--dashboard-muted);">Registro de avance</p>
+                <h3 class="mb-0">Responder incidencia</h3>
+            </div>
+            <span class="badge-estado">{{ incidencia.estado }}</span>
         </div>
 
-        <div class="mb-3">
-            <label class="form-label">Subir imágenes o videos</label>
-            <input type="file" name="archivos" class="form-control" multiple required>
+        <div class="meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">ID Incidencia</span>
+                <span class="meta-value">#{{ incidencia.solicitud_incidencia_id }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Incidencia</span>
+                <span class="meta-value">{{ incidencia.encuesta.tipo_incidencia }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Cuadrilla</span>
+                <span class="meta-value">{{ incidencia.cuadrilla.nombre|default:"Sin asignar" }}</span>
+            </div>
         </div>
 
-        <button type="submit" class="btn btn-success">Enviar Respuesta</button>
-        <a href="{% url 'dashboard_cuadrilla' %}" class="btn btn-accion btn-volver">
-            <i class="bi bi-arrow-left-circle"></i> Volver
-        </a>
-    </form>
+        <form method="post" enctype="multipart/form-data" class="mt-3">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Descripción de la solución</label>
+                <textarea name="respuesta" class="form-control" rows="4" required placeholder="Describe las acciones realizadas, materiales usados y estado final.">{% if respuesta_texto %}{{ respuesta_texto }}{% endif %}</textarea>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Subir imágenes o videos</label>
+                <input type="file" name="archivos" class="form-control" multiple required>
+                <small class="text-muted d-block mt-2">Adjunta evidencia del trabajo (formatos: imágenes o videos).</small>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Enviar respuesta</button>
+                <a href="{% url 'dashboard_cuadrilla' %}" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left-circle"></i> Volver
+                </a>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

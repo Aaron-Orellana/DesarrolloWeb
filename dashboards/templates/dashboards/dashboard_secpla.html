@@ -13,7 +13,7 @@
     }
 
     body {
-        background-color: var(--dashboard-bg) !important;
+        background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.05), transparent 28%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.04), transparent 32%), var(--dashboard-bg) !important;
         color: var(--dashboard-text);
     }
 
@@ -22,142 +22,234 @@
         box-shadow: none !important;
         padding: 0 !important;
         margin-top: 20px !important;
-        max-width: 100% !important;
+        max-width: 1200px !important;
+    }
+
+    .dashboard-secpla {
+        font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--dashboard-text);
+        padding-bottom: 32px;
     }
 
     .dashboard-hero {
-        background: var(--dashboard-surface);
-        border-radius: 26px;
-        padding: 38px 55px;                
-        width: 85%;                      
-        margin: auto;
+        background: linear-gradient(135deg, rgba(66, 71, 105, 0.9), rgba(66, 71, 105, 0.65));
+        border-radius: 28px;
+        padding: 38px 42px;
         margin-top: 25px;
-        box-shadow: 0 26px 55px rgba(7,10,26,0.38);
-        border: 1px solid rgba(255,255,255,0.05);
-        text-align: center;
+        box-shadow: 0 28px 60px rgba(7,10,26,0.35);
+        border: 1px solid rgba(255,255,255,0.06);
+        overflow: hidden;
+        position: relative;
+    }
+
+    .dashboard-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 25% 20%, rgba(249, 177, 122, 0.12), transparent 45%), radial-gradient(circle at 80% 10%, rgba(255,255,255,0.08), transparent 40%);
+        pointer-events: none;
+    }
+
+    .dashboard-hero .badge {
+        background: rgba(249, 177, 122, 0.14);
+        color: var(--dashboard-primary);
+        border: 1px solid rgba(249, 177, 122, 0.35);
+        border-radius: 999px;
+        padding: 0.45rem 0.9rem;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        font-size: 0.8rem;
     }
 
     .dashboard-hero h1 {
-        font-weight: 600;
-        font-size: 2.4rem;                
+        font-weight: 650;
+        font-size: 2.45rem;
         color: #FFFFFF;
-        margin-bottom: 10px;
+        margin: 12px 0 6px;
+        letter-spacing: 0.01em;
     }
 
     .dashboard-hero p {
         color: var(--dashboard-muted);
-        font-size: 1.05rem;                
+        font-size: 1.05rem;
         margin: 0;
+    }
+
+    .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+        margin-top: 24px;
     }
 
     .stat-card {
         background: var(--dashboard-surface);
-        padding: 22px 32px;
+        padding: 22px 24px;
         border-radius: 22px;
-        width: 220px;                        
-        height: 150px;                       
-        text-align: center;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.30);
-        border-left: 6px solid var(--dashboard-primary);
-        transition: .25s ease-in-out;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+        min-height: 150px;
+        text-align: left;
+        box-shadow: 0 16px 36px rgba(5,7,20,0.35);
+        border: 1px solid rgba(255,255,255,0.06);
+        transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(145deg, rgba(249, 177, 122, 0.14), transparent 45%);
+        opacity: 0;
+        transition: opacity .22s ease;
     }
 
     .stat-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 16px 34px rgba(0,0,0,0.45);
+        transform: translateY(-6px);
+        box-shadow: 0 22px 46px rgba(5,7,20,0.48);
+        border-color: rgba(249, 177, 122, 0.35);
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
     }
 
     .stat-title {
-        font-size: 1.05rem;
-        font-weight: 500;
+        font-size: 1.02rem;
+        font-weight: 600;
         color: #FFFFFF;
         margin-bottom: 10px;
-        text-align: center;
+        position: relative;
+        z-index: 1;
     }
 
     .stat-number {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 700;
         color: var(--dashboard-primary);
-        text-align: center;
+        margin: 0;
+        position: relative;
+        z-index: 1;
     }
 
-    .encuesta-card {
-        background: var(--dashboard-surface);
-        padding: 28px;
-        border-radius: 20px;
-        width: 260px;
-        text-align: center;
-        margin: auto;
+    .stat-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255,255,255,0.06);
+        color: var(--dashboard-muted);
+        padding: 0.3rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        position: relative;
+        z-index: 1;
+    }
+
+    .cta-card {
+        background: linear-gradient(160deg, rgba(66,71,105,0.92), rgba(66,71,105,0.75));
+        border-radius: 22px;
+        padding: 26px;
         border: 1px solid rgba(255,255,255,0.08);
-        box-shadow: 0 14px 28px rgba(7,10,26,0.45);
-        transition: .25s;
+        box-shadow: 0 18px 40px rgba(7,10,26,0.4);
+        text-align: center;
+        transition: transform .22s ease, box-shadow .22s ease, background .22s ease;
         color: #FFFFFF !important;
+        width: 280px;
+        margin: 14px auto 0;
     }
 
-    .encuesta-card:hover {
-        background-color: var(--dashboard-primary);
+    .cta-card:hover {
+        background: var(--dashboard-primary);
         color: #2D3250 !important;
-        transform: translateY(-4px);
+        transform: translateY(-6px);
+        box-shadow: 0 22px 46px rgba(5,7,20,0.48);
     }
 
-    .encuesta-card h3,
-    .encuesta-card div {
-        color: #FFFFFF !important;
+    .cta-card h3 {
+        margin-bottom: 6px;
+        font-weight: 700;
+        color: inherit;
+    }
+
+    .cta-card .cta-icon {
+        font-size: 2.3rem;
+        font-weight: 700;
+        line-height: 1;
+        color: inherit;
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-hero {
+            padding: 28px 24px;
+        }
+
+        .dashboard-hero h1 {
+            font-size: 1.8rem;
+        }
     }
 </style>
-<div class="dashboard-hero mt-4">
-    <h1>Panel de Control - SECPLA</h1>
-    <p class="mt-2">Vista general de la información municipal.</p>
-</div>
-
-<div class="d-flex justify-content-center flex-wrap gap-4 mt-4">
-
-    <a href="{% url 'user_list' %}" class="text-decoration-none">
-        <div class="stat-card">
-            <div class="stat-title">Usuarios Registrados</div>
-            <div class="stat-number">{{ total_usuarios }}</div>
+<div class="dashboard-secpla">
+    <div class="dashboard-hero mt-4 position-relative">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 position-relative" style="z-index:1;">
+            <div>
+                <span class="badge text-uppercase">Gestión municipal</span>
+                <h1>Panel de Control - SECPLA</h1>
+                <p>Vista general de la información municipal.</p>
+            </div>
         </div>
-    </a>
+    </div>
 
-    <a href="{% url 'solicitud_listar' %}?estado=Creada" class="text-decoration-none">
-        <div class="stat-card">
-            <div class="stat-title">Incidencias Creadas</div>
-            <div class="stat-number">{{ incidencias_creadas }}</div>
-        </div>
-    </a>
+    <div class="stat-grid mt-4">
+        <a href="{% url 'user_list' %}" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Usuarios</div>
+                <div class="stat-title mt-2">Usuarios Registrados</div>
+                <div class="stat-number">{{ total_usuarios }}</div>
+            </div>
+        </a>
 
-    <a href="{% url 'solicitud_listar' %}?estado=Derivada" class="text-decoration-none">
-        <div class="stat-card">
-            <div class="stat-title">Incidencias Derivadas</div>
-            <div class="stat-number">{{ incidencias_derivadas }}</div>
-        </div>
-    </a>
+        <a href="{% url 'solicitud_listar' %}?estado=Creada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Incidencias</div>
+                <div class="stat-title mt-2">Incidencias Creadas</div>
+                <div class="stat-number">{{ incidencias_creadas }}</div>
+            </div>
+        </a>
 
-    <a href="{% url 'solicitud_listar' %}?estado=Rechazada" class="text-decoration-none">
-        <div class="stat-card">
-            <div class="stat-title">Incidencias Rechazadas</div>
-            <div class="stat-number">{{ incidencias_rechazadas }}</div>
-        </div>
-    </a>
+        <a href="{% url 'solicitud_listar' %}?estado=Derivada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Seguimiento</div>
+                <div class="stat-title mt-2">Incidencias Derivadas</div>
+                <div class="stat-number">{{ incidencias_derivadas }}</div>
+            </div>
+        </a>
 
-    <a href="{% url 'solicitud_listar' %}?estado=Finalizada" class="text-decoration-none">
-        <div class="stat-card">
-            <div class="stat-title">Incidencias Finalizadas</div>
-            <div class="stat-number">{{ incidencias_finalizadas }}</div>
-        </div>
-    </a>
-</div>
+        <a href="{% url 'solicitud_listar' %}?estado=Rechazada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Validación</div>
+                <div class="stat-title mt-2">Incidencias Rechazadas</div>
+                <div class="stat-number">{{ incidencias_rechazadas }}</div>
+            </div>
+        </a>
 
-<div class="mt-4 mb-5 d-flex justify-content-center">
-    <a href="{% url 'encuesta_listar' %}" class="text-decoration-none">
-        <div class="encuesta-card">
-            <h3>Encuestas</h3>
-            <div style="font-size:2.3rem; font-weight:700;">+</div>
-        </div>
-    </a>
+        <a href="{% url 'solicitud_listar' %}?estado=Finalizada" class="text-decoration-none">
+            <div class="stat-card">
+                <div class="stat-chip">Resultados</div>
+                <div class="stat-title mt-2">Incidencias Finalizadas</div>
+                <div class="stat-number">{{ incidencias_finalizadas }}</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="mt-4 mb-5 d-flex justify-content-center">
+        <a href="{% url 'encuesta_listar' %}" class="text-decoration-none w-100" style="max-width: 320px;">
+            <div class="cta-card">
+                <h3>Encuestas</h3>
+                <div class="cta-icon">+</div>
+            </div>
+        </a>
+    </div>
 </div>
 {% endblock %}

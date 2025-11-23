@@ -12,30 +12,44 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    border: 1px solid transparent;
+    --bs-btn-color: white;
 }
 .btn-crear {
-    background-color: var(--color-main);
-    border-color: var(--color-main);
+    background-color: var(--color-main) !important;
+    border-color: var(--color-main) !important;
+    --bs-btn-bg: var(--color-main) !important;
+    --bs-btn-border-color: var(--color-main) !important;
+    --bs-btn-hover-bg: var(--color-main-hover) !important;
+    --bs-btn-hover-border-color: var(--color-main-hover) !important;
 }
 .btn-crear:hover {
-    background-color: var(--color-main-hover);
-    border-color: var(--color-main-hover);
+    background-color: var(--color-main-hover) !important;
+    border-color: var(--color-main-hover) !important;
 }
 .btn-editar {
-    background-color: var(--color-main);
-    border-color: var(--color-main);
+    background-color: var(--color-main) !important;
+    border-color: var(--color-main) !important;
+    --bs-btn-bg: var(--color-main) !important;
+    --bs-btn-border-color: var(--color-main) !important;
+    --bs-btn-hover-bg: var(--color-main-hover) !important;
+    --bs-btn-hover-border-color: var(--color-main-hover) !important;
 }
 .btn-editar:hover {
-    background-color: var(--color-main-hover);
-    border-color: var(--color-main-hover);
+    background-color: var(--color-main-hover) !important;
+    border-color: var(--color-main-hover) !important;
 }
 .btn-eliminar {
-    background-color: #d9534f;
-    border-color: #d9534f;
+    background-color: #d9534f !important;
+    border-color: #d9534f !important;
+    --bs-btn-bg: #d9534f !important;
+    --bs-btn-border-color: #d9534f !important;
+    --bs-btn-hover-bg: #c94440 !important;
+    --bs-btn-hover-border-color: #c94440 !important;
 }
 .btn-eliminar:hover {
-    background-color: #c94440;
-    border-color: #c94440;
+    background-color: #c94440 !important;
+    border-color: #c94440 !important;
 }
 .btn.btn-volver {
     --bs-btn-bg: var(--color-volver) ;

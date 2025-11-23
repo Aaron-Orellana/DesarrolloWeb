@@ -10,7 +10,7 @@
 
 {# === BOTÓN CREAR === #}
 {% block create_button %}
-    <a href="{% url 'user_create' %}" class="btn-accion btn-crear">
+    <a href="{% url 'user_create' %}" class="btn btn-accion btn-crear">
         Crear Usuario
     </a>
 {% endblock %}
@@ -49,7 +49,7 @@
             <td>
 
                 {# === BOTÓN EDITAR === #}
-                <a href="{% url 'user_edit' user.pk %}" class="btn-accion btn-editar btn-sm">
+                <a href="{% url 'user_edit' user.pk %}" class="btn btn-accion btn-editar btn-sm">
                     Editar
                 </a>
 
@@ -59,13 +59,13 @@
                     <form action="{% url 'user_toggle_active' user.pk %}"
                           method="post" class="d-inline">
                         {% csrf_token %}
-                        <button type="submit" class="btn-accion btn-editar btn-sm">
+                        <button type="submit" class="btn btn-accion btn-editar btn-sm">
                             {% if user.is_active %}Bloquear{% else %}Activar{% endif %}
                         </button>
                     </form>
 
                     <a href="{% url 'user_delete' user.pk %}"
-                       class="btn-accion btn-eliminar btn-sm">
+                       class="btn btn-accion btn-eliminar btn-sm">
                         Eliminar
                     </a>
 
