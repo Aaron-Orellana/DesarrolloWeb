@@ -67,3 +67,20 @@ class RechazaIncidenciaForm(forms.ModelForm):
             'motivo': forms.Select(attrs={'class': 'form-select'}),
             'otro': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'motivo'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Solo requerir "otro" cuando el motivo sea "Otro motivo"
+        self.fields['otro'].required = False
+
+    def clean(self):
+        cleaned = super().clean()
+        motivo = cleaned.get('motivo')
+        otro = cleaned.get('otro', '')
+        if motivo and motivo.lower() == 'otro motivo':
+            if not otro.strip():
+                self.add_error('otro', 'Debes indicar el motivo adicional.')
+        else:
+            # Limpiar el campo para no exigirlo
+            cleaned['otro'] = ''
+        return cleaned

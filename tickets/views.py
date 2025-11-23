@@ -70,7 +70,7 @@ def solicitud_listar(request):
         'es_cuadrilla': es_cuadrilla,
     })
 
-@role_required("Territoriales","Secpla")
+@role_required("Territoriales")
 def solicitud_crear(request):
     from surveys.models import Pregunta, Respuesta  
 
@@ -142,7 +142,7 @@ def solicitud_crear(request):
 
 
 
-@role_required("Secpla","Territoriales","Direcciones")
+@role_required("Territoriales","Direcciones")
 def solicitud_editar(request, solicitud_incidencia_id):
     try:
         profile = Profile.objects.filter(user_id=request.user.id).get()

@@ -42,7 +42,7 @@
                 {% if asignar_cuadrilla and es_encargado and inc.estado != 'En Proceso' and inc.cuadrilla %}
                     <form method="post" action="{% url 'poner_en_proceso' inc.pk %}" style="display:inline; margin-left:5px;">
                         {% csrf_token %}
-                        <button type="submit" class="btn" style="background:#007bff;">
+                        <button type="submit" class="btn btn-primary">
                             Iniciar
                         </button>
                     </form>
